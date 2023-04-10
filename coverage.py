@@ -21,8 +21,6 @@ class LazyPrompt(PromptTemplate):
     prompt_template = kwargs[self.template]
     template_kwargs = dict(kwargs)
     template_kwargs.pop(self.template)
-    print("TEMPLATE kwargs", template_kwargs)
-    print("PROMPT", prompt_template)
     return prompt_template.format(**template_kwargs)
   
   @root_validator()
