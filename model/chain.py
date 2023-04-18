@@ -1,20 +1,16 @@
-from langchain.chains import SequentialChain
-from langchain.chains.loading import load_chain_from_config
+from pydantic import BaseModel
+from pydantic_mongo import AbstractRepository, ObjectIdField
 
-class ESequentialChain(SequentialChain):
-  @property
-  def _chain_type(self) -> str:
-    return "sequential_chain"
+class Chain(BaseModel):
+  id: ObjectIdField = None
+  name: str
+  revision: ObjectIdField
+
+  class Config:
+    json_encoders = {ObjectIdField: str}
 
 
-def chain_loader(v):
-  match v['_type']:
-    case 'sequential_chain':
-      return ESequentialChain(
-        input_variables=v['input_variables'],
-        output_variables=v['output_variables'],
-        chains=[chain_loader(c) for c in v['chains']]
-      )
-    case _:
-      return load_chain_from_config(v)
+class ChainRepository(AbstractRepository[Chain]):
+  class Meta:
+    collection_name = 'chains'
 

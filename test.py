@@ -1,11 +1,10 @@
 from pprint import pprint
-from model.test_chain import TestChain
 from model.chain_revision import ChainRevision
 from db import test_chain_repository, chain_revision_repository
 from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
-from langchain.chains import LLMChain, SequentialChain
-
+from model.types import LLMSpec, SequentialSpec
+from model.test_chain import TestChain
 
 def pretty_print(clas, indent=0):
   print(' ' * indent +  type(clas).__name__ +  ':')
@@ -15,11 +14,6 @@ def pretty_print(clas, indent=0):
       pretty_print(v,indent)
     else:
       print(' ' * indent +  k + ': ' + str(v))
-
-
-test_chain = TestChain(name="test")
-
-test_chain_repository.save(test_chain)
 
 categorization_template = '''Context: ${context}\n The following is a list of categories
 that insurance customer questions fall into:
@@ -32,18 +26,20 @@ Category:'''
 
 template2 = "Sumarize this response:\n\n{category}\n\nSummary:"
 
-llm = OpenAI(temperature=0.7)
+# llm = OpenAI(temperature=0.7)
 
-chain1 = LLMChain(llm=llm, prompt=PromptTemplate(input_variables=["context", "user_input"], template=categorization_template), output_key="category", verbose=True)
-chain2 = LLMChain(llm=llm, prompt=PromptTemplate(input_variables=["category"], template=template2), verbose=True)
-chain = ESequentialChain(
-  input_variables=["context", "user_input"],
-  output_variables=["text"],
-  chains=[chain1, chain2]
+chain1 = LLMSpec(prompt=categorization_template, chain_type='llm_spec')
+chain2 = LLMSpec(prompt=template2, chain_type='llm_spec')
+chain = SequentialSpec(
+  chains=[chain1, chain2],
+  chain_type='sequential_spec'
 )
 
-revision = ChainRevision(parent=test_chain.id, major=0, minor=0, chain=chain)
+revision = ChainRevision(name="main", major=0, minor=0, chain=chain)
 chain_revision_repository.save(revision)
+
+test_chain = TestChain(name="test", revision=revision.id)
+test_chain_repository.save(test_chain)
 
 
 records = chain_revision_repository.find_by({})
