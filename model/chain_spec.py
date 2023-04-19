@@ -4,6 +4,7 @@ from langchain.chains.base import Chain
 from langchain.chains import LLMChain, SequentialChain
 from langchain.prompts import PromptTemplate
 from model.lang_chain_context import LangChainContext
+from chains.case_chain import CaseChain
 from chains.llm_recording_chain import LLMRecordingChain
 import hashlib
 
@@ -11,19 +12,18 @@ ChainSpec = Annotated[Union["SequentialSpec", "LLMSpec", "CaseSpec", "TransformS
 
 class BaseSpec(BaseModel):
   chain_id: int
-  input_keys: List[str]
-  output_keys: List[str]
 
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     raise NotImplementedError
 
 
 class LLMSpec(BaseSpec):
+  input_keys: List[str]
+  output_keys: List[str]
   chain_type: Literal["llm_spec"]
   prompt: str
   llm_key: str
 
-  # creates LLMChain from LLMSpec. Raises ValueError if llm_key is not found in ctx.
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     llm = ctx.llms.get(self.llm_key)
 
@@ -39,10 +39,11 @@ class LLMSpec(BaseSpec):
 
 
 class SequentialSpec(BaseSpec):
+  input_keys: List[str]
+  output_keys: List[str]
   chain_type: Literal["sequential_spec"]
   chains: List[ChainSpec]
 
-  # creates SequentialChain from SequentialSpec.
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     return SequentialChain(chains=[chain.to_lang_chain(ctx) for chain in self.chains], input_variables=self.input_keys, output_variables=self.output_keys)
 
@@ -50,6 +51,15 @@ class SequentialSpec(BaseSpec):
 class CaseSpec(BaseSpec):
   chain_type: Literal["case_spec"]
   cases: Dict[str, ChainSpec]
+  categorization_key: str
+  default_case: ChainSpec
+
+  def to_lang_chain(self, ctx: LangChainContext) -> CaseChain:
+    return CaseChain(
+      subchains={key: chain.to_lang_chain(ctx) for key, chain in self.cases.items()}, 
+      categorization_input=self.categorization_key,
+      default_chain=self.default_case.to_lang_chain(ctx),
+    )
 
 
 class TransformSpec(BaseSpec):
