@@ -1,5 +1,4 @@
-from chains.case_chain import CaseChain
-from model.chain_spec import BaseSpec, LLMSpec, SequentialSpec, CaseSpec
+from model.chain_spec import LLMSpec, SequentialSpec, CaseSpec
 from model.lang_chain_context import LangChainContext
 from langchain.llms.fake import FakeListLLM
 
