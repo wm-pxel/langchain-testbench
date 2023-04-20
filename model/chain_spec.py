@@ -5,10 +5,10 @@ from langchain.chains import LLMChain, SequentialChain
 from langchain.prompts import PromptTemplate
 from model.lang_chain_context import LangChainContext
 from chains.case_chain import CaseChain
+from chains.api_chain import APIChain
 from chains.llm_recording_chain import LLMRecordingChain
-import hashlib
 
-ChainSpec = Annotated[Union["SequentialSpec", "LLMSpec", "CaseSpec", "TransformSpec"], Field(discriminator='chain_type')]
+ChainSpec = Annotated[Union["SequentialSpec", "LLMSpec", "CaseSpec", "ReformatSpec"], Field(discriminator='chain_type')]
 
 class BaseSpec(BaseModel):
   chain_id: int
@@ -62,17 +62,32 @@ class CaseSpec(BaseSpec):
     )
 
 
-class TransformSpec(BaseSpec):
-  chain_type: Literal["transform_spec"]
-  transforms: Dict[str, str]
+class ReformatSpec(BaseSpec):
+  chain_type: Literal["reformat_spec"]
+  formatters: Dict[str, str]
+  input_keys: List[str]
+  ouptut_keys: List[str]
 
 
 class APISpec(BaseSpec):
-  chain_type: Literal["APISpec"]
+  chain_type: Literal["api_spec"]
   url: str
   method: str
   headers: Optional[Dict[str, str]]
   body: Optional[str]
+  input_keys: List[str]
+  output_key: str
+
+  def to_lang_chain(self, ctx: LangChainContext) -> Chain:
+    return APIChain(
+      url=self.url,
+      method=self.method,
+      headers=self.headers,
+      body=self.body,
+      input_variables=self.input_keys,
+      output_variable=self.output_key,
+    )
+
 
 SequentialSpec.update_forward_refs()
 CaseSpec.update_forward_refs()

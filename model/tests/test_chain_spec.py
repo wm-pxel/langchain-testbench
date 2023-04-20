@@ -1,4 +1,4 @@
-from model.chain_spec import LLMSpec, SequentialSpec, CaseSpec
+from model.chain_spec import LLMSpec, SequentialSpec, CaseSpec, APISpec
 from model.lang_chain_context import LangChainContext
 from langchain.llms.fake import FakeListLLM
 
@@ -213,3 +213,41 @@ def test_case_spec_to_lang_chain_creates_valid_chain():
         "input4": "input4"
     })
     assert output == "fake_response2"
+
+
+def test_api_chain_spec_serialization():
+    api_spec = APISpec(
+        chain_id=3,
+        chain_type="api_spec",
+        input_keys=["input1", "input2"],
+        output_key="output",
+        url="http://test.com",
+        method="POST",
+        body="body {input1} {input2}",
+        headers={"header1": "header1"},
+    )
+    serialized = api_spec.json()
+    deserialized = APISpec.parse_raw(serialized)
+    assert deserialized == api_spec
+
+
+def test_api_chain_spec_to_lang_chain_creates_valid_chain():
+    api_spec = APISpec(
+        chain_id=3,
+        chain_type="api_spec",
+        input_keys=["input1", "input2"],
+        output_key="output",
+        url="http://test.com",
+        method="POST",
+        body="body {input1} {input2}",
+        headers={"header1": "header1"},
+    )
+    ctx = LangChainContext(llms={})
+    api_chain = api_spec.to_lang_chain(ctx)
+
+    assert api_chain.input_keys == ["input1", "input2"]
+    assert api_chain.output_keys == ["output"]
+    assert api_chain.url == "http://test.com"
+    assert api_chain.method == "POST"
+    assert api_chain.body == "body {input1} {input2}"
+    assert api_chain.headers == {"header1": "header1"}
