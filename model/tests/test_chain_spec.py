@@ -1,4 +1,4 @@
-from model.chain_spec import LLMSpec, SequentialSpec, CaseSpec, APISpec
+from model.chain_spec import LLMSpec, SequentialSpec, CaseSpec, APISpec, ReformatSpec
 from model.lang_chain_context import LangChainContext
 from langchain.llms.fake import FakeListLLM
 
@@ -7,13 +7,13 @@ def test_llm_spec_serialization():
     llm_spec = LLMSpec(
         chain_id=1,
         input_keys=["input1", "input2"],
-        output_keys=["output1", "output2"],
+        output_key="output1",
         prompt="prompt",
         llm_key="llm_key",
         chain_type="llm_spec",
     )
     serialized = llm_spec.json()
-    assert serialized == '{"chain_id": 1, "input_keys": ["input1", "input2"], "output_keys": ["output1", "output2"], "chain_type": "llm_spec", "prompt": "prompt", "llm_key": "llm_key"}'
+    assert serialized == '{"chain_id": 1, "input_keys": ["input1", "input2"], "output_key": "output1", "chain_type": "llm_spec", "prompt": "prompt", "llm_key": "llm_key"}'
     deserialized = LLMSpec.parse_raw(serialized)
     assert deserialized == llm_spec
 
@@ -23,7 +23,7 @@ def test_llm_spec_to_lang_chain_creates_valid_chain():
     llm_spec = LLMSpec(
         chain_id=1,
         input_keys=["input1", "input2"],
-        output_keys=["output1"],
+        output_key="output1",
         prompt=prompt_template,
         llm_key="test",
         chain_type="llm_spec",
@@ -37,8 +37,8 @@ def test_llm_spec_to_lang_chain_creates_valid_chain():
     assert llm_chain.prompt.template == prompt_template
     assert llm_chain.llm == llms["test"]
 
-    output = llm_chain.run({"input1": "input1", "input2": "input2"})
-    assert output == "response1"
+    output = llm_chain._call({"input1": "input1", "input2": "input2"})
+    assert output == {"output1": "response1"}
 
 
 def test_sequential_spec_serialization():
@@ -51,7 +51,7 @@ def test_sequential_spec_serialization():
             LLMSpec(
                 chain_id=1,
                 input_keys=["input1", "input2"],
-                output_keys=["output1", "output2"],
+                output_key="output1",
                 prompt="prompt",
                 llm_key="llm_key",
                 chain_type="llm_spec"
@@ -59,7 +59,6 @@ def test_sequential_spec_serialization():
         ],
     )
     serialized = sequential_spec.json()
-    assert serialized == '{"chain_id": 1, "input_keys": ["input1", "input2"], "output_keys": ["output1", "output2"], "chain_type": "sequential_spec", "chains": [{"chain_id": 1, "input_keys": ["input1", "input2"], "output_keys": ["output1", "output2"], "chain_type": "llm_spec", "prompt": "prompt", "llm_key": "llm_key"}]}'
     deserialized = SequentialSpec.parse_raw(serialized)
     assert deserialized == sequential_spec 
 
@@ -68,7 +67,7 @@ def test_sequential_spec_to_lang_chain_creates_valid_chain():
     llm_spec1 = LLMSpec(
                 chain_id=1,
                 input_keys=["input1", "input2"],
-                output_keys=["llm1_output"],
+                output_key="llm1_output",
                 prompt="the prompt {input1} {input2}",
                 llm_key="test",
                 chain_type="llm_spec",
@@ -76,7 +75,7 @@ def test_sequential_spec_to_lang_chain_creates_valid_chain():
     llm_spec2 = LLMSpec(
                 chain_id=2,
                 input_keys=["llm1_output", "input3"],
-                output_keys=["llm2_output"],
+                output_key="llm2_output",
                 prompt="the prompt {llm1_output} {input3}",
                 llm_key="test",
                 chain_type="llm_spec",
@@ -119,7 +118,7 @@ def test_case_spec_serialization():
             "response1": LLMSpec(
                 chain_id=1,
                 input_keys=["input1", "input2"],
-                output_keys=["output"],
+                output_key="output",
                 prompt="prompt",
                 llm_key="test",
                 chain_type="llm_spec"
@@ -127,7 +126,7 @@ def test_case_spec_serialization():
             "response2": LLMSpec(
                 chain_id=2,
                 input_keys=["input3", "input4"],
-                output_keys=["output"],
+                output_key="output",
                 prompt="prompt",
                 llm_key="test",
                 chain_type="llm_spec"
@@ -136,7 +135,7 @@ def test_case_spec_serialization():
         default_case=LLMSpec(
             chain_id=4,
             input_keys=["input1", "input2"],
-            output_keys=["output"],
+            output_key="output",
             prompt="prompt",
             llm_key="test",
             chain_type="llm_spec"
@@ -152,7 +151,7 @@ def test_case_spec_to_lang_chain_creates_valid_chain():
     llm_spec1 = LLMSpec(
                 chain_id=1,
                 input_keys=["input1", "input2"],
-                output_keys=["output"],
+                output_key="output",
                 prompt="ll1 prompt {input1} {input2}",
                 llm_key="test1",
                 chain_type="llm_spec",
@@ -160,7 +159,7 @@ def test_case_spec_to_lang_chain_creates_valid_chain():
     llm_spec2 = LLMSpec(
                 chain_id=2,
                 input_keys=["input3", "input4"],
-                output_keys=["output"],
+                output_key="output",
                 prompt="llm2 prompt {input3} {input4}",
                 llm_key="test2",
                 chain_type="llm_spec",
@@ -168,7 +167,7 @@ def test_case_spec_to_lang_chain_creates_valid_chain():
     llm_spec3 = LLMSpec(
                 chain_id=4,
                 input_keys=["input1", "input2"],
-                output_keys=["output"],
+                output_key="output",
                 prompt="default prompt {input1} {input2}",
                 llm_key="test1",
                 chain_type="llm_spec"
@@ -251,3 +250,30 @@ def test_api_chain_spec_to_lang_chain_creates_valid_chain():
     assert api_chain.method == "POST"
     assert api_chain.body == "body {input1} {input2}"
     assert api_chain.headers == {"header1": "header1"}
+
+
+def test_reformat_spec_serialization():
+    reformat_spec = ReformatSpec(
+        chain_id=3,
+        chain_type="reformat_spec",
+        input_keys=["input1", "input2"],
+        formatters={"output1": "formatter1", "output2": "formatter2"},
+    )
+    serialized = reformat_spec.json()
+    deserialized = ReformatSpec.parse_raw(serialized)
+    assert deserialized == reformat_spec
+
+
+def test_reformat_spec_to_lang_chain_creates_valid_chain():
+    reformat_spec = ReformatSpec(
+        chain_id=3,
+        chain_type="reformat_spec",
+        input_keys=["input1", "input2"],
+        formatters={"output1": "formatter1", "output2": "formatter2"},
+    )
+    ctx = LangChainContext(llms={})
+    reformat_chain = reformat_spec.to_lang_chain(ctx)
+
+    assert reformat_chain.input_keys == ["input1", "input2"]
+    assert reformat_chain.output_keys == ["output1", "output2"]
+    assert reformat_chain.formatters == {"output1": "formatter1", "output2": "formatter2"}
