@@ -1,10 +1,10 @@
 from pprint import pprint
 from model.chain_revision import ChainRevision
-from db import test_chain_repository, chain_revision_repository
+from db import chain_repository, chain_revision_repository
 from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
-from model.types import LLMSpec, SequentialSpec
-from model.test_chain import TestChain
+from model.chain_spec import LLMSpec, SequentialSpec
+from model.chain import Chain
 
 def pretty_print(clas, indent=0):
   print(' ' * indent +  type(clas).__name__ +  ':')
@@ -28,18 +28,21 @@ template2 = "Sumarize this response:\n\n{category}\n\nSummary:"
 
 # llm = OpenAI(temperature=0.7)
 
-chain1 = LLMSpec(prompt=categorization_template, chain_type='llm_spec')
-chain2 = LLMSpec(prompt=template2, chain_type='llm_spec')
+chain1 = LLMSpec(prompt=categorization_template, chain_id=0, llm_key="llm", input_keys=[], output_key="out", chain_type='llm_spec')
+chain2 = LLMSpec(prompt=template2, chain_id=0, llm_key="llm", input_keys=[], output_key="out", chain_type='llm_spec')
 chain = SequentialSpec(
   chains=[chain1, chain2],
+  chain_id=1,
+  input_keys=[],
+  output_keys=["out"],
   chain_type='sequential_spec'
 )
 
-revision = ChainRevision(name="main", major=0, minor=0, chain=chain)
+revision = ChainRevision(name="main", major=0, minor=0, chain=chain, llms={"llm": OpenAI(temperature=0.7)})
 chain_revision_repository.save(revision)
 
-test_chain = TestChain(name="test", revision=revision.id)
-test_chain_repository.save(test_chain)
+test_chain = Chain(name="test", revision=revision.id)
+chain_repository.save(test_chain)
 
 
 records = chain_revision_repository.find_by({})
@@ -50,9 +53,9 @@ pretty_print(revisions[0], indent=2)
 for revision in revisions:
   print(chain_revision_repository.delete(revision))
 
-records = test_chain_repository.find_by({})
+records = chain_repository.find_by({})
 chains = [x for x in records]
 print(chains[0])
 
 for c in chains:
-  print(test_chain_repository.delete(c))
+  print(chain_repository.delete(c))

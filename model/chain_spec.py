@@ -19,27 +19,6 @@ class BaseSpec(BaseModel):
 
 
 class LLMSpec(BaseSpec):
-  """
-  Represents an LLMChain
-
-  Attributes
-  ----------
-  chain_id: int
-    The a unique id of this spec within the spec revision
-  input_keys: List[str]
-    The input keys of the chain. Must correspond to template variables for the prompt
-  output_key: str
-    Key for the chain's output
-  prompt: str
-    The prompt to use for the LLM
-  llm_key: str
-    The LLM to use selected from the LLMs specified in the chain revisions
-  
-  Methods
-  -------
-  to_lang_chain(ctx: LangChainContext) -> Chain
-    Returns an LLMChain based on this spec
-  """
   input_keys: List[str]
   output_key: str
   chain_type: Literal["llm_spec"]
