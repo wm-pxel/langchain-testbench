@@ -3,7 +3,7 @@ import click
 from model.chain_revision import ChainRevision
 from model.chain import Chain
 from model.lang_chain_context import LangChainContext
-from db import chain_revision_repository, chain_repository
+from db import chain_revision_repository, chain_repository, result_repository
 import dotenv
 import json
 import re
@@ -71,10 +71,19 @@ def load(chain_name):
 cli.add_command(load)
 
 
+def save_results(ctx: LangChainContext, revision_id: str):
+  results = ctx.results(revision_id)
+  for result in results:
+    result_repository.save(result)
+
+  ctx.reset_results()
+
+
 @click.command()
 @click.argument('chain-name')
 @click.argument("input", default="-", type=click.File("rb"))
-def run(chain_name, input):
+@click.option("--record", is_flag=True, help = "Record the inputs and outputs of LLM chains to the database.")
+def run(chain_name, input, record):
   """Run a chain revision.
   The revision is read from the database and fed input from stdin or the given file.
   The results are ouput as json to stdout.
@@ -89,17 +98,22 @@ def run(chain_name, input):
   chain = chain_repository.find_one_by({"name": chain_name})
   revision = chain_revision_repository.find_one_by_id(chain.revision)
 
-  ctx = LangChainContext(llms=revision.llms)
+  ctx = LangChainContext(llms=revision.llms, record=record)
   lang_chain = revision.chain.to_lang_chain(ctx)
   output = lang_chain.run(input)
+
+  if (record):
+    save_results(ctx, revision.id)
 
   print(json.dumps(output, indent=2))
 
 cli.add_command(run)
 
+
 @click.command()
 @click.argument('chain-name')
-def interactive(chain_name):
+@click.option("--record", is_flag=True, help = "Record the inputs and outputs of LLM chains to the database.")
+def interactive(chain_name, record):
   """Interact with a chain from the database on the command line.  
   The chain must either have an input key called 'input' or have exactly one 
   input key that is not also an output key. The user's input will be fed to this key.
@@ -121,7 +135,7 @@ def interactive(chain_name):
   """
   chain = chain_repository.find_one_by({"name": chain_name})
   revision = chain_revision_repository.find_one_by_id(chain.revision)
-  ctx = LangChainContext(llms=revision.llms)
+  ctx = LangChainContext(llms=revision.llms, recording=record)
   lang_chain = revision.chain.to_lang_chain(ctx)
 
   input_keys = set(lang_chain.input_keys)
@@ -148,6 +162,9 @@ def interactive(chain_name):
   while True:
     inputs[user_input_key] = input(f"{user_input_key}> ")
     outputs = lang_chain._call(inputs)
+
+    if (record):
+      save_results(ctx, revision.id)
 
     print(outputs[user_output_key])
     print()
