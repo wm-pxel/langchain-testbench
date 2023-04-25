@@ -5,9 +5,11 @@ from model.chain import Chain
 from model.lang_chain_context import LangChainContext
 from db import chain_revision_repository, chain_repository, result_repository
 from bson import ObjectId
+import csv
 import dotenv
 import json
 import re
+import sys
 
 dotenv.load_dotenv()
 
@@ -175,17 +177,20 @@ def interactive(chain_name, record):
 
 cli.add_command(interactive)
 
+def dict_to_csv_column(d: dict):
+  return "\n".join([f"{key}: {value}" for key, value in d.items()])
 
 @click.command()
 @click.option("--chain-name", default=None, help="Find results for the current revision of named chain.")
 @click.option("--revision", default=None, help="Find results for the given revision id.")
 @click.option("--ancestors", is_flag=True, help="Include results for ancestors of specified revision.")
+@click.option("--csv-format", is_flag=True, help="Return results as csv instead of json.")
 @click.argument("chain-id")
-def results(chain_name: str, revision: str, ancestors: bool, chain_id: str):
+def results(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chain_id: str):
   """Find results for a prompt in for one or more chain revisions.
   One of chain-name or revision must be specified.
   If the ancestors flag is set, results for all ancestors of the specified revision are included.
-  Results are output as json to stdout.
+  Results are output as json or csv (depending on the --csv-format flag) to stdout.
   """
   if chain_name is not None:
     chain = chain_repository.find_one_by({"name": chain_name})
@@ -204,9 +209,20 @@ def results(chain_name: str, revision: str, ancestors: bool, chain_id: str):
     revision_ids += [ObjectId(i) for i in ancestors_id]
 
   results = result_repository.find_by({"revision": {"$in": revision_ids}, "chain_id": int(chain_id)})
-  print('[')
-  for result in results:
-    print(json.dumps(result.dict(), indent=2, default=lambda o: str(o)), end=',\n')
-  print(']')
+  if csv_format:
+    csv_out = csv.writer(sys.stdout)
+    csv_out.writerow(["chain_id", "revision", "input", "output"])
+    for result in results:
+      csv_out.writerow([
+        result.chain_id, 
+        result.revision, 
+        dict_to_csv_column(result.input), 
+        dict_to_csv_column(result.output)
+      ])
+  else:
+    print('[')
+    for result in results:
+      print(json.dumps(result.dict(), indent=2, default=lambda o: str(o)), end=',\n')
+    print(']')
 
 cli.add_command(results)
