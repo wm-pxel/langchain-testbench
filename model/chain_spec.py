@@ -14,8 +14,24 @@ ChainSpec = Annotated[Union["SequentialSpec", "LLMSpec", "CaseSpec", "ReformatSp
 class BaseSpec(BaseModel):
   chain_id: int
 
+  @property
+  def children(self) -> List[ChainSpec]:
+    return []
+
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     raise NotImplementedError
+  
+  def find_by_chain_id(self, chain_id: int) -> Optional[ChainSpec]:
+    if self.chain_id == chain_id:
+      return self
+
+    for child in self.children:
+      result = child.find_by_chain_id(chain_id)
+
+      if result is not None:
+        return result
+
+    return None
 
 
 class LLMSpec(BaseSpec):
@@ -47,6 +63,10 @@ class SequentialSpec(BaseSpec):
   chain_type: Literal["sequential_spec"]
   chains: List[ChainSpec]
 
+  @property
+  def children(self) -> List[ChainSpec]:
+    return list(self.chains)
+
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     return SequentialChain(chains=[chain.to_lang_chain(ctx) for chain in self.chains], input_variables=self.input_keys, output_variables=self.output_keys)
 
@@ -56,6 +76,10 @@ class CaseSpec(BaseSpec):
   cases: Dict[str, ChainSpec]
   categorization_key: str
   default_case: ChainSpec
+
+  @property
+  def children(self) -> List[ChainSpec]:
+    return list(self.cases.values()) + [self.default_case]
 
   def to_lang_chain(self, ctx: LangChainContext) -> CaseChain:
     return CaseChain(

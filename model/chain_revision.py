@@ -35,3 +35,10 @@ class ChainRevisionRepository(AbstractRepository[ChainRevision]):
   class Meta:
     collection_name = 'chain_revisions'
 
+def find_ancestor_ids(revision_id: ObjectIdField, repository: ChainRevisionRepository) -> list[ObjectIdField]:
+  revision = repository.find_one_by_id(revision_id)
+  if revision is None:
+    raise ValueError(f"Revision with id {revision_id} not found")
+  if revision.parent is None:
+    return []
+  return [revision.parent] + find_ancestor_ids(revision.parent, repository)

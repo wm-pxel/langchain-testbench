@@ -1,9 +1,10 @@
 
 import click
-from model.chain_revision import ChainRevision
+from model.chain_revision import ChainRevision, find_ancestor_ids
 from model.chain import Chain
 from model.lang_chain_context import LangChainContext
 from db import chain_revision_repository, chain_repository, result_repository
+from bson import ObjectId
 import dotenv
 import json
 import re
@@ -173,3 +174,39 @@ def interactive(chain_name, record):
 
 
 cli.add_command(interactive)
+
+
+@click.command()
+@click.option("--chain-name", default=None, help="Find results for the current revision of named chain.")
+@click.option("--revision", default=None, help="Find results for the given revision id.")
+@click.option("--ancestors", is_flag=True, help="Include results for ancestors of specified revision.")
+@click.argument("chain-id")
+def results(chain_name: str, revision: str, ancestors: bool, chain_id: str):
+  """Find results for a prompt in for one or more chain revisions.
+  One of chain-name or revision must be specified.
+  If the ancestors flag is set, results for all ancestors of the specified revision are included.
+  Results are output as json to stdout.
+  """
+  if chain_name is not None:
+    chain = chain_repository.find_one_by({"name": chain_name})
+    revision = chain_revision_repository.find_one_by_id(chain.revision)
+  elif revision is not None:
+    revision = chain_revision_repository.find_one_by_id(revision)
+  elif chain_id is not None:
+    revision = chain_revision_repository.find_one_by({"chain": chain_id})
+  else:
+    raise Exception("Must specify chain name, revision id, or chain id")
+
+  revision_ids = [ObjectId(revision.id)]
+  # if ancestors are requested, find all ancestors of the specified revision
+  if ancestors:
+    ancestors_id = find_ancestor_ids(revision.id, chain_revision_repository)
+    revision_ids += [ObjectId(i) for i in ancestors_id]
+
+  results = result_repository.find_by({"revision": {"$in": revision_ids}, "chain_id": int(chain_id)})
+  print('[')
+  for result in results:
+    print(json.dumps(result.dict(), indent=2, default=lambda o: str(o)), end=',\n')
+  print(']')
+
+cli.add_command(results)
