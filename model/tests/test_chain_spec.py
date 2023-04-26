@@ -1,7 +1,7 @@
 from model.chain_spec import LLMSpec, SequentialSpec, CaseSpec, APISpec, ReformatSpec
 from model.lang_chain_context import LangChainContext
 from langchain.llms.fake import FakeListLLM
-
+from model.tests.factory import SpecFactoryContext, llm_factory, sequential_factory, case_factory
 
 def test_llm_spec_serialization():
     llm_spec = LLMSpec(
@@ -301,3 +301,49 @@ def test_reformat_spec_to_lang_chain_creates_valid_chain():
     assert reformat_chain.input_keys == ["input1", "input2"]
     assert reformat_chain.output_keys == ["output1", "output2"]
     assert reformat_chain.formatters == {"output1": "formatter1", "output2": "formatter2"}
+
+
+class ChainDict:
+    def __init__(self):
+        self.chains = {}
+    
+    def add_chain(self, chain):
+        self.chains[chain.chain_id] = chain
+
+
+def test_chain_spec_copy_replace():
+    ctx = SpecFactoryContext()
+    chain = sequential_factory(ctx, chains=[
+        llm_factory(ctx),
+        case_factory(ctx, cases={
+            "case1": llm_factory(ctx),
+            "case2": sequential_factory(ctx, chains=[llm_factory(ctx), llm_factory(ctx)]),
+        }, default_case=llm_factory(ctx)),
+    ])
+
+    original_specs = ChainDict()
+    chain.traverse(original_specs.add_chain)
+    copied_specs = {}
+    
+    copied_chain = chain.copy_replace(lambda spec: spec)
+    copied_specs = ChainDict()
+    copied_chain.traverse(copied_specs.add_chain)
+
+    assert len(original_specs.chains) == len(copied_specs.chains)
+
+    for chain_id, spec in original_specs.chains.items():
+        copied_spec = copied_specs.chains.get(chain_id)
+        assert copied_spec is not None
+        assert copied_spec == spec
+        assert copied_spec is not spec
+
+    replacement = copied_specs.chains[3]
+    replacement.prompt = "replaced"
+    replace_chain = chain.copy_replace(lambda spec: spec if spec.chain_id != 3 else replacement)
+    replace_specs = ChainDict()
+    replace_chain.traverse(replace_specs.add_chain)
+
+    assert len(original_specs.chains) == len(replace_specs.chains)
+    assert replace_specs.chains[3] == replacement
+    assert replace_specs.chains[3].prompt == "replaced"
+

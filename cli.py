@@ -14,14 +14,25 @@ import sys
 dotenv.load_dotenv()
 
 # TODO:
-# - Add an interactive command to run a chain interactively
-# - Add flags to the run and interactive command to trigger recording (implement recording)
-# - Add a command to branch a chain
 # - Add a command to patch a single chain element by chain_id
 
 @click.group()
 def cli():
   pass
+
+
+#####################
+# Chain revisions
+#####################
+
+
+@click.group()
+def revision():
+  """Save and load chain revisions."""
+  pass
+
+cli.add_command(revision)
+
 
 @click.command()
 @click.argument('chain-name')
@@ -58,7 +69,7 @@ def save(chain_name, file):
     
     print("Saved revision", revision.id, "for chain", chain_name)
 
-cli.add_command(save)
+revision.add_command(save)
 
 
 @click.command()
@@ -71,7 +82,35 @@ def load(chain_name):
   revision = chain_revision_repository.find_one_by_id(chain.revision)
   print(revision.json(indent=2))
 
-cli.add_command(load)
+revision.add_command(load)
+
+
+@click.command()
+@click.argument('chain-name')
+def history(chain_name):
+  """Output the ids of all revisions of the chain.
+  The ids will be output to stdout.
+  """
+  chain = chain_repository.find_one_by({"name": chain_name})
+  revision = chain_revision_repository.find_one_by_id(chain.revision)
+  ancestor_ids = [revision.id] + find_ancestor_ids(revision.id, chain_revision_repository)
+  for id in ancestor_ids:
+    print(id)
+
+revision.add_command(history)
+
+
+#####################
+# Chain names
+#####################
+
+
+@click.group()
+def chain():
+  """Branch and reset chain names."""
+  pass
+
+cli.add_command(chain)
 
 
 def save_results(ctx: LangChainContext, revision_id: str):
@@ -84,9 +123,62 @@ def save_results(ctx: LangChainContext, revision_id: str):
 
 @click.command()
 @click.argument('chain-name')
+@click.argument("branch-name")
+def branch(chain_name, branch_name):
+  """Branch a chain revision.
+  This will create a new chain that points to the same revision
+  as the provided chain. The new chain may be then revised independently.
+  """
+  chain = chain_repository.find_one_by({"name": chain_name})
+
+  new_chain = Chain(
+    name = branch_name,
+    revision = chain.revision,
+  )
+  chain_repository.save(new_chain)
+  print(f"Created branch {branch_name} at {new_chain.id}")
+
+chain.add_command(branch)
+
+
+@click.command()
+@click.argument('chain-name')
+@click.argument("revision")
+def reset(chain_name, revision):
+  """Reset a chain to a another revision.
+  This will update the chain to point to the given revision.
+  """
+  revision = chain_revision_repository.find_one_by_id(revision)
+  if revision is None:
+    print(f"Revision {revision} not found")
+    sys.exit(1)
+
+  chain = chain_repository.find_one_by({"name": chain_name})
+  chain.revision = revision
+  chain_repository.save(chain)
+  print(f"Reset {chain_name} to revision {revision}")
+
+chain.add_command(reset)
+
+
+#####################
+# Running
+#####################
+
+
+@click.group()
+def run():
+  """Run chains once or interactively."""
+  pass
+
+cli.add_command(run)
+
+
+@click.command()
+@click.argument('chain-name')
 @click.argument("input", default="-", type=click.File("rb"))
 @click.option("--record", is_flag=True, help = "Record the inputs and outputs of LLM chains to the database.")
-def run(chain_name, input, record):
+def once(chain_name, input, record):
   """Run a chain revision.
   The revision is read from the database and fed input from stdin or the given file.
   The results are ouput as json to stdout.
@@ -110,7 +202,7 @@ def run(chain_name, input, record):
 
   print(json.dumps(output, indent=2))
 
-cli.add_command(run)
+run.add_command(once)
 
 
 @click.command()
@@ -175,7 +267,21 @@ def interactive(chain_name, record):
     inputs = {key: outputs[output_mapping[key]] if key in output_mapping else "" for key in input_keys}
 
 
-cli.add_command(interactive)
+run.add_command(interactive)
+
+
+#####################
+# Results
+#####################
+
+
+@click.group()
+def results():
+  """Show results."""
+  pass
+
+cli.add_command(results)
+
 
 def dict_to_csv_column(d: dict):
   return "\n".join([f"{key}: {value}" for key, value in d.items()])
@@ -186,7 +292,7 @@ def dict_to_csv_column(d: dict):
 @click.option("--ancestors", is_flag=True, help="Include results for ancestors of specified revision.")
 @click.option("--csv-format", is_flag=True, help="Return results as csv instead of json.")
 @click.argument("chain-id")
-def results(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chain_id: str):
+def show(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chain_id: str):
   """Find results for a prompt in for one or more chain revisions.
   One of chain-name or revision must be specified.
   If the ancestors flag is set, results for all ancestors of the specified revision are included.
@@ -225,4 +331,4 @@ def results(chain_name: str, revision: str, ancestors: bool, csv_format: bool, c
       print(json.dumps(result.dict(), indent=2, default=lambda o: str(o)), end=',\n')
     print(']')
 
-cli.add_command(results)
+results.add_command(show)

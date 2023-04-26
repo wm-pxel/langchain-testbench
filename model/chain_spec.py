@@ -1,4 +1,4 @@
-from typing import Annotated, Dict, List, Literal, Optional, Union
+from typing import Annotated, Callable, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
 from langchain.chains import LLMChain, SequentialChain
@@ -21,6 +21,13 @@ class BaseSpec(BaseModel):
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     raise NotImplementedError
   
+  def traverse(self, fn: Callable[[ChainSpec], None]) -> None:
+    fn(self)
+
+    for child in self.children:
+      child.traverse(fn)
+  
+
   def find_by_chain_id(self, chain_id: int) -> Optional[ChainSpec]:
     if self.chain_id == chain_id:
       return self
@@ -32,6 +39,10 @@ class BaseSpec(BaseModel):
         return result
 
     return None
+  
+  def copy_replace(self, replace: Callable[[ChainSpec], ChainSpec]):
+    return replace(self).copy(deep=True)
+
 
 
 class LLMSpec(BaseSpec):
@@ -69,6 +80,11 @@ class SequentialSpec(BaseSpec):
 
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     return SequentialChain(chains=[chain.to_lang_chain(ctx) for chain in self.chains], input_variables=self.input_keys, output_variables=self.output_keys)
+  
+  def copy_replace(self, replace: Callable[[ChainSpec], ChainSpec]):
+    sequential = replace(self).copy(deep=True, exclude={"chains"})
+    sequential.chains = [chain.copy_replace(replace) for chain in self.chains]
+    return sequential
 
 
 class CaseSpec(BaseSpec):
@@ -87,6 +103,11 @@ class CaseSpec(BaseSpec):
       categorization_input=self.categorization_key,
       default_chain=self.default_case.to_lang_chain(ctx),
     )
+  
+  def copy_replace(self, replace: Callable[[ChainSpec], ChainSpec]):
+    case_chain = replace(self).copy(deep=True, exclude={"cases"})
+    case_chain.cases = {key: chain.copy_replace(replace) for key, chain in self.cases.items()}
+    return case_chain
 
 
 class ReformatSpec(BaseSpec):
