@@ -2,6 +2,7 @@
 import click
 from model.chain_revision import ChainRevision, find_ancestor_ids
 from model.chain import Chain
+from model.chain_spec import LLMSpec
 from model.lang_chain_context import LangChainContext
 from db import chain_revision_repository, chain_repository, result_repository
 from bson import ObjectId
@@ -98,6 +99,83 @@ def history(chain_name):
     print(id)
 
 revision.add_command(history)
+
+
+def save_patch(chain, revision, patch):
+  new_chain = revision.chain.copy_replace(lambda spec: patch if spec.chain_id == patch.chain_id else spec)
+
+  try:
+    ctx = LangChainContext(llms=revision.llms)
+    revision.chain.to_lang_chain(ctx)
+  except Exception as e:
+    print("Could not realize patched chian:", e)
+    sys.exit(1)
+
+  new_revision = revision.copy()
+  new_revision.id = None
+  new_revision.chain = new_chain
+
+  chain_revision_repository.save(new_revision)
+  chain.revision = new_revision.id
+  chain_repository.save(chain)
+
+  print("Saved revision", revision.id, "for chain", chain.name)
+
+
+@click.command()
+@click.argument('chain-name')
+def patch(chain_name):
+  """Replace a single chain spec component to create a new chain.
+  The patch must have the same chain_id as the chain spec to be replaced.
+  The new chain will be saved as a new revision and the chain name will be
+  updated to refrence it.
+  """
+  chain = chain_repository.find_one_by({"name": chain_name})
+  revision = chain_revision_repository.find_one_by_id(chain.revision)
+
+  buffer = b""
+  for f in sys.stdin:
+    buffer += f.encode('utf-8')
+  
+  patch_dict = json.loads(buffer.decode('utf-8'))
+
+  # junk revision lets us correctly deserialize the patch
+  junk_revision = ChainRevision(**{'chain': patch_dict, 'llms':{}})
+  patch = junk_revision.chain
+
+  save_patch(chain, revision, patch)    
+
+revision.add_command(patch)
+
+
+@click.command()
+@click.argument('chain-name')
+@click.argument('chain-id')
+def patch_prompt(chain_name, chain_id):
+  """Replace the prompt text for an LLMSpec of the given revision.
+  The prompt text will be provided on stdin.
+  The new chain will be saved as a new revision and the chain name will be
+  updated to refrence it.
+  """
+  chain = chain_repository.find_one_by({"name": chain_name})
+  revision = chain_revision_repository.find_one_by_id(chain.revision)
+
+  patch = revision.chain.find_by_chain_id(int(chain_id)).copy(deep=True)
+  
+  # error if spec is not an LLMSpec
+  if not isinstance(patch, LLMSpec):
+    print(f"Spec {chain_id} is not an LLMSpec")
+    sys.exit(1)
+
+  buffer = b""
+  for f in sys.stdin:
+    buffer += f.encode('utf-8')
+  
+  patch.prompt = buffer.decode('utf-8')
+
+  save_patch(chain, revision, patch)
+
+revision.add_command(patch_prompt)
 
 
 #####################

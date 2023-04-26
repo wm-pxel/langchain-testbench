@@ -347,3 +347,16 @@ def test_chain_spec_copy_replace():
     assert replace_specs.chains[3] == replacement
     assert replace_specs.chains[3].prompt == "replaced"
 
+
+def test_base_spec_find_by_chain_id():
+    ctx = SpecFactoryContext()
+    deep_llm = llm_factory(ctx)
+    chain = sequential_factory(ctx, chains=[
+        llm_factory(ctx),
+        case_factory(ctx, cases={
+            "case1": llm_factory(ctx),
+            "case2": sequential_factory(ctx, chains=[llm_factory(ctx), deep_llm]),
+        }, default_case=llm_factory(ctx)),
+    ])
+
+    assert chain.find_by_chain_id(deep_llm.chain_id) == deep_llm
