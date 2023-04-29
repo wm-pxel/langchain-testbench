@@ -11,7 +11,7 @@ class LLMRecordingChain(LLMChain):
 
   def _call(self, inputs: Dict[str, str]) -> Dict[str, str]:
     output = super()._call(inputs)
-    self.recorded_calls.append((dict(inputs), dict(output)))
+    self.recorded_calls.append((dict(inputs), output[self.output_key]))
     return output
 
   @property

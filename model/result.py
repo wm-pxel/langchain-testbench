@@ -8,7 +8,7 @@ class Result(BaseModel):
   revision: ObjectIdField
   chain_id: int
   input: Dict[str, str]
-  output: Dict[str, str]
+  output: str
   recorded: datetime
 
   class Config:

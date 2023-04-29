@@ -6,6 +6,8 @@ from model.chain_spec import LLMSpec
 from model.lang_chain_context import LangChainContext
 from db import chain_revision_repository, chain_repository, result_repository
 from bson import ObjectId
+from collections import defaultdict
+from typing import Optional, Dict, Any
 import csv
 import dotenv
 import json
@@ -13,9 +15,6 @@ import re
 import sys
 
 dotenv.load_dotenv()
-
-# TODO:
-# - Add a command to patch a single chain element by chain_id
 
 @click.group()
 def cli():
@@ -191,14 +190,6 @@ def chain():
 cli.add_command(chain)
 
 
-def save_results(ctx: LangChainContext, revision_id: str):
-  results = ctx.results(revision_id)
-  for result in results:
-    result_repository.save(result)
-
-  ctx.reset_results()
-
-
 @click.command()
 @click.argument('chain-name')
 @click.argument("branch-name")
@@ -226,17 +217,26 @@ def reset(chain_name, revision):
   """Reset a chain to a another revision.
   This will update the chain to point to the given revision.
   """
-  revision = chain_revision_repository.find_one_by_id(revision)
-  if revision is None:
+  new_revision = chain_revision_repository.find_one_by({"id": ObjectId(revision)})
+  if new_revision is None:
     print(f"Revision {revision} not found")
     sys.exit(1)
 
   chain = chain_repository.find_one_by({"name": chain_name})
-  chain.revision = revision
+  chain.revision = new_revision.id
   chain_repository.save(chain)
   print(f"Reset {chain_name} to revision {revision}")
 
 chain.add_command(reset)
+
+
+@click.command()
+def list():
+  """List all chains."""
+  for chain in chain_repository.find_by({}):
+    print(f"{chain.name}: {chain.revision}")
+
+chain.add_command(list)
 
 
 #####################
@@ -250,6 +250,14 @@ def run():
   pass
 
 cli.add_command(run)
+
+
+def save_results(ctx: LangChainContext, revision_id: str):
+  results = ctx.results(revision_id)
+  for result in results:
+    result_repository.save(result)
+
+  ctx.reset_results()
 
 
 @click.command()
@@ -401,7 +409,7 @@ def show(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chai
         result.chain_id, 
         result.revision, 
         dict_to_csv_column(result.input), 
-        dict_to_csv_column(result.output)
+        result.output,
       ])
   else:
     print('[')
@@ -410,3 +418,44 @@ def show(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chai
     print(']')
 
 results.add_command(show)
+
+def add_result(results: Dict, key: str, value: Any):
+  if key not in results:
+    results[key] = []
+  results[key].append(value)
+
+@click.command()
+@click.argument('chain-name1')
+@click.argument('chain-name2')
+@click.option("-c", "--chain-id", help="limit diff to a specific chain id", required=False, type=int)
+def diff(chain_name1, chain_name2, chain_id: Optional[int] = None):
+  chain1 = chain_repository.find_one_by({"name": chain_name1})
+  revision1 = chain_revision_repository.find_one_by_id(chain1.revision)
+  chain2 = chain_repository.find_one_by({"name": chain_name2})
+  revision2 = chain_revision_repository.find_one_by_id(chain2.revision)
+  
+  query = {'chain_id': chain_id} if chain_id is not None else {}
+
+  grouped_results = {}
+
+  results1 = result_repository.find_by({"revision": ObjectId(revision1.id), **query})
+  for result in results1:
+    add_result(grouped_results, json.dumps(result.input), result)
+
+  results2 = result_repository.find_by({"revision": ObjectId(revision2.id), **query})
+  for result in results2:
+    add_result(grouped_results, json.dumps(result.input), result)
+
+  csv_out = csv.writer(sys.stdout)
+  csv_out.writerow(["input", "revision 1", "revision 2"])
+  for input, results in grouped_results.items():
+    formatted_input = dict_to_csv_column(json.loads(input))
+    if len(results) == 1:
+      if results[0].revision == revision1.id:
+        csv_out.writerow([formatted_input, results[0].output, ""])
+      else:
+        csv_out.writerow([formatted_input, "", results[0].output])
+    else:
+      csv_out.writerow([formatted_input, results[0].output, results[1].output])
+
+results.add_command(diff)
