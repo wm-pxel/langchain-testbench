@@ -113,6 +113,7 @@ def save_patch(chain, revision, patch):
   new_revision = revision.copy()
   new_revision.id = None
   new_revision.chain = new_chain
+  new_revision.parent = revision.id
 
   chain_revision_repository.save(new_revision)
   chain.revision = new_revision.id
@@ -328,8 +329,10 @@ def interactive(chain_name, record):
   if "input" in input_keys:
     user_input_key = "input"
   elif len(input_keys - output_keys) == 1:
-    user_input_key = list(input_keys - output_keys)[0]
+    keys = input_keys - output_keys
+    user_input_key = next(iter(keys))
   else:
+    print("error inp key", input_keys)
     raise Exception("Chain must have exactly one input key that is not also an output key or an input key called 'input'")
   
   if "output" in output_keys:
@@ -392,7 +395,7 @@ def show(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chai
   elif chain_id is not None:
     revision = chain_revision_repository.find_one_by({"chain": chain_id})
   else:
-    raise Exception("Must specify chain name, revision id, or chain id")
+    raise Exception("Must specify chain name, revision id, or chain id")  
 
   revision_ids = [ObjectId(revision.id)]
   # if ancestors are requested, find all ancestors of the specified revision

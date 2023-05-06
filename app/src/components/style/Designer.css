@@ -1,0 +1,124 @@
+.designer {
+  /* overflow: scroll; */
+}
+
+.spec-designer {
+  border: var(--standard-border);
+  border-radius: var(--standard-border-radius);
+  position: relative;
+  display: flex;
+  padding: 2.5rem 1rem 1rem;
+  min-width: 10rem;
+  min-height: 5rem;
+  flex-direction: column;
+}
+
+.sequential-spec {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.llm-spec .editor {
+  position: relative;
+}
+
+.llm-spec .prompt-input, .llm-spec .prompt-display {
+  color: #dadada;
+  border: none;
+  font-family: Georgia, serif;
+  font-weight: 600;
+  font-size: 1rem;
+  min-width: 10rem;
+  min-height: 10rem;
+  position: relative;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+  line-height: 1.5em;
+  overflow: scroll;
+}
+
+.llm-spec .prompt-input {
+  background: none;
+  color: rgba(0,0,0,0);
+  caret-color: #ffffff;
+  min-width: 17.6em;
+}
+
+.llm-spec .prompt-display {
+  background-color: var(--main-background-color);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 4px);
+}
+
+.llm-spec .prompt-display .llm-variable {
+  color: #fd63ba;
+}
+
+.form-element {
+  display: flex;
+  flex-direction: row;
+}
+
+.form-element label {
+  font-size: .75rem;
+  text-align: right;
+  padding-right: .5rem;
+  width: 5rem;
+}
+
+.form-element .var-name-input {
+  background-color: var(--main-background-color);
+  color: #dadada;
+  border: none;
+  font-family: Georgia, serif;
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: left;
+  margin: 0;
+}
+
+.case-spec {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .5em;
+}
+
+.case-spec .case-spec-case {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.case-spec .case-spec-case__key {
+  background-color: var(--main-background-color);
+  color: #ffffff;
+  border: none;
+  font-family: Georgia, serif;
+  font-weight: 700;
+  font-size: .8rem;
+}
+
+.reformat-spec .reformat-input {
+  background-color: var(--main-background-color);
+  color: var(--primary-font-color);
+  border: none;
+}
+
+.chain-id {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 2em;
+  text-align: right;
+  margin: 0;
+  padding: .8rem 1rem;
+  font-size: .75rem;
+}
