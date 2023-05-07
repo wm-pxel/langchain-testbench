@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List
 from langchain.chains.base import Chain
-from formatters.extended_formatter import ExtendedFormatter
+from lib.formatters.extended_formatter import ExtendedFormatter
 
 class ReformatChain(Chain):
   input_variables: List[str]

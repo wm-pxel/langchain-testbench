@@ -1,6 +1,6 @@
 from typing import Dict
 from pydantic import BaseModel
-from model.result import Result
+from lib.model.result import Result
 from datetime import datetime
 
 # provides context for generating lang chains including llms and prompts

@@ -3,11 +3,11 @@ from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
 from langchain.chains import LLMChain, SequentialChain
 from langchain.prompts import PromptTemplate
-from model.lang_chain_context import LangChainContext
-from chains.case_chain import CaseChain
-from chains.api_chain import APIChain
-from chains.reformat_chain import ReformatChain
-from chains.llm_recording_chain import LLMRecordingChain
+from lib.model.lang_chain_context import LangChainContext
+from lib.chains.case_chain import CaseChain
+from lib.chains.api_chain import APIChain
+from lib.chains.reformat_chain import ReformatChain
+from lib.chains.llm_recording_chain import LLMRecordingChain
 
 ChainSpec = Annotated[Union["SequentialSpec", "LLMSpec", "CaseSpec", "ReformatSpec"], Field(discriminator='chain_type')]
 

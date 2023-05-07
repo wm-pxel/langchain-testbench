@@ -1,10 +1,10 @@
 
 import click
-from model.chain_revision import ChainRevision, find_ancestor_ids
-from model.chain import Chain
-from model.chain_spec import LLMSpec
-from model.lang_chain_context import LangChainContext
-from db import chain_revision_repository, chain_repository, result_repository
+from lib.model.chain_revision import ChainRevision, find_ancestor_ids
+from lib.model.chain import Chain
+from lib.model.chain_spec import LLMSpec
+from lib.model.lang_chain_context import LangChainContext
+from lib.db import chain_revision_repository, chain_repository, result_repository
 from bson import ObjectId
 from collections import defaultdict
 from typing import Optional, Dict, Any

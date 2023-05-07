@@ -1,9 +1,9 @@
 import os
 from dotenv import load_dotenv
 from pymongo import MongoClient
-from model.chain_revision import ChainRevisionRepository
-from model.chain import ChainRepository
-from model.result import ResultRepository
+from lib.model.chain_revision import ChainRevisionRepository
+from lib.model.chain import ChainRepository
+from lib.model.result import ResultRepository
 
 load_dotenv()
 

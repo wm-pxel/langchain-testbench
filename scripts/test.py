@@ -1,6 +1,6 @@
 from pprint import pprint
 from model.chain_revision import ChainRevision
-from db import chain_repository, chain_revision_repository
+from server.db import chain_repository, chain_revision_repository
 from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
 from model.chain_spec import LLMSpec, SequentialSpec
