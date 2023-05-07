@@ -29,7 +29,7 @@ export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
         url: "",
         method: "GET",
         headers: {},
-        body: '',
+        body: "",
         input_keys: [],
         output_key: "results",
       };
@@ -97,4 +97,72 @@ export const insertChainSpec = (
       ]);
   }
   return originalSpec;
+}
+
+export interface UpdateChainResult {
+  chainSpec: ChainSpec | null;
+  found: boolean;
+}
+
+interface UpdateChildrenResult {
+  found: boolean;
+  chainSpecs: ChainSpec[];
+}
+
+interface UpdateCaseResult {
+  found: boolean;
+  chainSpecs: [string, ChainSpec][];
+}
+
+export const updateChainSpec = (
+  originalSpec: ChainSpec | null,
+  newSubSpec: ChainSpec,
+): UpdateChainResult => {
+  if (originalSpec === null) {
+    return {chainSpec: null, found: false};
+  }
+
+  if (originalSpec.chain_id === newSubSpec.chain_id) {
+    return {chainSpec: newSubSpec, found: true};
+  }
+
+  if (originalSpec.chain_type === 'sequential_spec') {
+    const chains =  originalSpec.chains.reduce((result, chainSpec) => {
+      const nextResult: UpdateChainResult = result.found 
+        ? { found: true, chainSpec }
+        : updateChainSpec(chainSpec, newSubSpec);
+      return { 
+        found: nextResult.found,
+        chainSpecs: [...result.chainSpecs, nextResult.chainSpec] 
+      } as UpdateChildrenResult;
+    }, { found: false, chainSpecs: [] as ChainSpec[] });
+    return {
+      found: chains.found,
+      chainSpec: {
+        ...originalSpec,
+        chains: chains.chainSpecs,
+      }
+    }
+  }
+      
+  if (originalSpec.chain_type === 'case_spec') {
+    const cases = Object.entries(originalSpec.cases).reduce((result, [key, chainSpec]) => {
+      const nextResult: UpdateChainResult = result.found
+        ? { found: true, chainSpec }
+        : updateChainSpec(chainSpec, newSubSpec);
+      return {
+        found: nextResult.found,
+        chainSpecs: [...result.chainSpecs, [key, nextResult.chainSpec]]
+      } as UpdateCaseResult;
+    }, { found: false, chainSpecs: [] as [string, ChainSpec][] });
+    return {
+      found: cases.found,
+      chainSpec: {
+        ...originalSpec,
+        cases: Object.fromEntries(cases.chainSpecs),
+      }
+    }
+  }
+
+  return { chainSpec: originalSpec, found: false };
 }

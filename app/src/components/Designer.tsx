@@ -1,15 +1,14 @@
-import { useContext, useState, useEffect, useRef } from "react";
+import { useCallback, useContext, useState, useEffect, useRef } from "react";
 import { LLMSpec, SequentialSpec, CaseSpec, ReformatSpec, APISpec, ChainSpec } from '../model/specs';
 import InsertChainSpec from "./InsertChainSpec";
-import ChainSpecContext from "../contexts/ChainSpecContext";
+import ChainSpecContext, { UpdateSpecFunc } from "../contexts/ChainSpecContext";
 import DOMPurify from "dompurify";
 import "./style/Designer.css"
 
 type InsertChainFunc = (type: string, chainId: number, index: number) => void;
-type UpdateSpecFunc = (spec: ChainSpec) => void;
 
-interface LLMSpecDesignerProps { spec: LLMSpec };
-const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
+interface LLMSpecDesignerProps { spec: LLMSpec, updateChainSpec: UpdateSpecFunc };
+const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
   const [prompt, setPrompt] = useState<string>(spec.prompt);
   const [formattedPrompt, setFormattedPrompt] = useState<string>(spec.prompt);
   const [outuptKey, setOutputKey] = useState<string>(spec.output_key);
@@ -26,6 +25,15 @@ const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
     setVariables(vars);
     setFormattedPrompt(DOMPurify.sanitize(formatted));
   }, [prompt]);
+
+  useEffect(() => {
+    updateChainSpec({
+      ...spec,
+      prompt,
+      output_key: outuptKey,
+      input_keys: variables,
+    });
+  }, [prompt, outuptKey, variables]);
 
   const syncScroll = (e: React.UIEvent) => {
     if (!displayRef.current) return;
@@ -51,23 +59,44 @@ const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
   );
 };
 
-interface SequentialSpecDesignerProps { spec: SequentialSpec, insertChain: InsertChainFunc };
-const SequentialSpecDesigner = ({ spec, insertChain }: SequentialSpecDesignerProps) => {
+interface SequentialSpecDesignerProps { spec: SequentialSpec, insertChain: InsertChainFunc, updateChainSpec: UpdateSpecFunc };
+const SequentialSpecDesigner = ({ spec, insertChain, updateChainSpec }: SequentialSpecDesignerProps) => {
   return (
     <div className="sequential-spec spec-designer">
       <h3 className="chain-id">Sequential {spec.chain_id}</h3>
       <InsertChainSpec insertChain={insertChain} chainId={spec.chain_id} index={0} />
       {spec.chains.flatMap((chain: ChainSpec, idx: number) => [
-        renderChainSpec(chain, insertChain),
+        renderChainSpec(chain, insertChain, updateChainSpec),
         <InsertChainSpec insertChain={insertChain} chainId={spec.chain_id} index={idx+1} key={`button-${idx+1}`}/>
       ])}
     </div>
   );
 };
 
-interface CaseSpecDesignerProps { spec: CaseSpec, insertChain: InsertChainFunc };
-const CaseSpecDesigner = ({ spec, insertChain }: CaseSpecDesignerProps) => {
+interface CaseSpecDesignerProps { spec: CaseSpec, insertChain: InsertChainFunc, updateChainSpec: UpdateSpecFunc };
+const CaseSpecDesigner = ({ spec, insertChain, updateChainSpec }: CaseSpecDesignerProps) => {
   const [categorizationKey, setCategorizationKey] = useState<string>(spec.categorization_key);
+  const [cases, setCases] = useState<[string, ChainSpec][]>(Object.entries(spec.cases));
+
+  useEffect(() => {
+    setCases(Object.entries(spec.cases));
+  }, [spec]);
+
+  const updateCaseKey = useCallback((index: number, key: string) => {
+    const newCases: [string, ChainSpec][] = [
+      ...cases.slice(0, index),
+      [key, cases[index][1]],
+      ...cases.slice(index+1)];
+    setCases(newCases);
+  }, [cases]);
+
+  useEffect(() => {
+    updateChainSpec({
+      ...spec,
+      categorization_key: categorizationKey,
+    });
+  }, [categorizationKey]);
+
   return (
     <div className="case-spec spec-designer">
       <h3 className="chain-id">Case {spec.chain_id}</h3>
@@ -78,8 +107,8 @@ const CaseSpecDesigner = ({ spec, insertChain }: CaseSpecDesignerProps) => {
       <InsertChainSpec insertChain={insertChain} chainId={spec.chain_id} index={0} />
       {Object.entries(spec.cases).flatMap((item: [string, ChainSpec], idx: number) => [
         <div className="case-spec-case" key={`spec-case-${item[1].chain_id}`}>
-          <input className="case-spec-case__key" defaultValue={item[0]} />
-          {renderChainSpec(item[1] as ChainSpec, insertChain)}
+          <input className="case-spec-case__key" defaultValue={item[0]} onChange={(e) => updateCaseKey(idx, e.target.value)} />
+          {renderChainSpec(item[1] as ChainSpec, insertChain, updateChainSpec)}
         </div>,
         <InsertChainSpec insertChain={insertChain} chainId={spec.chain_id} index={idx+1} key={`button-${idx+1}`}/>,
       ])}
@@ -103,36 +132,87 @@ const ReformatSpecDesigner = ({ spec }: ReformatSpecDesignerProps) => {
   );
 };
 
-interface APISpecDesignerProps { spec: APISpec };
-const APISpecDesigner = ({ spec }: APISpecDesignerProps) => {
+interface APISpecDesignerProps { spec: APISpec, updateChainSpec: UpdateSpecFunc };
+const APISpecDesigner = ({ spec, updateChainSpec }: APISpecDesignerProps) => {
+  const [url, setUrl] = useState<string>(spec.url);
+  const [method, setMethod] = useState<string>(spec.method);
+  const [headers, setHeaders] = useState<string>(JSON.stringify(spec.headers, null, 2));
+  const [headersError, setHeadersError] = useState<boolean>(false);
+  const [body, setBody] = useState<string | null>(spec.body);
+
+  const tryParseHeaders = useCallback((str: string) => {
+    try {
+      setHeadersError(false);
+      return JSON.parse(str);
+    } catch (e) {
+      setHeadersError(true);
+    }
+    return spec.headers;
+  }, [spec.headers]);
+
+  useEffect(() => {
+    updateChainSpec({
+      ...spec,
+      url,
+      method,
+      headers: tryParseHeaders(headers),
+      body,
+    });
+  }, [url, method, headers, body]);
+
   return (
     <div className="api-spec spec-designer">
       <h3 className="chain-id">API {spec.chain_id}</h3>
+      <div className="form-element">
+        <label>URL</label>
+        <input className="var-name-input" value={url} onChange={e => setUrl(e.target.value)} placeholder="URL" />
+      </div>
+      <div className="form-element">
+        <label>Method</label>
+        <input className="var-name-input" value={method} onChange={e => setMethod(e.target.value)} placeholder="GET | POST" />
+      </div>
+      <div className={`form-element text ${headersError ? "error" : ""}`}>
+        <label>Headers</label>
+        <textarea
+          defaultValue={headers}
+          onChange={e => setHeaders(e.target.value)}
+          placeholder="{'header1': 'value'}"/>
+      </div>
+      <div className="form-element text">
+        <label>Body</label>
+        <textarea
+          defaultValue={body || ""}
+          onChange={e => setBody(e.target.value)}
+          placeholder="Optional body content"/>
+      </div>
     </div>
   );
 };
 
-const renderChainSpec = (spec: ChainSpec, insertChain: InsertChainFunc) => {
+const renderChainSpec = (spec: ChainSpec, insertChain: InsertChainFunc, updateSpec: UpdateSpecFunc) => {
   switch (spec.chain_type) {
     case "llm_spec":
-      return <LLMSpecDesigner spec={spec} key={`llm-spec-${spec.chain_id}`} />;
+      return <LLMSpecDesigner spec={spec} updateChainSpec={updateSpec} key={`llm-spec-${spec.chain_id}`} />;
     case "sequential_spec":
-      return <SequentialSpecDesigner spec={spec} insertChain={insertChain} key={`sequential-spec-${spec.chain_id}`} />;
+      return <SequentialSpecDesigner spec={spec} updateChainSpec={updateSpec} insertChain={insertChain} key={`sequential-spec-${spec.chain_id}`} />;
     case "case_spec":
-      return <CaseSpecDesigner spec={spec} insertChain={insertChain} key={`case-spec-${spec.chain_id}`} />;
+      return <CaseSpecDesigner spec={spec} updateChainSpec={updateSpec} insertChain={insertChain} key={`case-spec-${spec.chain_id}`} />;
     case "reformat_spec":
       return <ReformatSpecDesigner spec={spec} key={`reformat-spec-${spec.chain_id}`}/>;
     case "api_spec":
-      return <APISpecDesigner spec={spec} key={`api-spec-${spec.chain_id}`}/>;
+      return <APISpecDesigner spec={spec} updateChainSpec={updateSpec} key={`api-spec-${spec.chain_id}`}/>;
   }
 };
 
 const Designer = () => {
-  const { chainSpec: spec, insertChainSpec } = useContext(ChainSpecContext);
+  const { chainSpec: spec, insertChainSpec, updateChainSpec } = useContext(ChainSpecContext);
 
   return (
     <div className="designer">
-      { spec ? renderChainSpec(spec, insertChainSpec) : <InsertChainSpec insertChain={insertChainSpec} chainId={0} index={0}/> }
+      { spec 
+        ? renderChainSpec(spec, insertChainSpec, updateChainSpec)
+        : <InsertChainSpec insertChain={insertChainSpec} chainId={0} index={0}/> 
+      }
     </div>
   );
 };
