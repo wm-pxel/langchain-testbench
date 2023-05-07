@@ -8,6 +8,7 @@ from lib.db import chain_revision_repository, chain_repository, result_repositor
 from bson import ObjectId
 from collections import defaultdict
 from typing import Optional, Dict, Any
+import lib.chain_service as chain_service
 import csv
 import dotenv
 import json
@@ -52,21 +53,8 @@ def save(chain_name, file):
     revision_json = buffer.decode('utf-8')
     revision = ChainRevision.parse_raw(revision_json)
 
-    chain = chain_repository.find_one_by({"name": chain_name})
+    revision_id = chain_service.save_revision(chain_name, revision)
 
-    if chain is not None:
-      revision.parent = chain.revision
-      chain.revision = revision.id
-      chain_revision_repository.save(revision)
-
-      chain.revision = revision.id
-      chain_repository.save(chain)
-    else:
-      chain_revision_repository.save(revision)
-
-      chain = Chain(name=chain_name, revision=revision.id)
-      chain_repository.save(chain)
-    
     print("Saved revision", revision.id, "for chain", chain_name)
 
 revision.add_command(save)
@@ -78,8 +66,7 @@ def load(chain_name):
   """Load a chain revision from the database.
   The revision will be loaded and then output as json to stdout.
   """
-  chain = chain_repository.find_one_by({"name": chain_name})
-  revision = chain_revision_repository.find_one_by_id(chain.revision)
+  revision = chain_service.load_by_chain_name(chain_name)
   print(revision.json(indent=2))
 
 revision.add_command(load)
@@ -91,35 +78,11 @@ def history(chain_name):
   """Output the ids of all revisions of the chain.
   The ids will be output to stdout.
   """
-  chain = chain_repository.find_one_by({"name": chain_name})
-  revision = chain_revision_repository.find_one_by_id(chain.revision)
-  ancestor_ids = [revision.id] + find_ancestor_ids(revision.id, chain_revision_repository)
+  ancestor_ids = chain_service.history_by_chain_name(chain_name)
   for id in ancestor_ids:
     print(id)
 
 revision.add_command(history)
-
-
-def save_patch(chain, revision, patch):
-  new_chain = revision.chain.copy_replace(lambda spec: patch if spec.chain_id == patch.chain_id else spec)
-
-  try:
-    ctx = LangChainContext(llms=revision.llms)
-    revision.chain.to_lang_chain(ctx)
-  except Exception as e:
-    print("Could not realize patched chian:", e)
-    sys.exit(1)
-
-  new_revision = revision.copy()
-  new_revision.id = None
-  new_revision.chain = new_chain
-  new_revision.parent = revision.id
-
-  chain_revision_repository.save(new_revision)
-  chain.revision = new_revision.id
-  chain_repository.save(chain)
-
-  print("Saved revision", revision.id, "for chain", chain.name)
 
 
 @click.command()
@@ -130,9 +93,6 @@ def patch(chain_name):
   The new chain will be saved as a new revision and the chain name will be
   updated to refrence it.
   """
-  chain = chain_repository.find_one_by({"name": chain_name})
-  revision = chain_revision_repository.find_one_by_id(chain.revision)
-
   buffer = b""
   for f in sys.stdin:
     buffer += f.encode('utf-8')
@@ -143,7 +103,8 @@ def patch(chain_name):
   junk_revision = ChainRevision(**{'chain': patch_dict, 'llms':{}})
   patch = junk_revision.chain
 
-  save_patch(chain, revision, patch)    
+  revision_id = chain_service.save_patch(chain_name, patch)
+  print("Saved revision", revision_id, "for chain", chain_name)
 
 revision.add_command(patch)
 
@@ -157,9 +118,7 @@ def patch_prompt(chain_name, chain_id):
   The new chain will be saved as a new revision and the chain name will be
   updated to refrence it.
   """
-  chain = chain_repository.find_one_by({"name": chain_name})
-  revision = chain_revision_repository.find_one_by_id(chain.revision)
-
+  revision = chain_service.load_by_chain_name(chain_name)
   patch = revision.chain.find_by_chain_id(int(chain_id)).copy(deep=True)
   
   # error if spec is not an LLMSpec
@@ -173,7 +132,8 @@ def patch_prompt(chain_name, chain_id):
   
   patch.prompt = buffer.decode('utf-8')
 
-  save_patch(chain, revision, patch)
+  revision_id = chain_service.save_patch(chain_name, patch)
+  print("Saved revision", revision_id, "for chain", chain_name)
 
 revision.add_command(patch_prompt)
 
@@ -199,14 +159,8 @@ def branch(chain_name, branch_name):
   This will create a new chain that points to the same revision
   as the provided chain. The new chain may be then revised independently.
   """
-  chain = chain_repository.find_one_by({"name": chain_name})
-
-  new_chain = Chain(
-    name = branch_name,
-    revision = chain.revision,
-  )
-  chain_repository.save(new_chain)
-  print(f"Created branch {branch_name} at {new_chain.id}")
+  new_chain_id = chain_service.branch(chain_name, branch_name)
+  print(f"Created branch {branch_name} at {new_chain_id}")
 
 chain.add_command(branch)
 
@@ -218,14 +172,7 @@ def reset(chain_name, revision):
   """Reset a chain to a another revision.
   This will update the chain to point to the given revision.
   """
-  new_revision = chain_revision_repository.find_one_by({"id": ObjectId(revision)})
-  if new_revision is None:
-    print(f"Revision {revision} not found")
-    sys.exit(1)
-
-  chain = chain_repository.find_one_by({"name": chain_name})
-  chain.revision = new_revision.id
-  chain_repository.save(chain)
+  chain_service.reset(chain_name, revision)
   print(f"Reset {chain_name} to revision {revision}")
 
 chain.add_command(reset)
@@ -234,7 +181,7 @@ chain.add_command(reset)
 @click.command()
 def list():
   """List all chains."""
-  for chain in chain_repository.find_by({}):
+  for chain in chain_service.list_chains():
     print(f"{chain.name}: {chain.revision}")
 
 chain.add_command(list)
@@ -277,15 +224,7 @@ def once(chain_name, input, record):
   input_json = buffer.decode('utf-8')
   input = json.loads(input_json)
 
-  chain = chain_repository.find_one_by({"name": chain_name})
-  revision = chain_revision_repository.find_one_by_id(chain.revision)
-
-  ctx = LangChainContext(llms=revision.llms, record=record)
-  lang_chain = revision.chain.to_lang_chain(ctx)
-  output = lang_chain.run(input)
-
-  if (record):
-    save_results(ctx, revision.id)
+  output = chain_service.run_once(chain_name, input, record)
 
   print(json.dumps(output, indent=2))
 
@@ -315,9 +254,9 @@ def interactive(chain_name, record):
   All other inputs will get the empty string as input, and all other outputs
   will be ignored.
   """
-  chain = chain_repository.find_one_by({"name": chain_name})
-  revision = chain_revision_repository.find_one_by_id(chain.revision)
-  ctx = LangChainContext(llms=revision.llms, recording=record)
+  revision = chain_service.load_by_chain_name(chain_name)
+ 
+  ctx = LangChainContext(llms=revision.llms, recording=True)
   lang_chain = revision.chain.to_lang_chain(ctx)
 
   input_keys = set(lang_chain.input_keys)
@@ -345,10 +284,7 @@ def interactive(chain_name, record):
   inputs = {key: "" for key in input_keys if key != user_input_key}
   while True:
     inputs[user_input_key] = input(f"{user_input_key}> ")
-    outputs = lang_chain._call(inputs)
-
-    if (record):
-      save_results(ctx, revision.id)
+    outputs = chain_service.run_once(chain_name, inputs, record)
 
     print(outputs[user_output_key])
     print()
@@ -388,22 +324,13 @@ def show(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chai
   Results are output as json or csv (depending on the --csv-format flag) to stdout.
   """
   if chain_name is not None:
-    chain = chain_repository.find_one_by({"name": chain_name})
-    revision = chain_revision_repository.find_one_by_id(chain.revision)
+    revision = chain_service.load_by_chain_name(chain_name)
   elif revision is not None:
-    revision = chain_revision_repository.find_one_by_id(revision)
-  elif chain_id is not None:
-    revision = chain_revision_repository.find_one_by({"chain": chain_id})
+    revision = chain_service.load_by_id(revision)
   else:
     raise Exception("Must specify chain name, revision id, or chain id")  
 
-  revision_ids = [ObjectId(revision.id)]
-  # if ancestors are requested, find all ancestors of the specified revision
-  if ancestors:
-    ancestors_id = find_ancestor_ids(revision.id, chain_revision_repository)
-    revision_ids += [ObjectId(i) for i in ancestors_id]
-
-  results = result_repository.find_by({"revision": {"$in": revision_ids}, "chain_id": int(chain_id)})
+  results = chain_service.results(revision.id, ancestors, chain_id)
   if csv_format:
     csv_out = csv.writer(sys.stdout)
     csv_out.writerow(["chain_id", "revision", "input", "output"])
@@ -432,20 +359,18 @@ def add_result(results: Dict, key: str, value: Any):
 @click.argument('chain-name2')
 @click.option("-c", "--chain-id", help="limit diff to a specific chain id", required=False, type=int)
 def diff(chain_name1, chain_name2, chain_id: Optional[int] = None):
-  chain1 = chain_repository.find_one_by({"name": chain_name1})
-  revision1 = chain_revision_repository.find_one_by_id(chain1.revision)
-  chain2 = chain_repository.find_one_by({"name": chain_name2})
-  revision2 = chain_revision_repository.find_one_by_id(chain2.revision)
+  revision1 = chain_service.load_by_chain_name(chain_name1)
+  revision2 = chain_service.load_by_chain_name(chain_name2)
   
   query = {'chain_id': chain_id} if chain_id is not None else {}
 
   grouped_results = {}
 
-  results1 = result_repository.find_by({"revision": ObjectId(revision1.id), **query})
+  results1 = chain_service.results(revision1.id, False, chain_id)
   for result in results1:
     add_result(grouped_results, json.dumps(result.input), result)
 
-  results2 = result_repository.find_by({"revision": ObjectId(revision2.id), **query})
+  results2 = chain_service.results(revision2.id, False, chain_id)
   for result in results2:
     add_result(grouped_results, json.dumps(result.input), result)
 
