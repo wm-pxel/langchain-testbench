@@ -10,6 +10,7 @@
   --standard-border: .2rem solid rgba(204, 204, 204, .25);
   --standard-border-radius: .5rem;
   --standard-error-color: #eb0f46;
+  --variable-name-color: #fd63ba;
 
   /* color-scheme: light dark; */
   color: var(--primary-font-color);

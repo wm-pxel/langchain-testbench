@@ -9,12 +9,14 @@ export interface ChainSpecContextType {
   chainSpec: ChainSpec | null;
   insertChainSpec: (type: string, chainId: number, index: number) => void,
   updateChainSpec: UpdateSpecFunc,
+  latestChainSpec: ChainRetriever,
 }
 
 const ChainSpecContext = createContext<ChainSpecContextType>({
   chainSpec: null,
   insertChainSpec: (_: string, _chainId: number, _index: number) => {},
   updateChainSpec: (_: ChainSpec) => {},
+  latestChainSpec: () => null,
 });
 
 interface ChainSpecProviderProps {
@@ -33,6 +35,10 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
     setNextChainId(nextChainId + 1);
   }
 
+  const latestChainSpec = useCallback((): ChainSpec | null => {
+    return dirtyChainSpec;
+  }, [dirtyChainSpec])
+
   const updateDirtyChainSpec = useCallback((spec: ChainSpec): void => {
     const { found, chainSpec } = updateChainSpec(dirtyChainSpec, spec);
     if (!found) {
@@ -42,7 +48,7 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   }, [dirtyChainSpec]);
 
   return (
-    <ChainSpecContext.Provider value={{ chainSpec, insertChainSpec, updateChainSpec: updateDirtyChainSpec }}>
+    <ChainSpecContext.Provider value={{ chainSpec, insertChainSpec, updateChainSpec: updateDirtyChainSpec, latestChainSpec }}>
       {children}
     </ChainSpecContext.Provider>
   );

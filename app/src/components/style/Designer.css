@@ -33,7 +33,7 @@
   min-height: 10rem;
   position: relative;
   text-align: left;
-  padding: 0;
+  padding: .5em;
   margin: 0;
   line-height: 1.5em;
   overflow: scroll;
@@ -56,7 +56,7 @@
 }
 
 .llm-spec .prompt-display .llm-variable {
-  color: #fd63ba;
+  color: var(--variable-name-color);
 }
 
 .form-element {
@@ -97,6 +97,11 @@
   text-align: left;
   margin: 0;
   padding: .25em;
+}
+
+.form-element .var-name-input {
+  color: var(--variable-name-color);
+  border: none;
 }
 
 .form-element textarea {

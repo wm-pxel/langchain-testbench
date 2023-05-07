@@ -1,15 +1,19 @@
-// Header component holds buttons to manage application state
+import { useContext } from "react";
+import ChainSpecContext from "../contexts/ChainSpecContext";
+
+
 const Header = () => {
+  const { latestChainSpec } = useContext(ChainSpecContext);
+
+  const logRevision = () => console.log(latestChainSpec());
+
   return (
     <div className="header">
-      <button className="header__button" >
+      <button onClick={logRevision}>
         Save Revision
       </button>
-      <button className="header__button" >
+      <button>
         Reset Revision
-      </button>
-      <button className="header__button" >
-        Load Revision
       </button>
     </div>
   );
