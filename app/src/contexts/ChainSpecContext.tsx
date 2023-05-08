@@ -7,6 +7,9 @@ export type UpdateSpecFunc = (spec: ChainSpec) => void;
 
 export interface ChainSpecContextType {
   chainSpec: ChainSpec | null;
+  setChainSpec: (spec: ChainSpec) => void,
+  chainName: string;
+  setChainName: (name: string) => void,
   insertChainSpec: (type: string, chainId: number, index: number) => void,
   updateChainSpec: UpdateSpecFunc,
   latestChainSpec: ChainRetriever,
@@ -14,6 +17,9 @@ export interface ChainSpecContextType {
 
 const ChainSpecContext = createContext<ChainSpecContextType>({
   chainSpec: null,
+  setChainSpec: (_: ChainSpec) => {},
+  chainName: "",
+  setChainName: (_: string) => {},
   insertChainSpec: (_: string, _chainId: number, _index: number) => {},
   updateChainSpec: (_: ChainSpec) => {},
   latestChainSpec: () => null,
@@ -25,6 +31,7 @@ interface ChainSpecProviderProps {
 
 export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }) => {
   const [chainSpec, setChainSpec] = useState<ChainSpec | null>(null);
+  const [chainName, setChainName] = useState<string>("");
   const [dirtyChainSpec, setDirtyChainSpec] = useState<ChainSpec | null>(null);
   const [nextChainId, setNextChainId] = useState<number>(0);
 
@@ -39,6 +46,11 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
     return dirtyChainSpec;
   }, [dirtyChainSpec])
 
+  const setChains = (spec: ChainSpec): void => {
+    setChainSpec(spec);
+    setDirtyChainSpec(spec);
+  }
+
   const updateDirtyChainSpec = useCallback((spec: ChainSpec): void => {
     const { found, chainSpec } = updateChainSpec(dirtyChainSpec, spec);
     if (!found) {
@@ -48,7 +60,15 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   }, [dirtyChainSpec]);
 
   return (
-    <ChainSpecContext.Provider value={{ chainSpec, insertChainSpec, updateChainSpec: updateDirtyChainSpec, latestChainSpec }}>
+    <ChainSpecContext.Provider value={{ 
+      chainSpec,
+      setChainSpec: setChains,
+      chainName,
+      setChainName,
+      insertChainSpec,
+      updateChainSpec: updateDirtyChainSpec,
+      latestChainSpec
+    }}>
       {children}
     </ChainSpecContext.Provider>
   );

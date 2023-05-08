@@ -35,6 +35,12 @@ const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
     });
   }, [prompt, outuptKey, variables]);
 
+  useEffect(() => {
+    setPrompt(spec.prompt);
+    setOutputKey(spec.output_key);
+    setVariables(spec.input_keys);
+  }, [spec]);
+
   const syncScroll = (e: React.UIEvent) => {
     if (!displayRef.current) return;
     displayRef.current.scrollTop = (e.target as HTMLTextAreaElement).scrollTop;
@@ -79,6 +85,7 @@ const CaseSpecDesigner = ({ spec, insertChain, updateChainSpec }: CaseSpecDesign
   const [cases, setCases] = useState<[string, ChainSpec][]>(Object.entries(spec.cases));
 
   useEffect(() => {
+    setCategorizationKey(spec.categorization_key);
     setCases(Object.entries(spec.cases));
   }, [spec]);
 
@@ -139,6 +146,13 @@ const APISpecDesigner = ({ spec, updateChainSpec }: APISpecDesignerProps) => {
   const [headers, setHeaders] = useState<string>(JSON.stringify(spec.headers, null, 2));
   const [headersError, setHeadersError] = useState<boolean>(false);
   const [body, setBody] = useState<string | null>(spec.body);
+
+  useEffect(() => {
+    setUrl(spec.url);
+    setMethod(spec.method);
+    setHeaders(JSON.stringify(spec.headers, null, 2));
+    setBody(spec.body);
+  }, [spec]);
 
   const tryParseHeaders = useCallback((str: string) => {
     try {
