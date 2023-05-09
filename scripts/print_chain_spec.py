@@ -1,6 +1,6 @@
 from langchain.llms import OpenAI
-from model.chain_revision import ChainRevision
-from model.chain_spec import LLMSpec, SequentialSpec
+from lib.model.chain_revision import ChainRevision
+from lib.model.chain_spec import LLMSpec, SequentialSpec
 import dotenv
 
 dotenv.load_dotenv()

@@ -1,10 +1,10 @@
 from pprint import pprint
-from model.chain_revision import ChainRevision
-from server.db import chain_repository, chain_revision_repository
+from lib.model.chain_revision import ChainRevision
+from lib.db import chain_repository, chain_revision_repository
 from langchain.prompts import PromptTemplate
 from langchain.llms import OpenAI
-from model.chain_spec import LLMSpec, SequentialSpec
-from model.chain import Chain
+from lib.model.chain_spec import LLMSpec, SequentialSpec
+from lib.model.chain import Chain
 
 def pretty_print(clas, indent=0):
   print(' ' * indent +  type(clas).__name__ +  ':')

@@ -1,7 +1,8 @@
-from flask import Flask, Response
+from flask import Flask, Response, request
 from flask_pymongo import PyMongo
 from bson.json_util import dumps
 from flask_cors import CORS
+from lib.model.chain_revision import ChainRevision
 import lib.chain_service as chain_service
 
 app = Flask(__name__)
@@ -19,9 +20,15 @@ def list_chains():
   return Response(dumps(chains), mimetype="application/json")
 
 @app.route("/chain/<chain_name>/revision", methods=["POST"])
-def save_revision(request, chain_name):
-  revision = chain_service.save_revision(chain_name, request.json)
-  return Response(revision.json(), mimetype="application/json")
+def save_revision(chain_name):
+  try:
+    next_revision = ChainRevision.parse_raw(request.data)
+  except Exception as e:
+    print("ERROR parsing revision:", e)
+    return {"error": str(e)}, 400
+
+  revision_id = chain_service.save_revision(chain_name, next_revision)
+  return Response(str(revision_id), mimetype="application/json")
 
 @app.route("/chain/<chain_name>/revision", methods=["GET"])
 def load_by_chain_name(chain_name):
@@ -34,7 +41,7 @@ def history_by_chain_name(chain_name):
   return Response(dumps(history), mimetype="application/json")
 
 @app.route("/chain/<chain_name>/patch", methods=["POST"])
-def save_patch(request, chain_name):
+def save_patch(chain_name):
   revision_id = chain_service.save_patch(chain_name, request.json)
   return Response(dumps(revision_id), mimetype="application/json")
 
@@ -49,7 +56,7 @@ def load_results_by_chain_name(chain_name):
   return Response(dumps(results), mimetype="application/json")
 
 @app.route("/chain/<chain_name>/run", methods=["POST"])
-def run_chain(request, chain_name):
+def run_chain(chain_name):
   result = chain_service.run_chain(chain_name, request.json)
   return Response(dumps(result), mimetype="application/json")
 

@@ -1,23 +1,23 @@
 
-import { ChainSpec } from '../model/specs';
+import { Revision } from '../model/revision';
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
 
 export const listChains = async () => {
-  console.log("API_URL", API_URL);
   const response = await fetch(`${API_URL}/chains`);
   return await response.json();
 }
 
-export const loadRevision = async (chainName: string) => {
+export const loadRevision = async (chainName: string): Promise<Revision> => {
   const response = await fetch(`${API_URL}/chain/${chainName}/revision`);
   return await response.json();
 }
 
-export const saveChain = async (chainName: string, chainSpec: ChainSpec) => {  
+export const saveRevision = async (chainName: string, revision: Revision) => {  
   const response = await fetch(`${API_URL}/chain/${chainName}/revision`, {
     method: 'POST',
-    body: JSON.stringify(chainSpec),
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(revision),
   });
   return await response.json();
 }

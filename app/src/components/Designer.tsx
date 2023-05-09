@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState, useEffect, useRef } from "react";
+import { useCallback, useContext, useState, useEffect, useMemo, useRef } from "react";
 import { LLMSpec, SequentialSpec, CaseSpec, ReformatSpec, APISpec, ChainSpec } from '../model/specs';
 import InsertChainSpec from "./InsertChainSpec";
 import ChainSpecContext, { UpdateSpecFunc } from "../contexts/ChainSpecContext";
@@ -81,12 +81,15 @@ const SequentialSpecDesigner = ({ spec, insertChain, updateChainSpec }: Sequenti
 
 interface CaseSpecDesignerProps { spec: CaseSpec, insertChain: InsertChainFunc, updateChainSpec: UpdateSpecFunc };
 const CaseSpecDesigner = ({ spec, insertChain, updateChainSpec }: CaseSpecDesignerProps) => {
+  const { findByChainId } = useContext(ChainSpecContext);
   const [categorizationKey, setCategorizationKey] = useState<string>(spec.categorization_key);
-  const [cases, setCases] = useState<[string, ChainSpec][]>(Object.entries(spec.cases));
+  const [cases, setCases] = useState<[string, ChainSpec][]>([]);
 
   useEffect(() => {
     setCategorizationKey(spec.categorization_key);
-    setCases(Object.entries(spec.cases));
+    const newCases = {...spec.cases};
+    if (spec.default_case) newCases._default = spec.default_case;
+    setCases(Object.entries(newCases));
   }, [spec]);
 
   const updateCaseKey = useCallback((index: number, key: string) => {
@@ -97,12 +100,29 @@ const CaseSpecDesigner = ({ spec, insertChain, updateChainSpec }: CaseSpecDesign
     setCases(newCases);
   }, [cases]);
 
+  const mustFind = (chainId: number): ChainSpec => {
+    const chain = findByChainId(chainId);
+    if (!chain) throw new Error(`Chain ${chainId} not found.`);
+    return chain;
+  };
+
+  const computeCases = useCallback((): [ChainSpec, Record<string, ChainSpec>] => {
+    const newCases = Object.fromEntries(cases.map(([key, chain]) => [key, mustFind(chain.chain_id)]));
+    const defaultCase = newCases._default;
+    delete newCases._default;
+    return [defaultCase, newCases];
+  }, [cases]);
+
   useEffect(() => {
+    if (!cases.length) return;
+    const [defaultCase, updatedCases] = computeCases();
     updateChainSpec({
       ...spec,
+      cases: updatedCases,
       categorization_key: categorizationKey,
+      default_case: defaultCase,
     });
-  }, [categorizationKey]);
+  }, [categorizationKey, cases]);
 
   return (
     <div className="case-spec spec-designer">
@@ -112,7 +132,7 @@ const CaseSpecDesigner = ({ spec, insertChain, updateChainSpec }: CaseSpecDesign
         <input className="var-name-input" value={categorizationKey} onChange={e => setCategorizationKey(e.target.value)} />
       </div>
       <InsertChainSpec insertChain={insertChain} chainId={spec.chain_id} index={0} />
-      {Object.entries(spec.cases).flatMap((item: [string, ChainSpec], idx: number) => [
+      {cases.flatMap((item: [string, ChainSpec], idx: number) => [
         <div className="case-spec-case" key={`spec-case-${item[1].chain_id}`}>
           <input className="case-spec-case__key" defaultValue={item[0]} onChange={(e) => updateCaseKey(idx, e.target.value)} />
           {renderChainSpec(item[1] as ChainSpec, insertChain, updateChainSpec)}
