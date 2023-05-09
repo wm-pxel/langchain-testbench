@@ -28,6 +28,7 @@ class CaseChain(Chain):
     categorization = inputs[self.categorization_input].strip()
 
     subchain = self.subchains[categorization] if categorization in self.subchains else self.default_chain
+    print("subchain:", subchain)
  
     known_values = inputs.copy()
     outputs = subchain(known_values, return_only_outputs=True)

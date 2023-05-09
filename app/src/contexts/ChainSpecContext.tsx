@@ -1,6 +1,7 @@
-import React, { createContext, useState, useCallback } from "react";
+import React, { createContext, useState, useCallback, useMemo } from "react";
 import { ChainSpec } from "../model/specs";
 import { insertChainSpec as insertGeneratedChainSpec, updateChainSpec } from "../model/spec_control";
+import { deepEquals } from "../util/sets";
 import { findByChainId } from "../model/spec_control";
 
 export type ChainRetriever = () => ChainSpec | null;
@@ -17,6 +18,9 @@ export interface ChainSpecContextType {
   updateChainSpec: UpdateSpecFunc,
   latestChainSpec: ChainRetriever,
   findByChainId: (chainId: number) => ChainSpec | undefined,
+  readyToInteract: boolean,
+  isInteracting: boolean,
+  setIsInteracting: (isInteracting: boolean) => void,
 }
 
 const ChainSpecContext = createContext<ChainSpecContextType>({
@@ -30,6 +34,9 @@ const ChainSpecContext = createContext<ChainSpecContextType>({
   updateChainSpec: (_: ChainSpec) => {},
   latestChainSpec: () => null,
   findByChainId: (_: number) => undefined,
+  readyToInteract: false,
+  isInteracting: false,
+  setIsInteracting: (_: boolean) => undefined,
 });
 
 interface ChainSpecProviderProps {
@@ -42,6 +49,7 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   const [dirtyChainSpec, setDirtyChainSpec] = useState<ChainSpec | null>(null);
   const [nextChainId, setNextChainId] = useState<number>(0);
   const [revision, setRevision] = useState<string|null>(null);
+  const [isInteracting, setIsInteracting] = useState<boolean>(false);
 
   const insertChainSpec = (type: string, chainId: number, index: number): void => {
     const newSpec = insertGeneratedChainSpec(dirtyChainSpec, nextChainId, type, chainId, index);
@@ -74,6 +82,10 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
     setDirtyChainSpec(chainSpec);
   }, [dirtyChainSpec]);
 
+  const readyToInteract = useMemo(() => {
+    return !!chainSpec && deepEquals(chainSpec, dirtyChainSpec);
+  }, [chainSpec, dirtyChainSpec]);
+
   return (
     <ChainSpecContext.Provider value={{ 
       chainSpec,
@@ -86,6 +98,9 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
       updateChainSpec: updateDirtyChainSpec,
       latestChainSpec,
       findByChainId: findChainInCurrentSpec,
+      readyToInteract,
+      isInteracting,
+      setIsInteracting,
     }}>
       {children}
     </ChainSpecContext.Provider>

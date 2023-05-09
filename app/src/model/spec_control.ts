@@ -1,64 +1,20 @@
 import { ChainSpec } from './specs';
 import { Revision } from './revision';
+import { union, difference, intersection } from '../util/sets';
 
-export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
-  switch (type) {
-    case 'llm_spec':
-      return {
-        chain_type: "llm_spec",
-        prompt: "",
-        input_keys: [],
-        output_key: "text",
-        llm_key: "llm",        
-      };
-    case 'sequential_spec':
-      return {
-        chain_type: "sequential_spec",
-        chains: [],
-        input_keys: [],
-        output_keys: [],
-      };
-    case 'case_spec':
-      return {
-        chain_type: "case_spec",
-        categorization_key: "",
-        cases: {},
-      };
-    case 'api_spec':
-      return {
-        chain_type: "api_spec",
-        url: "",
-        method: "GET",
-        headers: {},
-        body: "",
-        input_keys: [],
-        output_key: "results",
-      };
-    case 'reformat_spec':
-      return {
-        chain_type: "reformat_spec",
-        input_keys: [],
-        formatters: {},
-      };
-    default:
-      throw new Error(`Unknown spec type: ${type}`);
-  }
+export interface UpdateChainResult {
+  chainSpec: ChainSpec | null;
+  found: boolean;
 }
 
-export const defaultLLMs = {
-  llm: {
-    "model_name": "text-davinci-003",
-    "temperature": 0.8,
-    "max_tokens": 256,
-    "top_p": 1.0,
-    "frequency_penalty": 0.0,
-    "presence_penalty": 0.0,
-    "n": 1,
-    "best_of": 1,
-    "request_timeout": null,
-    "logit_bias": {},
-    "_type": "openai"
-  }
+interface UpdateChildrenResult {
+  found: boolean;
+  chainSpecs: ChainSpec[];
+}
+
+interface UpdateCaseResult {
+  found: boolean;
+  chainSpecs: [string, ChainSpec][];
 }
 
 export const findByChainId = (chainId: number, chainSpec: ChainSpec): ChainSpec | undefined => {
@@ -87,25 +43,6 @@ export const findByChainId = (chainId: number, chainSpec: ChainSpec): ChainSpec 
       break;
   }
   return undefined;
-}
-
-const difference = <T>(a: Set<T>, b: Set<T>): Set<T> => {
-  const difference = new Set<T>();
-  for (const item of a) if (!b.has(item)) difference.add(item);
-  return difference;
-}
-
-const intersection = <T>(a: Set<T>, b: Set<T>): Set<T> => {
-  const intersection = new Set<T>();
-  for (const item of a) if (b.has(item)) intersection.add(item);
-  return intersection;
-}
-
-const union = <T>(a: Set<T>, b: Set<T>): Set<T> => {
-  const union = new Set<T>();
-  for (const item of a) union.add(item);
-  for (const item of b) union.add(item);
-  return union;
 }
 
 export const computeChainIO = (spec: ChainSpec): [Set<string>, Set<string>] => {
@@ -185,21 +122,6 @@ export const insertChainSpec = (
   return originalSpec;
 }
 
-export interface UpdateChainResult {
-  chainSpec: ChainSpec | null;
-  found: boolean;
-}
-
-interface UpdateChildrenResult {
-  found: boolean;
-  chainSpecs: ChainSpec[];
-}
-
-interface UpdateCaseResult {
-  found: boolean;
-  chainSpecs: [string, ChainSpec][];
-}
-
 export const updateChainSpec = (
   originalSpec: ChainSpec | null,
   newSubSpec: ChainSpec,
@@ -257,4 +179,64 @@ export const updateChainSpec = (
   }
 
   return { chainSpec: originalSpec, found: false };
+}
+
+export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
+  switch (type) {
+    case 'llm_spec':
+      return {
+        chain_type: "llm_spec",
+        prompt: "",
+        input_keys: [],
+        output_key: "text",
+        llm_key: "llm",        
+      };
+    case 'sequential_spec':
+      return {
+        chain_type: "sequential_spec",
+        chains: [],
+        input_keys: [],
+        output_keys: [],
+      };
+    case 'case_spec':
+      return {
+        chain_type: "case_spec",
+        categorization_key: "",
+        cases: {},
+      };
+    case 'api_spec':
+      return {
+        chain_type: "api_spec",
+        url: "",
+        method: "GET",
+        headers: {},
+        body: "",
+        input_keys: [],
+        output_key: "results",
+      };
+    case 'reformat_spec':
+      return {
+        chain_type: "reformat_spec",
+        input_keys: [],
+        formatters: {},
+      };
+    default:
+      throw new Error(`Unknown spec type: ${type}`);
+  }
+}
+
+export const defaultLLMs = {
+  llm: {
+    "model_name": "text-davinci-003",
+    "temperature": 0.8,
+    "max_tokens": 256,
+    "top_p": 1.0,
+    "frequency_penalty": 0.0,
+    "presence_penalty": 0.0,
+    "n": 1,
+    "best_of": 1,
+    "request_timeout": null,
+    "logit_bias": {},
+    "_type": "openai"
+  }
 }

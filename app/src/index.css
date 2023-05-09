@@ -64,6 +64,10 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+textarea:focus,
+textarea:focus-visible {
+  outline: 1px solid rgba(204, 204, 204, 1);
+}
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -71,16 +75,3 @@ button:disabled {
 button:disabled:hover {
   border-color: transparent;
 }
-
-/* @media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #ff74ef;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-} */

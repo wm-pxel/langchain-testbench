@@ -21,3 +21,12 @@ export const saveRevision = async (chainName: string, revision: Revision) => {
   });
   return await response.json();
 }
+
+export const runOnce = async (chainName: string, input: Record<string, string>) => {
+  const response = await fetch(`${API_URL}/chain/${chainName}/run`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(input),
+  });
+  return await response.json();
+}

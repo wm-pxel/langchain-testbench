@@ -7,7 +7,11 @@ import "./style/Header.css";
 
 
 const Header = () => {
-  const { latestChainSpec, setChainName, chainName, chainSpec, setChainSpec, revision, setRevision } = useContext(ChainSpecContext);
+  const { 
+    latestChainSpec, setChainName,  chainName, chainSpec, 
+    setChainSpec, revision, setRevision, readyToInteract,
+    isInteracting, setIsInteracting
+  } = useContext(ChainSpecContext);
   const [revisions, setRevisions] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -27,7 +31,7 @@ const Header = () => {
     }
     const nextRevision = createRevision(revision, spec, defaultLLMs);
     const nextRevisionId = await saveRevision(chainName, nextRevision);
-    setRevision(nextRevisionId);
+    setRevision(nextRevisionId.revision_id);
 
     const chains = await listChains()
     setRevisions(chains);
@@ -46,6 +50,9 @@ const Header = () => {
         </button>
         <button disabled={!(chainName in revisions)} onClick={loadLatest}>
           Load Latest
+        </button>
+        <button disabled={!readyToInteract} onClick={() => setIsInteracting(!isInteracting)}>
+          Interact
         </button>
       </div>
     </div>

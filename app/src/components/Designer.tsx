@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState, useEffect, useMemo, useRef } from "react";
+import { useCallback, useContext, useState, useEffect, useRef } from "react";
 import { LLMSpec, SequentialSpec, CaseSpec, ReformatSpec, APISpec, ChainSpec } from '../model/specs';
 import InsertChainSpec from "./InsertChainSpec";
 import ChainSpecContext, { UpdateSpecFunc } from "../contexts/ChainSpecContext";

@@ -51,7 +51,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  height: calc(100% - 4px);
+  height: calc(100% - 1rem);
 }
 
 .llm-spec .prompt-display .llm-variable {

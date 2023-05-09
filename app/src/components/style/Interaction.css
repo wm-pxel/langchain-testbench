@@ -1,0 +1,86 @@
+.interaction {
+  position: fixed;
+  top: 4rem;
+  right: 0;
+  bottom: 0;
+  width: 35rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  margin: 0 auto;
+  padding: 0 0 0 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: var(--standard-border);
+  border-color: #dadada;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 1rem;
+  margin-right: -100%;
+  transition: margin-right 0.5s;
+}
+
+.interaction.open {
+  margin-right: 0;
+}
+
+.interaction .conversation {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .5em;
+  padding: 1em;
+  width: 100%;
+  overflow-y: scroll;
+  box-sizing: border-box;
+  padding: 1rem;
+}
+
+.interaction .conversation .message {
+  color: #dadada;
+  border: none;
+  font-family: Georgia, serif;
+  font-weight: 600;
+  font-size: 1.25rem;
+  line-height: 1.5em;
+  text-align: left;
+  padding: .5em;
+  margin: 0;
+  width: 100%;
+}
+
+.interaction .conversation .message.chain {
+  color: #1ab4b9;
+}
+
+.interaction .input {
+  display: flex;
+  flex-direction: column;
+  align-items: justify-content;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border-top: .2rem solid #dadada;
+  padding: 1rem;
+}
+
+.interaction .input textarea{
+  color: #dadada;
+  border: none;
+  font-family: Georgia, serif;
+  background-color: var(--main-background-color);
+  font-weight: 600;
+  font-size: 1rem;
+  height: 8rem;
+  position: relative;
+  text-align: left;
+  padding: .5em;
+  margin: 0;
+  line-height: 1.5em;
+  overflow: scroll;
+  border: 1px solid rgba(204, 204, 204, .5);
+  /* prevent resize */
+  resize: none;
+}
