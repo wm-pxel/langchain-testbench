@@ -19,11 +19,11 @@
   gap: 1rem;
 }
 
-.llm-spec .editor {
+.designer .highlighted-editor {
   position: relative;
 }
 
-.llm-spec .prompt-input, .llm-spec .prompt-display {
+.designer .highlighted-input, .designer .highlighted-display {
   color: #dadada;
   border: none;
   font-family: Georgia, serif;
@@ -40,13 +40,13 @@
   min-width: 18rem;
 }
 
-.llm-spec .prompt-input {
+.designer .highlighted-input {
   background: none;
   color: rgba(0,0,0,0);
   caret-color: #ffffff;
 }
 
-.llm-spec .prompt-display {
+.designer .highlighted-display {
   background-color: var(--main-background-color);
   position: absolute;
   top: 0;
@@ -54,7 +54,11 @@
   height: calc(100% - 1rem);
 }
 
-.llm-spec .prompt-display .llm-variable {
+.designer .highlighted-display .expr {
+  color: #aaaada;
+}
+
+.designer .highlighted-display .var-name {
   color: var(--variable-name-color);
 }
 
@@ -86,7 +90,7 @@
   color: var(--standard-error-color);
 }
 
-.form-element .var-name-input, .form-element textarea {
+.form-element .var-name-input, .form-element .text-input, .form-element textarea {
   background-color: var(--main-background-color);
   color: #dadada;
   border: var(--standard-border);
@@ -96,7 +100,7 @@
   font-size: 1rem;
   text-align: left;
   margin: 0;
-  padding: .25em;
+  padding: .5em;
 }
 
 .form-element .var-name-input {
@@ -133,6 +137,27 @@
   font-family: Georgia, serif;
   font-weight: 700;
   font-size: .8rem;
+}
+
+.reformat-spec .formatters {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 1em;
+}
+
+.reformat-spec .formatter {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: .2em;
+}
+
+
+.add-formatter {
+  align-self: center;
 }
 
 .reformat-spec .reformat-input {

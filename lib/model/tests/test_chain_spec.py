@@ -1,4 +1,5 @@
-from model.chain_spec import LLMSpec, SequentialSpec, CaseSpec, APISpec, ReformatSpec
+from model.chain_spec import ChainSpec, LLMSpec, SequentialSpec, CaseSpec, APISpec, ReformatSpec
+from model.chain_revision import ChainRevision
 from model.lang_chain_context import LangChainContext
 from langchain.llms.fake import FakeListLLM
 from model.tests.factory import SpecFactoryContext, llm_factory, sequential_factory, case_factory
@@ -14,7 +15,10 @@ def test_llm_spec_serialization():
     )
     serialized = llm_spec.json()
     assert serialized == '{"chain_id": 1, "input_keys": ["input1", "input2"], "output_key": "output1", "chain_type": "llm_spec", "prompt": "prompt", "llm_key": "llm_key"}'
-    deserialized = LLMSpec.parse_raw(serialized)
+
+    revision = ChainRevision(chain=llm_spec, llms={})
+    serialized_revision = revision.json()
+    deserialized = ChainRevision.parse_raw(serialized_revision).chain
     assert deserialized == llm_spec
 
 
@@ -61,7 +65,7 @@ def test_llm_spec_to_lang_chain_creates_recording_chain():
 
     assert output == {"output1": "response1"}
     assert ctx.prompts[0].calls == [
-        ({"input1": "input1", "input2": "input2"}, {"output1": "response1"})
+        ({"input1": "input1", "input2": "input2"}, "response1")
     ]
 
 
@@ -249,8 +253,10 @@ def test_api_chain_spec_serialization():
         body="body {input1} {input2}",
         headers={"header1": "header1"},
     )
-    serialized = api_spec.json()
-    deserialized = APISpec.parse_raw(serialized)
+
+    revision = ChainRevision(chain=api_spec, llms={})
+    serialized_revision = revision.json()
+    deserialized = ChainRevision.parse_raw(serialized_revision).chain
     assert deserialized == api_spec
 
 

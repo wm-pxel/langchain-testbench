@@ -4,14 +4,46 @@ import json
 import numexpr
 
 class ExtendedFormatter(string.Formatter):
+  """
+  This class extends the standard Python string formatter to add some extra
+  features that are useful for formatting data for the LangChain.
+
+  The following expressions are added:
+
+  - `{join:[varexpr]:[separator]}`: Join an array found at varexpr with the separator. For each
+    item in the array, the rest of the format string is formatted with the item as the `item` variable
+    and the index of the item as the `index` variable. If no separator is provided, the items are
+    joined without a separator. Example:
+    format('{join:data[colors]:, }{index}:{item}', data={'colors': ['r','g','b']})) -> '0:r, 1:g, 2:b'
+  - `{parse_json:[varexpr]:[varname]}`: Parse a JSON string found at varexpr and store the result
+    in a variable with the name varname which will be available in the rest of the expression.
+    If no varname is provided, the variable is named `data`.
+    Example: format('{parse_json:data[json]:person}{person[name]}', data={'json': '{"name": "John"}'}) -> 'John'
+  - `{let:[varexpr]:[varname]}`: Store the value found at varexpr in a variable with the name varname
+    which will be available in the rest of the expression. If no varname is provided, the variable
+    is named `data`.
+    Example: format('{let:data[name]:person}{person}', data={'name': 'John'}) -> 'John'
+  - `{expr:[expr]:[varname]}`: Evaluate the math expression expr using numexpr and store the result
+    in a variable with the name varname which will be available in the rest of the expression.
+    Note that variables used in [expr] must be ints or floats and cannot be nested format expressions
+    (eg. a[b] or a.b will not work). Use the int or float expressions to prepare data to use in expressions.
+    If no varname is provided, the variable is named `data`.
+    Example: format('{expr:a*b:result}{result}', a=2, b=3) -> '6'
+  - `{int:[varexpr]:[varname]}`: Parse varexpr as an integer in a variable with the name varname which
+    will be available in the rest of the expression. If no varname is provided, the variable is named `data`.
+    Example: format('{int:result[age]:age}{expr:age+4:result}{result}', result={'age': '2.0001'}) -> '6'
+  - `{float:[varexpr]:[varname]}`: Parse varexpr as a float in a variable with the name varname which
+    will be available in the rest of the expression. If no varname is provided, the variable is named `data`.
+    Example: format('{float:result[age]:age}{expr:age+4:result}{result}', result={'age': '2.5'}) -> '6.5'
+  """
   def format(self, format_string, *args, **kwargs):
     regex = r"\{(join|parse_json|let|expr|int|float):([^:\}]+)(:([^:\}]+))?\}(.*)"
-    join_match = re.fullmatch(regex, format_string, flags=re.DOTALL)
+    match = re.fullmatch(regex, format_string, flags=re.DOTALL)
 
-    if not join_match:      
+    if not match:      
       return super().format(format_string, *args, **kwargs)
 
-    args = join_match.groups()
+    args = match.groups()
     value = args[1]
     arg = args[3]
     rest = args[4]

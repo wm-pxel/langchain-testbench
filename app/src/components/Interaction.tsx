@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import ChainSpecContext from "../contexts/ChainSpecContext";
 import { runOnce } from "../api/api";
 import { computeChainIO } from "../model/spec_control";
+import DOMPurify from 'dompurify';
 import "./style/Interaction.css"
 
 
@@ -28,13 +29,15 @@ const Interaction = () => {
     }, 0);
   }
 
+  const richText = (text: string): string => {
+    return DOMPurify.sanitize(text.replace(/\n/g, "<br/>"));
+  }
+
   const runChain = async () => {
     const chainSpec = latestChainSpec()
     if (!chainSpec) return;
 
     const [inputs]: [Set<string>, Set<string>] = computeChainIO(chainSpec)
-    console.log(lastOutput);
-    console.log([...inputs].map(inVar => inVar.replace(/_in$/, "_out")));
     const inputVars = [...inputs].reduce((data, inVar) => ({
       primary: data.primary || (inVar.endsWith("_in") ? null : input),
       input: {...data.input, [inVar]: inVar.endsWith("_in") 
@@ -58,14 +61,14 @@ const Interaction = () => {
   useEffect(() => {
     setConversation([]);
     setInput("");
+    setLastOutput({});
   }, [isInteracting, readyToInteract]);
 
   return (
     <div className={`interaction ${(readyToInteract && isInteracting) ? 'open' : ''}`}>
       <div className="conversation" ref={conversationRef}>
         {conversation.map((message, i) => (
-          <div className={`message ${message.from}`} key={`message-${i}`}>
-            {message.text}
+          <div className={`message ${message.from}`} key={`message-${i}`} dangerouslySetInnerHTML={{__html: richText(message.text)}}>
           </div>
         ))}
       </div>

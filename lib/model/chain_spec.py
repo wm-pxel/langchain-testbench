@@ -9,7 +9,7 @@ from lib.chains.api_chain import APIChain
 from lib.chains.reformat_chain import ReformatChain
 from lib.chains.llm_recording_chain import LLMRecordingChain
 
-ChainSpec = Annotated[Union["SequentialSpec", "LLMSpec", "CaseSpec", "ReformatSpec"], Field(discriminator='chain_type')]
+ChainSpec = Annotated[Union["APISpec", "SequentialSpec", "LLMSpec", "CaseSpec", "ReformatSpec"], Field(discriminator='chain_type')]
 
 class BaseSpec(BaseModel):
   chain_id: int

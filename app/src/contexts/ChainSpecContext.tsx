@@ -51,12 +51,11 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   const [revision, setRevision] = useState<string|null>(null);
   const [isInteracting, setIsInteracting] = useState<boolean>(false);
 
-  const insertChainSpec = (type: string, chainId: number, index: number): void => {
+  const insertChainSpec = useCallback((type: string, chainId: number, index: number): void => {
     const newSpec = insertGeneratedChainSpec(dirtyChainSpec, nextChainId, type, chainId, index);
-    setChainSpec(newSpec)
-    setDirtyChainSpec(newSpec);
+    setChains(newSpec);
     setNextChainId(nextChainId + 1);
-  }
+  }, [dirtyChainSpec, nextChainId]);
 
   const latestChainSpec = useCallback((): ChainSpec | null => {
     return dirtyChainSpec;
@@ -75,11 +74,11 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   }, [chainSpec]);
 
   const updateDirtyChainSpec = useCallback((spec: ChainSpec): void => {
-    const { found, chainSpec } = updateChainSpec(dirtyChainSpec, spec);
-    if (!found) {
+    const result = updateChainSpec(dirtyChainSpec, spec);
+    if (!result.found) {
       throw new Error(`Could not find chain spec with id ${spec.chain_id} to update`);
     }
-    setDirtyChainSpec(chainSpec);
+    setDirtyChainSpec(result.chainSpec);
   }, [dirtyChainSpec]);
 
   const readyToInteract = useMemo(() => {

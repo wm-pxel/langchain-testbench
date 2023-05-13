@@ -1,39 +1,38 @@
-import { useCallback, useContext, useState, useEffect, useRef } from "react";
+import { useCallback, useContext, useState, useEffect, useMemo } from "react";
 import { LLMSpec, SequentialSpec, CaseSpec, ReformatSpec, APISpec, ChainSpec } from '../model/specs';
 import InsertChainSpec from "./InsertChainSpec";
 import ChainSpecContext, { UpdateSpecFunc } from "../contexts/ChainSpecContext";
-import DOMPurify from "dompurify";
+import HighlightedTextarea from "./HighlightedTextarea";
+import FormatReducer from "../util/FormatReducer";
 import "./style/Designer.css"
 
 type InsertChainFunc = (type: string, chainId: number, index: number) => void;
 
 interface LLMSpecDesignerProps { spec: LLMSpec, updateChainSpec: UpdateSpecFunc };
+
 const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
   const [prompt, setPrompt] = useState<string>(spec.prompt);
-  const [formattedPrompt, setFormattedPrompt] = useState<string>(spec.prompt);
-  const [outuptKey, setOutputKey] = useState<string>(spec.output_key);
+  const [outputKey, setOutputKey] = useState<string>(spec.output_key);
   const [variables, setVariables] = useState<string[]>([]);
-  const displayRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const vars: string[] = [];
-    const formatted = prompt.replace(/{(.*?)}/g, (_, variable) => {
-      vars.push(variable);
-      return `{<span class="llm-variable">${variable}</span>}`;
-    }).replace(/\n/g, "<br/>");
-
-    setVariables(vars);
-    setFormattedPrompt(DOMPurify.sanitize(formatted));
-  }, [prompt]);
+  const formatReducer = useMemo(() => new FormatReducer(
+    /{(.*?)}/g,
+    () => new Set<string>(),
+    (variables: Set<string>, _, variable) => [
+      variables.add(variable),
+      `<span class="expr">{<span class="var-name">${variable}</span>}</span>`
+    ],
+    (variables: Set<string>) => setVariables(Array.from(variables))
+  ), []);
 
   useEffect(() => {
     updateChainSpec({
       ...spec,
       prompt,
-      output_key: outuptKey,
+      output_key: outputKey,
       input_keys: variables,
     });
-  }, [prompt, outuptKey, variables]);
+  }, [prompt, outputKey, variables]);
 
   useEffect(() => {
     setPrompt(spec.prompt);
@@ -41,31 +40,25 @@ const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
     setVariables(spec.input_keys);
   }, [spec]);
 
-  const syncScroll = (e: React.UIEvent) => {
-    if (!displayRef.current) return;
-    displayRef.current.scrollTop = (e.target as HTMLTextAreaElement).scrollTop;
-  }
-
   return (
     <div className="llm-spec spec-designer">
       <h3 className="chain-id">LLM {spec.chain_id}</h3>
-      <div className="editor">
-        <div className="prompt-display" ref={displayRef} dangerouslySetInnerHTML={{__html: formattedPrompt}}></div>
-        <textarea className="prompt-input" value={prompt} 
-          onChange={e => setPrompt(e.target.value)} 
-          placeholder="Enter prompt here."
-          onScroll={syncScroll}>
-        </textarea>
-      </div>
+      <HighlightedTextarea
+        value={prompt}
+        onChange={setPrompt}
+        formatReducer={formatReducer}
+        placeholder="Enter prompt here."
+      />
       <div className="form-element">
         <label>Output Key</label>
-        <input className="var-name-input" value={outuptKey} onChange={e => setOutputKey(e.target.value)} />
+        <input className="var-name-input" value={outputKey} onChange={e => setOutputKey(e.target.value)} />
       </div>
     </div>
   );
 };
 
 interface SequentialSpecDesignerProps { spec: SequentialSpec, insertChain: InsertChainFunc, updateChainSpec: UpdateSpecFunc };
+
 const SequentialSpecDesigner = ({ spec, insertChain, updateChainSpec }: SequentialSpecDesignerProps) => {
   return (
     <div className="sequential-spec spec-designer">
@@ -80,6 +73,7 @@ const SequentialSpecDesigner = ({ spec, insertChain, updateChainSpec }: Sequenti
 };
 
 interface CaseSpecDesignerProps { spec: CaseSpec, insertChain: InsertChainFunc, updateChainSpec: UpdateSpecFunc };
+
 const CaseSpecDesigner = ({ spec, insertChain, updateChainSpec }: CaseSpecDesignerProps) => {
   const { findByChainId } = useContext(ChainSpecContext);
   const [categorizationKey, setCategorizationKey] = useState<string>(spec.categorization_key);
@@ -143,29 +137,130 @@ const CaseSpecDesigner = ({ spec, insertChain, updateChainSpec }: CaseSpecDesign
   );
 };
 
-interface ReformatSpecDesignerProps { spec: ReformatSpec };
-const ReformatSpecDesigner = ({ spec }: ReformatSpecDesignerProps) => {
+
+type ExtendedFormatterState = [inputs: Set<string>, internal: Set<string>];
+
+const extendedFormatterRegex = /\{(join|parse_json|let|expr|int|float):([^:\{\}]+)(:([^:\{\}]+))?\}|(\{([^\{\}]*)\})/g;
+const parseFormatExpression = (expr: string): [string, string] => {
+  const variable = expr.match(/^[_A-Za-z0-9]+/)?.[0] || '';
+  return [variable, expr.slice(variable.length)];
+};
+const condAdd = (set1: Set<string>, set2: Set<string>, item: string): Set<string> => (
+  set2.has(item) ? set1 : set1.add(item)
+);
+
+const extendedFormatterReduceFunc = (
+  [inputs, internal]: ExtendedFormatterState,
+  _: string,
+  exprType: string | undefined,
+  exprParam1: string | undefined,
+  _ep2Group: string | undefined,
+  exprParam2: string | undefined,
+  stdExpr: string | undefined,
+  stdExprVar: string | undefined,
+): [ExtendedFormatterState, string] => {
+  const [newInputs, newInternal] = [new Set(inputs), new Set(internal)];
+  if (exprType === 'parse_json' || exprType === 'let' || exprType === 'int' || exprType === 'float') {
+    const [variable, expr] = parseFormatExpression(exprParam1 || '');
+    return [
+      [condAdd(newInputs, newInternal, variable), newInternal.add(exprParam2 || 'data')], 
+      `<span class="expr">\{${exprType}:<span class="var-name">${variable}</span>${expr}:${exprParam2}\}</span>`
+    ];
+  } else if (exprType === 'join') {
+    const [variable, expr] = parseFormatExpression(exprParam1 || '');
+    return [
+      [condAdd(newInputs, newInternal, variable), newInternal.add('item').add('index')],
+      `<span class="expr">\{${exprType}:<span class="var-name">${variable}</span>${expr}:${exprParam2}\}</span>`
+    ];
+  } else if (exprType === 'expr') {
+    const formatted = exprParam1?.replace(/[_A-Za-z][_A-Za-z0-9]*/g, (variable) => { 
+      condAdd(newInputs, newInternal, variable); 
+      return `<span class="var-name">${variable}</span>`;
+    });
+    return [
+      [newInputs, newInternal.add(exprParam2 || 'data')],
+      `<span class="expr">\{${exprType}:${formatted}:${exprParam2}\}</span>`
+    ]
+  } else if (stdExpr) {
+    const [variable, expr] = parseFormatExpression(stdExprVar || '');
+    return [
+      [condAdd(newInputs, newInternal, variable), newInternal],
+      `<span class="expr">\{<span class="var-name">${variable}</span>${expr}\}</span>`
+    ]
+  }
+  return [[newInputs, newInternal], '<span class="error">ERROR</span>'];
+}
+
+interface ReformatSpecDesignerProps { spec: ReformatSpec, updateChainSpec: UpdateSpecFunc  };
+
+const ReformatSpecDesigner = ({ spec, updateChainSpec }: ReformatSpecDesignerProps) => {
+  const [formatters, setFormatters] = useState<[string, string][]>([]);
+  const [variables, setVariables] = useState<string[]>([]);
+
+  useEffect(() => {
+    setFormatters(Object.entries({...spec.formatters}));
+  }, [spec]);
+
+  const updateFormatter = useCallback((index: number, key: string, value: string) => {
+    setFormatters([
+      ...formatters.slice(0, index), [key, value], ...formatters.slice(index+1)
+    ]);
+  }, [formatters]);
+
+  const formatReducer = useMemo(() => new FormatReducer<ExtendedFormatterState>(
+    extendedFormatterRegex,
+    () => [new Set<string>(), new Set<string>()],
+    extendedFormatterReduceFunc,
+    ([inputs, _]: ExtendedFormatterState) => setVariables(Array.from(inputs))
+  ), []);
+
+  const addFormatter = useCallback(() => {
+    setFormatters([...formatters, [`output_key_${formatters.length}`, '']]);
+  }, [formatters]);
+
+  useEffect(() => {
+    updateChainSpec({
+      ...spec,
+      input_keys: variables,
+      formatters: Object.fromEntries(formatters),
+    });
+  }, [formatters, variables]);
+
   return (
     <div className="reformat-spec spec-designer">
       <h3 className="chain-id">Reformat {spec.chain_id}</h3>
-      {Object.keys(spec.formatters).map((key, index) => (
-        <div className="reformat-spec-designer__formatter" key={`reformat-${index}`}>
-          <label>{key}</label>
-          <textarea className="reformat-spec-designer reformat-input" defaultValue={spec.formatters[key]}>
-          </textarea>
-        </div>
-      ))}
+      <div className="formatters">
+        { formatters.map(([key, value], idx) => (
+          <div className="formatter form-element" key={`reformat-${idx}`}>
+            <input className="formatter__key var-name-input"
+              defaultValue={key}
+              onChange={(e) => updateFormatter(idx, e.target.value, value)}
+              placeholder="Output Key"
+            />
+
+            <HighlightedTextarea
+              value={value}
+              onChange={(newValue) => updateFormatter(idx, key, newValue)}
+              formatReducer={formatReducer}
+              placeholder="Enter format command."
+            />
+          </div>
+        ))}
+      </div>
+      <button className="add-formatter" onClick={addFormatter}>+ formatter</button>
     </div>
   );
 };
 
 interface APISpecDesignerProps { spec: APISpec, updateChainSpec: UpdateSpecFunc };
+
 const APISpecDesigner = ({ spec, updateChainSpec }: APISpecDesignerProps) => {
   const [url, setUrl] = useState<string>(spec.url);
   const [method, setMethod] = useState<string>(spec.method);
   const [headers, setHeaders] = useState<string>(JSON.stringify(spec.headers, null, 2));
   const [headersError, setHeadersError] = useState<boolean>(false);
   const [body, setBody] = useState<string | null>(spec.body);
+  const [outputKey, setOutputKey] = useState<string>(spec.output_key);
 
   useEffect(() => {
     setUrl(spec.url);
@@ -185,25 +280,35 @@ const APISpecDesigner = ({ spec, updateChainSpec }: APISpecDesignerProps) => {
   }, [spec.headers]);
 
   useEffect(() => {
+    const vars = new Set<string>();
+    const regex = /\{([a-zA-Z0-9_]+)\}/g;
+    const add = (_: string, ...matches: any[]): string => { vars.add(matches[0]); return ""; };
+    url.replace(regex, add);
+    method.replace(regex, add);
+    headers.replace(regex, add);
+    if (body) body.replace(regex, add);
+
     updateChainSpec({
       ...spec,
       url,
       method,
+      input_keys: Array.from(vars),
       headers: tryParseHeaders(headers),
       body,
+      output_key: outputKey,
     });
-  }, [url, method, headers, body]);
+  }, [url, method, headers, body, outputKey]);
 
   return (
     <div className="api-spec spec-designer">
       <h3 className="chain-id">API {spec.chain_id}</h3>
       <div className="form-element">
         <label>URL</label>
-        <input className="var-name-input" value={url} onChange={e => setUrl(e.target.value)} placeholder="URL" />
+        <input className="text-input" value={url} onChange={e => setUrl(e.target.value)} placeholder="URL" />
       </div>
       <div className="form-element">
         <label>Method</label>
-        <input className="var-name-input" value={method} onChange={e => setMethod(e.target.value)} placeholder="GET | POST" />
+        <input className="text-input" value={method} onChange={e => setMethod(e.target.value)} placeholder="GET | POST" />
       </div>
       <div className={`form-element text ${headersError ? "error" : ""}`}>
         <label>Headers</label>
@@ -219,6 +324,10 @@ const APISpecDesigner = ({ spec, updateChainSpec }: APISpecDesignerProps) => {
           onChange={e => setBody(e.target.value)}
           placeholder="Optional body content"/>
       </div>
+      <div className="form-element">
+        <label>Output Key</label>
+        <input className="var-name-input" value={outputKey} onChange={e => setOutputKey(e.target.value)} />
+      </div>
     </div>
   );
 };
@@ -232,7 +341,7 @@ const renderChainSpec = (spec: ChainSpec, insertChain: InsertChainFunc, updateSp
     case "case_spec":
       return <CaseSpecDesigner spec={spec} updateChainSpec={updateSpec} insertChain={insertChain} key={`case-spec-${spec.chain_id}`} />;
     case "reformat_spec":
-      return <ReformatSpecDesigner spec={spec} key={`reformat-spec-${spec.chain_id}`}/>;
+      return <ReformatSpecDesigner spec={spec} updateChainSpec={updateSpec} key={`reformat-spec-${spec.chain_id}`}/>;
     case "api_spec":
       return <APISpecDesigner spec={spec} updateChainSpec={updateSpec} key={`api-spec-${spec.chain_id}`}/>;
   }

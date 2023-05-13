@@ -58,7 +58,6 @@ def load_results_by_chain_name(chain_name):
 @app.route("/chain/<chain_name>/run", methods=["POST"])
 def run_chain(chain_name):
   input = request.json
-  print("input:", input)
   result = chain_service.run_once(chain_name, input, False)
   return Response(dumps(result), mimetype="application/json")
 

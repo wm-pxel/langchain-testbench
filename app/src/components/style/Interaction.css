@@ -12,6 +12,7 @@
   padding: 0 0 0 0;
   box-sizing: border-box;
   overflow: hidden;
+  background-color: var(--main-background-color);
   border: var(--standard-border);
   border-color: #dadada;
   border-right: none;
@@ -42,7 +43,7 @@
   border: none;
   font-family: Georgia, serif;
   font-weight: 600;
-  font-size: 1.25rem;
+  font-size: 1rem;
   line-height: 1.5em;
   text-align: left;
   padding: .5em;

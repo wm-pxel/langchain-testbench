@@ -119,7 +119,6 @@ def run_once(chain_name, input, record):
   ctx = LangChainContext(llms=revision.llms, recording=True)
   lang_chain = revision.chain.to_lang_chain(ctx)
   output = lang_chain._call(input)
-  print("output:", output)
 
   if (record):
     save_results(ctx, revision.id)
