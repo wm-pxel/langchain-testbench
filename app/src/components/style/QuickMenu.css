@@ -1,9 +1,9 @@
 
-.insert-chain-spec {
+.quick-menu {
   position: relative;
 }
 
-.open-insert-chain-spec {
+.open-quick-menu {
   width: 1rem;
   height: 1rem;
   padding: 0;
@@ -14,20 +14,23 @@
   padding-top: 1rem;
 }
 
-.chain-spec-type-selector {
+.quick-menu-selector {
   display: none;
   position: absolute;
-  top: 0;
+  top: 1.5rem;
   left: 0;
-  width: 30rem;
   height: 3rem;
   justify-content: space-around;
   background-color: var(--button-background-color);
   border: var(--standard-border);
+  border-width: .1rem;
   border-radius: var(--standard-border-radius);
   z-index: 1;
 }
+.quick-menu-selector button {
+  white-space: nowrap;
+}
 
-.chain-spec-type-selector.open {
+.quick-menu.open .quick-menu-selector {
   display: flex;
 }

@@ -1,19 +1,31 @@
 import { useCallback, useContext, useState, useEffect, useMemo } from "react";
 import { LLMSpec, SequentialSpec, CaseSpec, ReformatSpec, APISpec, ChainSpec } from '../model/specs';
-import InsertChainSpec from "./InsertChainSpec";
+import QuickMenu from "./QuickMenu";
 import ChainSpecContext, { UpdateSpecFunc } from "../contexts/ChainSpecContext";
 import HighlightedTextarea from "./HighlightedTextarea";
 import FormatReducer from "../util/FormatReducer";
 import "./style/Designer.css"
+import { LLMContext } from "../contexts/LLMContext";
 
 type InsertChainFunc = (type: string, chainId: number, index: number) => void;
 
 interface LLMSpecDesignerProps { spec: LLMSpec, updateChainSpec: UpdateSpecFunc };
 
+const specTypeOptions = {
+  llm_spec: 'LLM',
+  sequential_spec: 'Sequential',
+  case_spec: 'Case',
+  reformat_spec: 'Reformat',
+  api_spec: 'API',
+};
+
 const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
+  const { llms } = useContext(LLMContext);
+
   const [prompt, setPrompt] = useState<string>(spec.prompt);
   const [outputKey, setOutputKey] = useState<string>(spec.output_key);
   const [variables, setVariables] = useState<string[]>([]);
+  const [llm, setLLM] = useState<string>(spec.llm_key);
 
   const formatReducer = useMemo(() => new FormatReducer(
     /{(.*?)}/g,
@@ -28,11 +40,12 @@ const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
   useEffect(() => {
     updateChainSpec({
       ...spec,
+      llm_key: llm,
       prompt,
       output_key: outputKey,
       input_keys: variables,
     });
-  }, [prompt, outputKey, variables]);
+  }, [llm, prompt, outputKey, variables]);
 
   useEffect(() => {
     setPrompt(spec.prompt);
@@ -50,6 +63,12 @@ const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
         placeholder="Enter prompt here."
       />
       <div className="form-element">
+        <label>LLM</label>
+        <select value={llm} onChange={e => setLLM(e.target.value)}>
+          {Object.keys(llms).map(llm => <option value={llm}>{llm}</option>)}
+        </select>
+      </div>
+      <div className="form-element">
         <label>Output Key</label>
         <input className="var-name-input" value={outputKey} onChange={e => setOutputKey(e.target.value)} />
       </div>
@@ -63,10 +82,10 @@ const SequentialSpecDesigner = ({ spec, insertChain, updateChainSpec }: Sequenti
   return (
     <div className="sequential-spec spec-designer">
       <h3 className="chain-id">Sequential {spec.chain_id}</h3>
-      <InsertChainSpec insertChain={insertChain} chainId={spec.chain_id} index={0} />
+      <QuickMenu selectValue={(option) => insertChain(option, spec.chain_id, 0)} options={specTypeOptions} />
       {spec.chains.flatMap((chain: ChainSpec, idx: number) => [
         renderChainSpec(chain, insertChain, updateChainSpec),
-        <InsertChainSpec insertChain={insertChain} chainId={spec.chain_id} index={idx+1} key={`button-${idx+1}`}/>
+        <QuickMenu selectValue={(option) => insertChain(option, spec.chain_id, idx+1)} options={specTypeOptions} key={`button-${idx+1}`}/>
       ])}
     </div>
   );
@@ -125,13 +144,13 @@ const CaseSpecDesigner = ({ spec, insertChain, updateChainSpec }: CaseSpecDesign
         <label>Category Key</label>
         <input className="var-name-input" value={categorizationKey} onChange={e => setCategorizationKey(e.target.value)} />
       </div>
-      <InsertChainSpec insertChain={insertChain} chainId={spec.chain_id} index={0} />
+      <QuickMenu selectValue={(option) => insertChain(option, spec.chain_id, 0)} options={specTypeOptions} />
       {cases.flatMap((item: [string, ChainSpec], idx: number) => [
         <div className="case-spec-case" key={`spec-case-${item[1].chain_id}`}>
           <input className="case-spec-case__key" defaultValue={item[0]} onChange={(e) => updateCaseKey(idx, e.target.value)} />
           {renderChainSpec(item[1] as ChainSpec, insertChain, updateChainSpec)}
         </div>,
-        <InsertChainSpec insertChain={insertChain} chainId={spec.chain_id} index={idx+1} key={`button-${idx+1}`}/>,
+        <QuickMenu selectValue={(option) => insertChain(option, spec.chain_id, idx+1)} options={specTypeOptions} key={`button-${idx+1}`}/>,
       ])}
     </div>
   );
@@ -354,7 +373,7 @@ const Designer = () => {
     <div className="designer">
       { spec 
         ? renderChainSpec(spec, insertChainSpec, updateChainSpec)
-        : <InsertChainSpec insertChain={insertChainSpec} chainId={0} index={0}/> 
+        : <QuickMenu selectValue={(option) => insertChainSpec(option, 0, 0)} options={specTypeOptions}/> 
       }
     </div>
   );

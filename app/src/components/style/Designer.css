@@ -117,6 +117,20 @@
   border-color: var(--standard-error-color);
 }
 
+.form-element select {
+  background-color: var(--main-background-color);
+  color: #dadada;
+  border: var(--standard-border);
+  border-width: .1rem;
+  font-family: Georgia, serif;
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: left;
+  margin: 0;
+  padding: .5em;
+  min-width: 16rem;
+}
+
 .case-spec {
   display: flex;
   flex-direction: column;

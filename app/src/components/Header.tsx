@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { listChains, loadRevision, saveRevision } from "../api/api";
-import { createRevision, defaultLLMs } from "../model/spec_control";
+import { createRevision } from "../model/spec_control";
 import ChainSpecContext from "../contexts/ChainSpecContext";
+import { LLMContext } from "../contexts/LLMContext";
 import "./style/Header.css";
 
 
 const Header = () => {
+  const { latestLLMs, setIsEditingLLMs, setLLMs } = useContext(LLMContext);
   const { 
     latestChainSpec, setChainName,  chainName, chainSpec, 
     setChainSpec, revision, setRevision, readyToInteract,
@@ -22,6 +23,7 @@ const Header = () => {
     const revision = await loadRevision(chainName);
     if (revision.id) setRevision(revision.id);
     setChainSpec(revision.chain);
+    setLLMs(revision.llms);
   }
 
   const saveSpec = async () => {
@@ -29,7 +31,8 @@ const Header = () => {
     if (!spec) {
       throw new Error("No chain spec to save");
     }
-    const nextRevision = createRevision(revision, spec, defaultLLMs);
+    const llms = latestLLMs();
+    const nextRevision = createRevision(revision, spec, llms);
     const nextRevisionId = await saveRevision(chainName, nextRevision);
     setRevision(nextRevisionId.revision_id);
 
@@ -45,6 +48,7 @@ const Header = () => {
         defaultValue={chainName || ""} 
         onChange={e => setChainName(e.target.value)} />
       <div className="actions">
+        <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>
         <button disabled={!(chainSpec && chainName)} onClick={saveSpec}>
           Save Revision
         </button>

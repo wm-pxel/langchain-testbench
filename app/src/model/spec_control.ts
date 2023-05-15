@@ -259,19 +259,3 @@ export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
       throw new Error(`Unknown spec type: ${type}`);
   }
 }
-
-export const defaultLLMs = {
-  llm: {
-    "model_name": "text-davinci-003",
-    "temperature": 0.8,
-    "max_tokens": 256,
-    "top_p": 1.0,
-    "frequency_penalty": 0.0,
-    "presence_penalty": 0.0,
-    "n": 1,
-    "best_of": 1,
-    "request_timeout": null,
-    "logit_bias": {},
-    "_type": "openai"
-  }
-}

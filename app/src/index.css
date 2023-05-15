@@ -4,7 +4,7 @@
   font-weight: 400;
   padding-top: 4rem;
 
-  --main-background-color: #242424;
+  --main-background-color: rgb(36, 36, 36);
   --primary-font-color: rgba(255, 255, 255, 0.87);
   --button-background-color: #1a1a1a;
   --standard-border: .2rem solid rgba(204, 204, 204, .25);
@@ -62,11 +62,12 @@ button:hover {
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: none;
+  border: 1px solid rgba(204, 204, 204, 1);
 }
 textarea:focus,
 textarea:focus-visible {
-  outline: 1px solid rgba(204, 204, 204, 1);
+  border: 1px solid rgba(204, 204, 204, 1);
 }
 button:disabled {
   opacity: 0.5;
