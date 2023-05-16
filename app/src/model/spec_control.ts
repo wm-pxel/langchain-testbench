@@ -55,8 +55,8 @@ export const computeChainIO = (spec: ChainSpec): [Set<string>, Set<string>] => {
       return [new Set(spec.input_keys), new Set([spec.output_key])];
 
     case 'sequential_spec':
-      const [sin, sout] = spec.chains.reduce(([inputs, outputs], spec) => {
-        const [specIn, specOut] = computeChainIO(spec);        
+      const [sin, sout] = spec.chains.reduce(([inputs, outputs], child) => {
+        const [specIn, specOut] = computeChainIO(child);
         return [union(inputs, difference(specIn, outputs)), union(outputs, specOut)];
       }, [new Set(), new Set()] as [Set<string>, Set<string>]);
 

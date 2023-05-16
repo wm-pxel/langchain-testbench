@@ -50,6 +50,7 @@ const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
   useEffect(() => {
     setPrompt(spec.prompt);
     setOutputKey(spec.output_key);
+    setLLM(spec.llm_key);
     setVariables(spec.input_keys);
   }, [spec]);
 
@@ -65,7 +66,7 @@ const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
       <div className="form-element">
         <label>LLM</label>
         <select value={llm} onChange={e => setLLM(e.target.value)}>
-          {Object.keys(llms).map(llm => <option value={llm}>{llm}</option>)}
+          {Object.keys(llms).map(llm => <option key={llm} value={llm}>{llm}</option>)}
         </select>
       </div>
       <div className="form-element">

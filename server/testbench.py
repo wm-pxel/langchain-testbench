@@ -28,7 +28,7 @@ def save_revision(chain_name):
     return {"error": str(e)}, 400
 
   revision_id = chain_service.save_revision(chain_name, next_revision)
-  return Response(dumps({"revision_id": revision_id}), mimetype="application/json")
+  return Response(dumps({"revision_id": str(revision_id)}), mimetype="application/json")
 
 @app.route("/chain/<chain_name>/revision", methods=["GET"])
 def load_by_chain_name(chain_name):
@@ -43,12 +43,12 @@ def history_by_chain_name(chain_name):
 @app.route("/chain/<chain_name>/patch", methods=["POST"])
 def save_patch(chain_name):
   revision_id = chain_service.save_patch(chain_name, request.json)
-  return Response(dumps({"revision_id": revision_id}), mimetype="application/json")
+  return Response(dumps({"revision_id": str(revision_id)}), mimetype="application/json")
 
 @app.route("/chain/<revision_id>", methods=["GET"])
 def load_by_id(revision_id):
   revision_id = chain_service.load_by_id(revision_id)
-  return Response(dumps({"revision_id": revision_id}), mimetype="application/json")
+  return Response(dumps({"revision_id": str(revision_id)}), mimetype="application/json")
 
 @app.route("/chain/<chain_name>/results", methods=["GET"])
 def load_results_by_chain_name(chain_name):

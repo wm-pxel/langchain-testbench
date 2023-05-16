@@ -33,7 +33,7 @@ const OpenAILLMEditor = ({ llmKey, llm, updateLLM }: OpenAILLMEditorProps) => {
       request_timeout: null,
       logit_bias: {},
     });
-  }, [name, modelName, temperature, maxTokens, topP, frequencyPenalty, presencePenalty, updateLLM]);
+  }, [name, modelName, temperature, maxTokens, topP, frequencyPenalty, presencePenalty]);
 
   return (
     <div className="llm">

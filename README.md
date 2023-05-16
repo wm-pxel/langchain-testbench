@@ -4,6 +4,7 @@ A system for designing and testing chains
 TODO:
 * Error responses from server for saves and interactive tests.
 * Include nested inputs in the response
+* Bug: Fix HighlightedDisplay alignment issue between textarea and display.
 * save does not always save what's displayed on screen
 * Bug: load revision is enables and interact is disabled after save (should be opposite)
 * Within Reformat Chains, outputs of formatters should be available as inputs to subsequent formatters. This will require an update to the ReformatChain and a modification of the FormatReducer logic for inputs in the designer.

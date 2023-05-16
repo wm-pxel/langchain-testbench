@@ -18,8 +18,8 @@ const QuickMenu = ({selectValue, options}: QuickMenuProps) => {
       <button onClick={()=>setModalOpen(!modalOpen)} className="open-quick-menu">{modalOpen ? 'x' : '+'}</button>
       <div className="quick-menu-selector">
         {
-          Object.entries(options).map(([key, value]) => (
-            <button onClick={() => handleInsert(key)}>{value}</button>
+          Object.entries(options).map(([key, value], idx) => (
+            <button key={`qm-option-${idx}`} onClick={() => handleInsert(key)}>{value}</button>
           ))
         }
       </div>

@@ -26,6 +26,10 @@ const HighlightedTextarea = ({ value, formatReducer, onChange, placeholder }: Hi
     onChange(text);
   }, [text]);
 
+  useEffect(() => {
+    setText(value);
+  }, [value]);
+
   const syncScroll = (e: React.UIEvent) => {
     if (!displayRef.current) return;
     displayRef.current.scrollTop = (e.target as HTMLTextAreaElement).scrollTop;
