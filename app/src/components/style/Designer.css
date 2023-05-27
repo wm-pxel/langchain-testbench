@@ -21,6 +21,7 @@
 
 .designer .highlighted-editor {
   position: relative;
+  min-height: 10rem;
 }
 
 .designer .highlighted-input, .designer .highlighted-display {
@@ -29,15 +30,14 @@
   font-family: Georgia, serif;
   font-weight: 600;
   font-size: 1rem;
-  min-width: 10rem;
-  min-height: 10rem;
   position: relative;
   text-align: left;
   padding: .5em;
   margin: 0;
   line-height: 1.5em;
   overflow: scroll;
-  min-width: 18rem;
+  min-width: calc(100% - 1rem);
+  min-height: 10rem;
 }
 
 .designer .highlighted-input {
@@ -51,7 +51,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  height: calc(100% - 1rem);
+  height: calc(100% - 1.5rem);
 }
 
 .designer .highlighted-display .expr {

@@ -9,14 +9,23 @@ export interface HighlightedTextareaProps {
   placeholder?: string;
 }
 
+const htmlEscapes: Record<string, string> = {
+  '<': '&lt;',
+  '>': '&gt;',
+  '&': '&amp;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '\n': '<br/>'
+}
+
 const HighlightedTextarea = ({ value, formatReducer, onChange, placeholder }: HighlightedTextareaProps) => {
   const displayRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState<string>(value);
   const [formattedText, setFormattedText] = useState<string>(value);
 
   const escapedAndFormatted = useCallback((text: string) => {
-    const escaped = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const formatted = formatReducer.format(escaped).replace(/\n/g, "<br/>");
+    const escaped = text.replace(/[<>\n&"']/g, (m) => htmlEscapes[m]).replace(/>/g, "&gt;");
+    const formatted = formatReducer.format(escaped).replace(/  /g, " &nbsp;");
     return DOMPurify.sanitize(formatted)
   }, [formatReducer]);
   
