@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import FormatReducer from '../util/FormatReducer';
+import { escapeHTML } from '../util/html';
 
 export interface HighlightedTextareaProps {
   value: string;
@@ -9,29 +10,19 @@ export interface HighlightedTextareaProps {
   placeholder?: string;
 }
 
-const htmlEscapes: Record<string, string> = {
-  '<': '&lt;',
-  '>': '&gt;',
-  '&': '&amp;',
-  '"': '&quot;',
-  "'": '&#39;',
-  '\n': '<br/>'
-}
-
 const HighlightedTextarea = ({ value, formatReducer, onChange, placeholder }: HighlightedTextareaProps) => {
   const displayRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState<string>(value);
   const [formattedText, setFormattedText] = useState<string>(value);
 
   const escapedAndFormatted = useCallback((text: string) => {
-    const escaped = text.replace(/[<>\n&"']/g, (m) => htmlEscapes[m]).replace(/>/g, "&gt;");
-    const formatted = formatReducer.format(escaped).replace(/  /g, " &nbsp;");
+    const formatted = formatReducer.format(escapeHTML(text));
     return DOMPurify.sanitize(formatted)
   }, [formatReducer]);
   
   useEffect(() => {
     const formatted = escapedAndFormatted(text);
-    setFormattedText(DOMPurify.sanitize(formatted));
+    setFormattedText(formatted);
     onChange(text);
   }, [text]);
 
@@ -40,8 +31,10 @@ const HighlightedTextarea = ({ value, formatReducer, onChange, placeholder }: Hi
   }, [value]);
 
   const syncScroll = (e: React.UIEvent) => {
-    if (!displayRef.current) return;
-    displayRef.current.scrollTop = (e.target as HTMLTextAreaElement).scrollTop;
+    setTimeout(() => {
+      if (!displayRef.current) return;
+      displayRef.current.scrollTop = (e.target as HTMLTextAreaElement).scrollTop;
+    }, 0)
   }
 
   return (

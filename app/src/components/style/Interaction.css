@@ -85,3 +85,64 @@
   /* prevent resize */
   resize: none;
 }
+
+.interaction .loading {
+  width: 100%
+}
+
+.interaction .loading .lds-ellipsis {
+  display: inline-block;
+  position: relative;
+  margin: 0 auto;
+  width: 4rem;
+  height: 2rem;
+}
+.interaction .loading .lds-ellipsis div {
+  position: absolute;
+  top: .5rem;
+  width: .7rem;
+  height: .7rem;
+  border-radius: 50%;
+  background: #1ab4b9;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+.interaction .loading .lds-ellipsis div:nth-child(1) {
+  left: .5rem;
+  animation: lds-ellipsis1 0.6s linear infinite;
+}
+.interaction .loading .lds-ellipsis div:nth-child(2) {
+  left: .5rem;
+  animation: lds-ellipsis2 0.6s linear infinite;
+}
+.interaction .loading .lds-ellipsis div:nth-child(3) {
+  left: 2rem;
+  animation: lds-ellipsis2 0.6s linear infinite;
+}
+.interaction .loading .lds-ellipsis div:nth-child(4) {
+  left: 3.5rem;
+  animation: lds-ellipsis3 0.6s linear infinite;
+}
+@keyframes lds-ellipsis1 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes lds-ellipsis3 {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+@keyframes lds-ellipsis2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(1.5rem, 0);
+  }
+}
