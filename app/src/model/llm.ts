@@ -12,7 +12,21 @@ export interface OpenAILLM {
   logit_bias: Record<number, number>;
 }
 
-export type LLM = OpenAILLM;
+export interface HuggingFaceHubArgs {
+  temperature: number;
+  max_new_tokens: number;
+  min_new_tokens: number;
+  max_time: number;
+}
+
+export interface HuggingFaceHubLLM {
+  _type: "huggingface_hub";
+  repo_id: string;
+  task: string | null;
+  model_kwargs: HuggingFaceHubArgs;
+}
+
+export type LLM = OpenAILLM | HuggingFaceHubLLM;
 
 export const defaultLLMs: Record<string, LLM> = {
   llm: {

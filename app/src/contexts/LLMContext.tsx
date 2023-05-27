@@ -58,22 +58,43 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
     return dirtyLLMs;
   }
 
-  const addLLM = (_llmType: string) => (setBothLLMs({
+  const addLLM = (llmType: string) => (setBothLLMs({
     ...dirtyLLMs,
-    [`llm-${Object.keys(dirtyLLMs).length}`]: {
-      "_type": "openai",
-      "model_name": "text-davinci-003",
-      "temperature": 0.8,
-      "max_tokens": 256,
-      "top_p": 1.0,
-      "frequency_penalty": 0.0,
-      "presence_penalty": 0.0,
-      "n": 1,
-      "best_of": 1,
-      "request_timeout": null,
-      "logit_bias": {}
-    },
+    [`llm-${Object.keys(dirtyLLMs).length}`]: defaultLLM(llmType),
   }));
+
+  const defaultLLM = (llmType: string): LLM => {
+    switch (llmType) {
+      case "openai":
+        return {
+          _type: "openai",
+          model_name: "text-davinci-003",
+          temperature: 0.8,
+          max_tokens: 256,
+          top_p: 1.0,
+          frequency_penalty: 0.0,
+          presence_penalty: 0.0,
+          n: 1,
+          best_of: 1,
+          request_timeout: null,
+          logit_bias: {}
+        }
+      case "huggingface_hub":
+        return {
+          _type: "huggingface_hub",
+          repo_id: "google/flan-t5-xl",
+          task: null,
+          model_kwargs: {
+            temperature: 0.8,
+            max_new_tokens: 256,
+            min_new_tokens: 128,
+            max_time: 60,
+          },
+        }
+    }
+    throw new Error(`Unknown LLM type: ${llmType}`);
+  };
+    
 
 
   return (

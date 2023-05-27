@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { LLMContext } from "../contexts/LLMContext";
-import { LLM, OpenAILLM } from "../model/llm";
+import { HuggingFaceHubLLM, LLM, OpenAILLM } from "../model/llm";
 import "./style/EditLLMs.css";
 import QuickMenu from "./QuickMenu";
 
@@ -34,6 +34,20 @@ const OpenAILLMEditor = ({ llmKey, llm, updateLLM }: OpenAILLMEditorProps) => {
       logit_bias: {},
     });
   }, [name, modelName, temperature, maxTokens, topP, frequencyPenalty, presencePenalty]);
+
+  useEffect((): void => {
+    setName(llmKey);
+    setModelName(llm.model_name);
+    setTemperature(llm.temperature);
+    setMaxTokens(llm.max_tokens);
+    setTopP(llm.top_p);
+    setFrequencyPenalty(llm.frequency_penalty);
+    setPresencePenalty(llm.presence_penalty);
+  }, [llm]);
+
+  useEffect((): void => {
+    setName(llmKey);
+  }, [llmKey]);
 
   return (
     <div className="llm">
@@ -77,11 +91,71 @@ const OpenAILLMEditor = ({ llmKey, llm, updateLLM }: OpenAILLMEditorProps) => {
   );
 }
 
+export interface HuggingFaceHubLLMEditorProps {
+  llmKey: string,
+  llm: HuggingFaceHubLLM,
+  updateLLM: (llmKey: string, llm: LLM) => void
+}
+
+const HuggingFaceLLMEditor = ({ llmKey, llm, updateLLM }: HuggingFaceHubLLMEditorProps) => {
+  const [name, setName] = useState(llmKey);
+  const [repoId, setRepoId] = useState(llm.repo_id);
+  const [temperature, setTemperature] = useState<number>(llm.model_kwargs.temperature);
+  const [maxLength, setMaxLength] = useState<number>(llm.model_kwargs.max_length);
+
+  useEffect((): void => {
+    updateLLM(name, { 
+      _type: 'huggingface_hub',
+      repo_id: repoId,
+      task: null,
+      model_kwargs: {
+        temperature: temperature,
+        max_length: maxLength,
+      }
+    });
+  }, [name, repoId, temperature, maxLength]);
+
+  useEffect((): void => {
+    setRepoId(llm.repo_id);
+    setTemperature(llm.model_kwargs.temperature);
+    setMaxLength(llm.model_kwargs.max_length);
+  }, [llm]);
+
+  useEffect((): void => {
+    setName(llmKey);
+  }, [llmKey]);
+
+  return (
+    <div className="llm">
+      <div className="llm-key">
+        <input type="text" className="llm-key-input"
+          defaultValue={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div className="llm-params">
+        <div className="llm-param">
+          <div className="llm-param-name">repo id</div>
+          <input type="text" className="llm-param-value"
+            defaultValue={repoId} onChange={(e) => setRepoId(e.target.value)} />
+        </div>
+        <div className="llm-param">
+          <div className="llm-param-name">temperature</div>
+          <input type="text" className="llm-param-value"
+            defaultValue={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} />
+        </div>
+        <div className="llm-param">
+          <div className="llm-param-name">max length</div>
+          <input type="text" className="llm-param-value"
+            defaultValue={maxLength} onChange={(e) => setMaxLength(parseFloat(e.target.value))} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const EditLLMs = () => {
   const { llms, addLLM, updateLLM, latestLLMs, isEditingLLMs,  setIsEditingLLMs } = useContext(LLMContext);
   const backgroundRef = useRef<HTMLDivElement>(null);
   const [visibilityState, setVisibilityState] = useState("absent");
-
 
   useEffect(() => {
     if (isEditingLLMs) {
@@ -113,11 +187,12 @@ const EditLLMs = () => {
         {Object.entries(llms).map(([llmKey, llm], idx) => {
           if (llm._type === 'openai') {
             return <OpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
+          } else if (llm._type === 'huggingface_hub') {
+            return <HuggingFaceLLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           }
-          return <div key={llmKey}>Unknown LLM type: {llm._type}</div>
         })}
         <div className="llm-actions">
-          <QuickMenu selectValue={addLLM} options={{ openai: 'Open AI' }} />
+          <QuickMenu selectValue={addLLM} options={{ openai: 'Open AI', huggingface_hub: 'Hugging Face' }} />
         </div>
       </div>
     </div>
