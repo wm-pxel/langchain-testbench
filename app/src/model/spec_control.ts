@@ -49,6 +49,20 @@ export const findByChainId = (chainId: number, chainSpec: ChainSpec): ChainSpec 
   return undefined;
 }
 
+export const findNextChainId = (chainSpec: ChainSpec): number => {
+  switch (chainSpec.chain_type) {
+    case 'sequential_spec':
+      return chainSpec.chains.reduce((acc, chain) => Math.max(acc, findNextChainId(chain)), chainSpec.chain_id + 1);
+    case 'case_spec':
+      return [...Object.values(chainSpec.cases), chainSpec.default_case].reduce((acc, chain) => {
+        if (chain == null) return acc;
+        return Math.max(acc, findNextChainId(chain));
+      }, chainSpec.chain_id + 1);
+    default:
+      return chainSpec.chain_id + 1;
+  }
+}
+
 export const computeChainIO = (spec: ChainSpec): [Set<string>, Set<string>] => {
   switch (spec.chain_type) {
     case 'llm_spec':
@@ -143,7 +157,8 @@ export const insertChainSpec = (
           cases: Object.fromEntries(caseEntries.map(([key, chain]) => [
             key,
             insertChainSpec(chain, nextChainId, type, chainId, index)
-          ]))
+          ])),
+          default_case: insertChainSpec(originalSpec.default_case, nextChainId, type, chainId, index)
         }
       }
   }

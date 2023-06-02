@@ -169,6 +169,9 @@
   gap: .2em;
 }
 
+.reformat-spec .highlighted-input, .reformat-spec .highlighted-editor, .reformat-spec .highlighted-display {
+  min-height: 5rem;
+}
 
 .add-formatter {
   align-self: center;

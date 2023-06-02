@@ -67,7 +67,9 @@
   padding: 1rem;
 }
 
-.interaction .input textarea{
+.interaction .input textarea {
+  display: none;
+  width: calc(100% - 1rem);
   color: #dadada;
   border: none;
   font-family: Georgia, serif;
@@ -77,13 +79,41 @@
   height: 8rem;
   position: relative;
   text-align: left;
-  padding: .5em;
+  padding: 1rem;
   margin: 0;
   line-height: 1.5em;
   overflow: scroll;
   border: 1px solid rgba(204, 204, 204, .5);
-  /* prevent resize */
   resize: none;
+  outline: none;
+}
+
+.interaction .input textarea.active {
+  display: block;
+}
+
+.interaction .input-tabs {
+  display: flex;
+  flex-direction: row;
+}
+
+.interaction .input-tabs button {
+  flex: 1;
+  color:rgba(204, 204, 204, .5)
+}
+
+.interaction .input-tabs button.active {
+  position: relative;
+  z-index: 1;
+  top: 1px;
+  background-color: var(--main-background-color);
+  color: #ffffff;
+  cursor: default;
+  border-radius: 0;
+  border-top: 1px solid rgba(204, 204, 204, .5);
+  border-right: 1px solid rgba(204, 204, 204, .5);
+  border-left: 1px solid rgba(204, 204, 204, .5);
+  border-bottom: none;
 }
 
 .interaction .loading {

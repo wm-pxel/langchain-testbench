@@ -17,11 +17,25 @@ interface InputState { primary: string | null, input: Record<string, string> }
 const Interaction = () => {
   const { chainName, isInteracting, readyToInteract, latestChainSpec } = useContext(ChainSpecContext);
 
-  const [input, setInput] = useState<string>("");
+  const [input, setInput] = useState<Record<string,string>>({});
   const [conversation, setConversation] = useState<Message[]>([]);
-  const [lastOutput, setLastOutput] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<boolean>(false);
   const conversationRef = useRef<HTMLDivElement>(null);
+  const [activeInput, setActiveInput] = useState<string | null>(null);
+  const [primaryInput, setPrimaryInput] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isInteracting || !readyToInteract) return;
+    setConversation([]);
+    const chainSpec = latestChainSpec()
+    if (!chainSpec) return;
+    const [inputs] = computeChainIO(chainSpec)
+    setInput(Object.fromEntries([...inputs].map((inVar) => [inVar, ''])));
+    const firstInput = inputs.has('input') ? 'input' : [...inputs].find((inVar) => !inVar.endsWith("_in"));
+    setPrimaryInput(firstInput || null);
+    setActiveInput(firstInput || [...inputs][0]);
+  }, [isInteracting, readyToInteract]);
+
 
   const scrollDown = () => {
     setTimeout(() => {
@@ -31,8 +45,12 @@ const Interaction = () => {
     }, 0);
   }
 
+  const updateInput = (key: string, value: string) => {
+    return setInput({...input, [key]: value})
+  }
+
   const richText = (text: string): string => {
-    return DOMPurify.sanitize(escapeHTML(text));
+    return DOMPurify.sanitize(escapeHTML(text.trim()));
   }
 
   const runChain = async () => {
@@ -41,35 +59,34 @@ const Interaction = () => {
 
     setLoading(true);
     try {
-      const [inputs]: [Set<string>, Set<string>] = computeChainIO(chainSpec)
-      const inputVars = [...inputs].reduce((data, inVar) => ({
-        primary: data.primary || (inVar.endsWith("_in") ? null : input),
-        input: {...data.input, [inVar]: inVar.endsWith("_in") 
-          ? (lastOutput[inVar.replace(/_in$/, "_out")] || 'replaced but not found')
-          : (data.primary ? '' : input)
-        }
-      }), {primary: null, input: {}} as InputState);
-      
+      let newConversation = conversation;
+      if (primaryInput) {
+        newConversation = [...conversation, { from: 'user', text: input[primaryInput] || ''}];
+        setConversation(newConversation);
+        for (const key of Object.keys(input)) updateInput(key, '');
+        scrollDown();
+      }
 
-      const newConversation = [...conversation, { from: 'user', text: inputVars.primary || ''}];
-      setConversation(newConversation);
-      setInput("");
-      scrollDown();
+      const response = await runOnce(chainName, input);
+      const output = response.output || response[Object.keys(response)[0]];
+      setConversation([...newConversation, { from: 'chain', text: output }]);
 
-      const response = await runOnce(chainName, inputVars.input);
-      setLastOutput(response);
-      setConversation([...newConversation, { from: 'chain', text: response.output }]);
+      let nextInput = input;
+      for (const key of Object.keys(input)) {
+        if (!key.endsWith("_in")) continue;
+        const outputKey = key.replace(/_in$/, "_out");
+        if (response[outputKey] === undefined) continue;
+        nextInput = {...nextInput, [key]: response[outputKey]};
+      }
+      setInput(nextInput);
+
       scrollDown();
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
   }
-
-  useEffect(() => {
-    setConversation([]);
-    setInput("");
-    setLastOutput({});
-  }, [isInteracting, readyToInteract]);
 
   return (
     <div className={`interaction ${(readyToInteract && isInteracting) ? 'open' : ''}`}>
@@ -83,11 +100,25 @@ const Interaction = () => {
         </div>}
       </div>
       <div className="input">
-        <textarea
-          value={input}
-          disabled={loading}
-          onChange={e => setInput(e.target.value)}
-          placeholder={loading ? "" : "Enter interaction here"}/>
+        <div className="input-tabs">
+          {Object.keys(input).map((key, i) => (
+            <button
+              key={`input-${i}`}
+              className={activeInput === key ? 'active' : ''}
+              onClick={() => setActiveInput(key)}>{key}</button>
+          ))}
+        </div>
+        <div className="input-values">
+          {Object.entries(input).map(([key, value], i) => (
+            <textarea
+              key={`input-${i}`}
+              className={activeInput===key?'active':''}
+              value={value}
+              disabled={loading}
+              onChange={e => updateInput(key, e.target.value)}
+              placeholder={loading ? "" : `Enter ${key} here`}/>
+          ))}
+        </div>
         <button onClick={runChain}>Send</button>
       </div>
     </div>

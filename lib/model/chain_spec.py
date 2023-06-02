@@ -79,7 +79,8 @@ class SequentialSpec(BaseSpec):
     return list(self.chains)
 
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
-    return SequentialChain(chains=[chain.to_lang_chain(ctx) for chain in self.chains], input_variables=self.input_keys, output_variables=self.output_keys)
+    chains = [chain.to_lang_chain(ctx) for chain in self.chains]
+    return SequentialChain(chains=chains, input_variables=self.input_keys, output_variables=self.output_keys)
   
   def copy_replace(self, replace: Callable[[ChainSpec], ChainSpec]):
     sequential = replace(self).copy(deep=True, exclude={"chains"})
@@ -98,11 +99,13 @@ class CaseSpec(BaseSpec):
     return list(self.cases.values()) + [self.default_case]
 
   def to_lang_chain(self, ctx: LangChainContext) -> CaseChain:
-    return CaseChain(
-      subchains={key: chain.to_lang_chain(ctx) for key, chain in self.cases.items()}, 
+    subchains = {key: chain.to_lang_chain(ctx) for key, chain in self.cases.items()}
+    case_chain = CaseChain(
+      subchains=subchains, 
       categorization_input=self.categorization_key,
       default_chain=self.default_case.to_lang_chain(ctx),
     )
+    return case_chain
   
   def copy_replace(self, replace: Callable[[ChainSpec], ChainSpec]):
     case_chain = replace(self).copy(deep=True, exclude={"cases"})
