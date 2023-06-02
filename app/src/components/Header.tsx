@@ -35,6 +35,7 @@ const Header = () => {
     const nextRevision = createRevision(revision, spec, llms);
     const nextRevisionId = await saveRevision(chainName, nextRevision);
     setRevision(nextRevisionId.revision_id);
+    setChainSpec(spec);
 
     const chains = await listChains()
     setRevisions(chains);
@@ -49,7 +50,7 @@ const Header = () => {
         onChange={e => setChainName(e.target.value)} />
       <div className="actions">
         <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>
-        <button disabled={!(chainSpec && chainName)} onClick={saveSpec}>
+        <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
           Save Revision
         </button>
         <button disabled={!(chainName in revisions)} onClick={loadLatest}>

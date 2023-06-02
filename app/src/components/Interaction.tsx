@@ -12,8 +12,6 @@ interface Message {
   text: string;
 }
 
-interface InputState { primary: string | null, input: Record<string, string> }
-
 const Interaction = () => {
   const { chainName, isInteracting, readyToInteract, latestChainSpec } = useContext(ChainSpecContext);
 
