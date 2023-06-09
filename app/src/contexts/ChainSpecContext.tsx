@@ -9,11 +9,11 @@ export type UpdateSpecFunc = (spec: ChainSpec) => void;
 
 export interface ChainSpecContextType {
   chainSpec: ChainSpec | null;
-  setChainSpec: (spec: ChainSpec) => void,
+  setChainSpec: (spec: ChainSpec | null) => void,
   chainName: string;
   setChainName: (name: string) => void,
   revision: string | null;
-  setRevision: (revision: string) => void,
+  setRevision: (revision: string | null) => void,
   insertChainSpec: (type: string, chainId: number, index: number) => void,
   updateChainSpec: UpdateSpecFunc,
   latestChainSpec: ChainRetriever,
@@ -25,11 +25,11 @@ export interface ChainSpecContextType {
 
 const ChainSpecContext = createContext<ChainSpecContextType>({
   chainSpec: null,
-  setChainSpec: (_: ChainSpec) => {},
+  setChainSpec: (_: ChainSpec | null) => {},
   chainName: "",
   setChainName: (_: string) => {},
   revision: null,
-  setRevision: (_: string) => {},
+  setRevision: (_: string | null) => {},
   insertChainSpec: (_: string, _chainId: number, _index: number) => {},
   updateChainSpec: (_: ChainSpec) => {},
   latestChainSpec: () => null,
@@ -61,10 +61,10 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
     return dirtyChainSpec;
   }, [dirtyChainSpec])
 
-  const setChains = (spec: ChainSpec): void => {
+  const setChains = (spec: ChainSpec | null): void => {
     setChainSpec(spec);
     setDirtyChainSpec(spec);
-    setNextChainId(findNextChainId(spec));
+    setNextChainId(spec ? findNextChainId(spec) : 0);
   }
 
   const findChainInCurrentSpec = useCallback((chainId: number): ChainSpec | undefined => {

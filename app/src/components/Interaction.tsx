@@ -13,7 +13,7 @@ interface Message {
 }
 
 const Interaction = () => {
-  const { chainName, isInteracting, readyToInteract, latestChainSpec } = useContext(ChainSpecContext);
+  const { chainName, isInteracting, readyToInteract, latestChainSpec, setIsInteracting } = useContext(ChainSpecContext);
 
   const [input, setInput] = useState<Record<string,string>>({});
   const [conversation, setConversation] = useState<Message[]>([]);
@@ -68,10 +68,14 @@ const Interaction = () => {
       const response = await runOnce(chainName, input);
       const output = response.output || response[Object.keys(response)[0]];
       setConversation([...newConversation, { from: 'chain', text: output }]);
+      Object.entries(response).forEach(([key, value]) => console.log(`${key}:`, value))
 
       let nextInput = input;
       for (const key of Object.keys(input)) {
-        if (!key.endsWith("_in")) continue;
+        if (!key.endsWith("_in")) {
+          nextInput = {...nextInput, [key]: ''};
+          continue;
+        }
         const outputKey = key.replace(/_in$/, "_out");
         if (response[outputKey] === undefined) continue;
         nextInput = {...nextInput, [key]: response[outputKey]};
@@ -88,6 +92,7 @@ const Interaction = () => {
 
   return (
     <div className={`interaction ${(readyToInteract && isInteracting) ? 'open' : ''}`}>
+      <button className="close" onClick={() => setIsInteracting(false)}>close</button>
       <div className="conversation" ref={conversationRef}>
         {conversation.map((message, i) => (
           <div className={`message ${message.from}`} key={`message-${i}`} dangerouslySetInnerHTML={{__html: richText(message.text)}}>
