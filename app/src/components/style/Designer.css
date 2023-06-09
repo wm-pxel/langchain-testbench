@@ -5,6 +5,7 @@
 
 .designer {
   padding-top: 5rem;
+  transition: padding-right 0.5s;
 }
 
 .spec-designer {
