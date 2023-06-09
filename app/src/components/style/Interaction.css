@@ -1,6 +1,6 @@
 .interaction {
   position: fixed;
-  top: 4rem;
+  top: 0;
   right: 0;
   bottom: 0;
   width: 35rem;
@@ -12,18 +12,23 @@
   padding: 0 0 0 0;
   box-sizing: border-box;
   overflow: hidden;
-  background-color: var(--main-background-color);
-  border: var(--standard-border);
-  border-color: #dadada;
-  border-right: none;
-  border-bottom: none;
-  border-radius: 1rem;
+  background-color: rgba(33, 33, 33, 0.4);
+  backdrop-filter: blur(15px) opacity(1);
+  border-left: var(--standard-border);
+  border-color: #adadad;
   margin-right: -100%;
   transition: margin-right 0.5s;
+  z-index: 2;
 }
 
 .interaction.open {
   margin-right: 0;
+}
+
+.interaction .close {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
 }
 
 .interaction .conversation {
@@ -63,7 +68,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  border-top: .2rem solid #dadada;
+  border-top: .1rem solid #adadad;
+  ;
   padding: 1rem;
 }
 

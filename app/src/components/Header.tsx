@@ -3,6 +3,9 @@ import { listChains, loadRevision, saveRevision } from "../api/api";
 import { createRevision } from "../model/spec_control";
 import ChainSpecContext from "../contexts/ChainSpecContext";
 import { LLMContext } from "../contexts/LLMContext";
+import FilterMenu from "./FilterMenu";
+import TextModal from "./TextModal";
+import { defaultLLMs } from "../model/llm";
 import "./style/Header.css";
 
 
@@ -19,11 +22,19 @@ const Header = () => {
     listChains().then((chains) => setRevisions(chains));
   }, []);
 
-  const loadLatest = async () => {
-    const revision = await loadRevision(chainName);
+  const loadLatest = async (name: string) => {
+    setChainName(name);
+    const revision = await loadRevision(name);
     if (revision.id) setRevision(revision.id);
     setChainSpec(revision.chain);
     setLLMs(revision.llms);
+  }
+
+  const newChain = (name: string) => {
+    setChainName(name);
+    setChainSpec(null);
+    setLLMs(defaultLLMs);
+    setRevision(null);
   }
 
   const saveSpec = async () => {
@@ -43,19 +54,16 @@ const Header = () => {
 
   return (
     <div className="header">
-      <input type="text"
-        className="chain-name"
-        placeholder="Chain Name"
-        defaultValue={chainName || ""} 
-        onChange={e => setChainName(e.target.value)} />
+      <div className="file-options">
+        <TextModal title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} />
+        <FilterMenu title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
+        <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
+          Save
+        </button>
+      </div>
+      <div className="chain-name">{chainName || ""}</div>
       <div className="actions">
         <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>
-        <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
-          Save Revision
-        </button>
-        <button disabled={!(chainName in revisions)} onClick={loadLatest}>
-          Load Latest
-        </button>
         <button disabled={!readyToInteract} onClick={() => setIsInteracting(!isInteracting)}>
           Interact
         </button>

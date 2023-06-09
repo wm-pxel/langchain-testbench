@@ -368,10 +368,10 @@ const renderChainSpec = (spec: ChainSpec, insertChain: InsertChainFunc, updateSp
 };
 
 const Designer = () => {
-  const { chainSpec: spec, insertChainSpec, updateChainSpec } = useContext(ChainSpecContext);
+  const { chainSpec: spec, insertChainSpec, updateChainSpec, isInteracting } = useContext(ChainSpecContext);
 
   return (
-    <div className="designer">
+    <div className={`designer ${isInteracting ? 'interacting' : ''}`}>
       { spec 
         ? renderChainSpec(spec, insertChainSpec, updateChainSpec)
         : <QuickMenu selectValue={(option) => insertChainSpec(option, 0, 0)} options={specTypeOptions}/> 
