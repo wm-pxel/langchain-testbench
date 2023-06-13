@@ -1,8 +1,8 @@
 
-## Pre-requisites
+## Pre-requisites 
 
-- OpenAI API key
-- Hugging Face API Key
+- OpenAI API key (Necessary if you use OpenAI LLM)
+- Hugging Face API Key (Necessary if you use Hugging Face LLM)
 
 
 #### OpenAI API Key
@@ -18,11 +18,6 @@
 - Copy the key somewhere safe
 
 It's good to create separate API keys for separate projects/tools. That way if you need to disable a key for a project, you don't have to generate new keys for all your other projects.
-
-## Gitting the code
-
-https://github.com/wm-pxel/langchain-testbench
-
 
 ## Setting up Mongo
 
@@ -92,11 +87,20 @@ MONGODB_DATABASE=testbench
 HUGGINGFACEHUB_API_TOKEN=[your hugging face API key]
 ```
 
+Create a copy of this .env file and place it in the docker-envs folder. In the docker-envs version,
+replace "localhost" with "mongo":
+```
+MONGODB_URL=mongodb://testbench:testbench@mongo:27017/testbench
+```
+
+
 Create a second .env file in the app folder.
 
-```
+```app/.env
 VITE_SERVER_URL=http://localhost:4900
 ```
+
+MONGODB_URL=mongodb://testbench:testbench@mongo:27017/testbench
 
 ## Configuring Dockerfile
 
