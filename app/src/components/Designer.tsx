@@ -34,7 +34,7 @@ const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
       variables.add(variable),
       `<span class="expr">{<span class="var-name">${variable}</span>}</span>`
     ],
-    (variables: Set<string>) => setVariables(Array.from(variables))
+    (variables: Set<string>) => setTimeout(() => setVariables(Array.from(variables)), 0)
   ), []);
 
   useEffect(() => {

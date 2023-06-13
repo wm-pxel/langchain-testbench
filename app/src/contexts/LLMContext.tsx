@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { LLM } from "../model/llm";
 import { defaultLLMs } from "../model/llm";
 
@@ -9,6 +9,7 @@ export interface LLMContextType {
   deleteLLM: (name: string) => void;
   setLLMs: (llms: Record<string, LLM>) => void;
   latestLLMs: () => Record<string, LLM>;
+  LLMsNeedSave: boolean;
   isEditingLLMs: boolean;
   setIsEditingLLMs: (isEditingLLMs: boolean) => void;
 }
@@ -21,6 +22,7 @@ export const LLMContext = createContext<LLMContextType>({
   setLLMs: (_: Record<string, LLM>) => {},
   latestLLMs: () => ({}),
   isEditingLLMs: false,
+  LLMsNeedSave: false,
   setIsEditingLLMs: (_: boolean) => {},
 });
 
@@ -32,6 +34,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
   const [llms, setLLMs] = useState<Record<string, LLM>>(defaultLLMs);
   const [dirtyLLMs, setDirtyLLMs] = useState<Record<string, LLM>>({});
   const [isEditingLLMs, setIsEditingLLMs] = useState<boolean>(false);
+  const [LLMsNeedSave, setLLMsNeedSave] = useState<boolean>(false);
 
   const updateLLM = (index: number, name: string, llm: LLM): void => {
     const entries = Object.entries(dirtyLLMs);
@@ -46,6 +49,10 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
     setLLMs(newLLMs);
     setDirtyLLMs(newLLMs);
   }
+
+  useEffect(() => {
+    setLLMsNeedSave(JSON.stringify(llms) !== JSON.stringify(dirtyLLMs));
+  }, [llms, dirtyLLMs]);
 
   const deleteLLM = (name: string): void => {
     const newLLMs = {...llms};
@@ -86,7 +93,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
           task: null,
           model_kwargs: {
             temperature: 0.8,
-            max_new_tokens: 256,
+            max_length: 256,
             min_new_tokens: 128,
             max_time: 60,
           },
@@ -94,8 +101,6 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
     }
     throw new Error(`Unknown LLM type: ${llmType}`);
   };
-    
-
 
   return (
     <LLMContext.Provider value={{ 
@@ -106,7 +111,8 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
       setLLMs: setBothLLMs,
       latestLLMs,
       isEditingLLMs,
-      setIsEditingLLMs
+      setIsEditingLLMs,
+      LLMsNeedSave,
     }}>
       {children}
     </LLMContext.Provider>
