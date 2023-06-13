@@ -53,7 +53,6 @@ six==1.16.0
 SQLAlchemy==1.4.47
 stevedore==5.0.0
 tenacity==8.2.2
--e git+ssh://git@github.com/acruikshank-wm/testbench.git@b10e78f98865c81ff35e4e3ce8630e78bfa12d20#egg=testbench
 tomli==2.0.1
 tqdm==4.65.0
 typing-inspect==0.8.0
