@@ -8,14 +8,14 @@ import EditLLMs from './EditLLMs'
 
 function App() {
   return (
-    <ChainSpecProvider>
-      <LLMContextProvider>
+    <LLMContextProvider>
+      <ChainSpecProvider>
         <Header />
         <Designer />
         <Interaction />
         <EditLLMs />
-      </LLMContextProvider>
-    </ChainSpecProvider>
+      </ChainSpecProvider>
+    </LLMContextProvider>
   )
 }
 

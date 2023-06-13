@@ -1,7 +1,8 @@
-import React, { createContext, useState, useCallback, useMemo } from "react";
+import React, { createContext, useState, useCallback, useMemo, useContext } from "react";
 import { ChainSpec } from "../model/specs";
 import { findNextChainId, insertChainSpec as insertGeneratedChainSpec, updateChainSpec } from "../model/spec_control";
 import { deepEquals } from "../util/sets";
+import { LLMContext } from "./LLMContext";
 import { findByChainId } from "../model/spec_control";
 
 export type ChainRetriever = () => ChainSpec | null;
@@ -44,6 +45,7 @@ interface ChainSpecProviderProps {
 }
 
 export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }) => {
+  const { LLMsNeedSave } = useContext(LLMContext);
   const [chainSpec, setChainSpec] = useState<ChainSpec | null>(null);
   const [chainName, setChainName] = useState<string>("");
   const [dirtyChainSpec, setDirtyChainSpec] = useState<ChainSpec | null>(null);
@@ -64,7 +66,7 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   const setChains = (spec: ChainSpec | null): void => {
     setChainSpec(spec);
     setDirtyChainSpec(spec);
-    setNextChainId(spec ? findNextChainId(spec) : 0);
+    setNextChainId(spec ? Math.max(findNextChainId(spec), nextChainId) : 0);
   }
 
   const findChainInCurrentSpec = useCallback((chainId: number): ChainSpec | undefined => {
@@ -83,8 +85,8 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   }, [dirtyChainSpec]);
 
   const readyToInteract = useMemo(() => {
-    return !!chainSpec && deepEquals(chainSpec, dirtyChainSpec);
-  }, [chainSpec, dirtyChainSpec]);
+    return !LLMsNeedSave && !!chainSpec && deepEquals(chainSpec, dirtyChainSpec);
+  }, [chainSpec, dirtyChainSpec, LLMsNeedSave]);
 
   return (
     <ChainSpecContext.Provider value={{ 

@@ -21,7 +21,6 @@ const OpenAILLMEditor = ({ llmKey, llm, updateLLM }: OpenAILLMEditorProps) => {
 
   useEffect((): void => {
     updateLLM(name, { 
-      _type: 'openai',
       model_name: modelName,
       temperature: temperature,
       max_tokens: maxTokens,
@@ -32,6 +31,7 @@ const OpenAILLMEditor = ({ llmKey, llm, updateLLM }: OpenAILLMEditorProps) => {
       best_of: 1,
       request_timeout: null,
       logit_bias: {},
+      _type: 'openai',
     });
   }, [name, modelName, temperature, maxTokens, topP, frequencyPenalty, presencePenalty]);
 

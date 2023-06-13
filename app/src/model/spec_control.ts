@@ -91,23 +91,23 @@ export const computeChainIO = (spec: ChainSpec): [Set<string>, Set<string>] => {
   }
 }
 
-const updateChildren = (spec: ChainSpec) => {
+export const updateChildIO = (spec: ChainSpec) => {
   switch (spec.chain_type) {
     case 'sequential_spec':
-      spec.chains.forEach(updateChildren);
+      spec.chains.forEach(updateChildIO);
       const [inKeys, outKeys] = computeChainIO(spec);
       spec.input_keys = Array.from(inKeys);
       spec.output_keys = Array.from(outKeys);
       return;
     case 'case_spec':
-      Object.values(spec.cases).forEach(updateChildren);
-      if (spec.default_case) updateChildren(spec.default_case);
+      Object.values(spec.cases).forEach(updateChildIO);
+      if (spec.default_case) updateChildIO(spec.default_case);
       return;
   }
 }
 
 export const createRevision = (parent: string | null, chain: ChainSpec, llms: Record<string,any>): Revision => {
-  updateChildren(chain);
+  updateChildIO(chain);
   return { parent, chain, llms }
 }
 
