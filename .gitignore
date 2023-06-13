@@ -3,3 +3,4 @@ __pycache__
 venv
 testbench.egg-info
 node_modules
+/.vs
