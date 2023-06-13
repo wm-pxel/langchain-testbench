@@ -87,14 +87,13 @@ MONGODB_DATABASE=testbench
 HUGGINGFACEHUB_API_TOKEN=[your hugging face API key]
 ```
 
-Create a copy of this .env file and place it in the docker-envs folder. In the docker-envs version,
+Create a copy of this .env file and place it in the docker-envs folder and call it server.env. In the docker-envs version,
 replace "localhost" with "mongo":
 ```
 MONGODB_URL=mongodb://testbench:testbench@mongo:27017/testbench
 ```
 
-
-Create a second .env file in the app folder.
+Create another .env file in the app folder.
 
 ```app/.env
 VITE_SERVER_URL=http://localhost:4900
