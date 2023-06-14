@@ -1,15 +1,13 @@
 import { useCallback, useContext, useState, useEffect, useMemo } from "react";
 import { LLMSpec, SequentialSpec, CaseSpec, ReformatSpec, APISpec, ChainSpec } from '../model/specs';
 import QuickMenu from "./QuickMenu";
-import ChainSpecContext, { UpdateSpecFunc } from "../contexts/ChainSpecContext";
+import ChainSpecContext from "../contexts/ChainSpecContext";
 import HighlightedTextarea from "./HighlightedTextarea";
 import FormatReducer from "../util/FormatReducer";
 import "./style/Designer.css"
 import { LLMContext } from "../contexts/LLMContext";
 
-type InsertChainFunc = (type: string, chainId: number, index: number) => void;
-
-interface LLMSpecDesignerProps { spec: LLMSpec, updateChainSpec: UpdateSpecFunc };
+interface LLMSpecDesignerProps { spec: LLMSpec };
 
 const specTypeOptions = {
   llm_spec: 'LLM',
@@ -19,8 +17,15 @@ const specTypeOptions = {
   api_spec: 'API',
 };
 
-const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
+const DeleteChainButton = ({ onDelete }: { onDelete: () => void }) => <QuickMenu
+  menuClass="delete-spec"
+  options={{ cancel: 'cancel', delete: 'delete' }}
+  selectValue={(option: string) => {if (option === 'delete') onDelete()}}
+  buttonText="x"/>
+
+const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
   const { llms } = useContext(LLMContext);
+  const { updateChainSpec, deleteChainSpec } = useContext(ChainSpecContext);
 
   const [prompt, setPrompt] = useState<string>(spec.prompt);
   const [outputKey, setOutputKey] = useState<string>(spec.output_key);
@@ -57,6 +62,7 @@ const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
   return (
     <div className="llm-spec spec-designer">
       <h3 className="chain-id">LLM {spec.chain_id}</h3>
+      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <HighlightedTextarea
         value={prompt}
         onChange={setPrompt}
@@ -77,25 +83,27 @@ const LLMSpecDesigner = ({ spec, updateChainSpec }: LLMSpecDesignerProps) => {
   );
 };
 
-interface SequentialSpecDesignerProps { spec: SequentialSpec, insertChain: InsertChainFunc, updateChainSpec: UpdateSpecFunc };
+interface SequentialSpecDesignerProps { spec: SequentialSpec };
 
-const SequentialSpecDesigner = ({ spec, insertChain, updateChainSpec }: SequentialSpecDesignerProps) => {
+const SequentialSpecDesigner = ({ spec }: SequentialSpecDesignerProps) => {
+  const { insertChainSpec, deleteChainSpec } = useContext(ChainSpecContext);
   return (
     <div className="sequential-spec spec-designer">
       <h3 className="chain-id">Sequential {spec.chain_id}</h3>
-      <QuickMenu selectValue={(option) => insertChain(option, spec.chain_id, 0)} options={specTypeOptions} />
+      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <QuickMenu selectValue={(option) => insertChainSpec(option, spec.chain_id, 0)} options={specTypeOptions} />
       {spec.chains.flatMap((chain: ChainSpec, idx: number) => [
-        renderChainSpec(chain, insertChain, updateChainSpec),
-        <QuickMenu selectValue={(option) => insertChain(option, spec.chain_id, idx+1)} options={specTypeOptions} key={`button-${idx+1}`}/>
+        renderChainSpec(chain),
+        <QuickMenu selectValue={(option) => insertChainSpec(option, spec.chain_id, idx+1)} options={specTypeOptions} key={`button-${idx+1}`}/>
       ])}
     </div>
   );
 };
 
-interface CaseSpecDesignerProps { spec: CaseSpec, insertChain: InsertChainFunc, updateChainSpec: UpdateSpecFunc };
+interface CaseSpecDesignerProps { spec: CaseSpec };
 
-const CaseSpecDesigner = ({ spec, insertChain, updateChainSpec }: CaseSpecDesignerProps) => {
-  const { findByChainId } = useContext(ChainSpecContext);
+const CaseSpecDesigner = ({ spec }: CaseSpecDesignerProps) => {
+  const { deleteChainSpec, findByChainId, insertChainSpec, updateChainSpec } = useContext(ChainSpecContext);
   const [categorizationKey, setCategorizationKey] = useState<string>(spec.categorization_key);
   const [cases, setCases] = useState<[string, ChainSpec][]>([]);
 
@@ -141,17 +149,18 @@ const CaseSpecDesigner = ({ spec, insertChain, updateChainSpec }: CaseSpecDesign
   return (
     <div className="case-spec spec-designer">
       <h3 className="chain-id">Case {spec.chain_id}</h3>
+      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <div className="form-element">
         <label>Category Key</label>
         <input className="var-name-input" value={categorizationKey} onChange={e => setCategorizationKey(e.target.value)} />
       </div>
-      <QuickMenu selectValue={(option) => insertChain(option, spec.chain_id, 0)} options={specTypeOptions} />
+      <QuickMenu selectValue={(option) => insertChainSpec(option, spec.chain_id, 0)} options={specTypeOptions} />
       {cases.flatMap((item: [string, ChainSpec], idx: number) => [
         <div className="case-spec-case" key={`spec-case-${item[1].chain_id}`}>
           <input className="case-spec-case__key" defaultValue={item[0]} onChange={(e) => updateCaseKey(idx, e.target.value)} />
-          {renderChainSpec(item[1] as ChainSpec, insertChain, updateChainSpec)}
+          {renderChainSpec(item[1] as ChainSpec)}
         </div>,
-        <QuickMenu selectValue={(option) => insertChain(option, spec.chain_id, idx+1)} options={specTypeOptions} key={`button-${idx+1}`}/>,
+        <QuickMenu selectValue={(option) => insertChainSpec(option, spec.chain_id, idx+1)} options={specTypeOptions} key={`button-${idx+1}`}/>,
       ])}
     </div>
   );
@@ -211,9 +220,10 @@ const extendedFormatterReduceFunc = (
   return [[newInputs, newInternal], '<span class="error">ERROR</span>'];
 }
 
-interface ReformatSpecDesignerProps { spec: ReformatSpec, updateChainSpec: UpdateSpecFunc  };
+interface ReformatSpecDesignerProps { spec: ReformatSpec  };
 
-const ReformatSpecDesigner = ({ spec, updateChainSpec }: ReformatSpecDesignerProps) => {
+const ReformatSpecDesigner = ({ spec }: ReformatSpecDesignerProps) => {
+  const { deleteChainSpec, updateChainSpec } = useContext(ChainSpecContext);
   const [formatters, setFormatters] = useState<[string, string][]>([]);
   const [variables, setVariables] = useState<string[]>([]);
 
@@ -249,6 +259,7 @@ const ReformatSpecDesigner = ({ spec, updateChainSpec }: ReformatSpecDesignerPro
   return (
     <div className="reformat-spec spec-designer">
       <h3 className="chain-id">Reformat {spec.chain_id}</h3>
+      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <div className="formatters">
         { formatters.map(([key, value], idx) => (
           <div className="formatter form-element" key={`reformat-${idx}`}>
@@ -272,9 +283,11 @@ const ReformatSpecDesigner = ({ spec, updateChainSpec }: ReformatSpecDesignerPro
   );
 };
 
-interface APISpecDesignerProps { spec: APISpec, updateChainSpec: UpdateSpecFunc };
+interface APISpecDesignerProps { spec: APISpec };
 
-const APISpecDesigner = ({ spec, updateChainSpec }: APISpecDesignerProps) => {
+const APISpecDesigner = ({ spec }: APISpecDesignerProps) => {
+  const { deleteChainSpec, updateChainSpec } = useContext(ChainSpecContext);
+
   const [url, setUrl] = useState<string>(spec.url);
   const [method, setMethod] = useState<string>(spec.method);
   const [headers, setHeaders] = useState<string>(JSON.stringify(spec.headers, null, 2));
@@ -322,6 +335,7 @@ const APISpecDesigner = ({ spec, updateChainSpec }: APISpecDesignerProps) => {
   return (
     <div className="api-spec spec-designer">
       <h3 className="chain-id">API {spec.chain_id}</h3>
+      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <div className="form-element">
         <label>URL</label>
         <input className="text-input" value={url} onChange={e => setUrl(e.target.value)} placeholder="URL" />
@@ -352,28 +366,28 @@ const APISpecDesigner = ({ spec, updateChainSpec }: APISpecDesignerProps) => {
   );
 };
 
-const renderChainSpec = (spec: ChainSpec, insertChain: InsertChainFunc, updateSpec: UpdateSpecFunc) => {
+const renderChainSpec = (spec: ChainSpec) => {
   switch (spec.chain_type) {
     case "llm_spec":
-      return <LLMSpecDesigner spec={spec} updateChainSpec={updateSpec} key={`llm-spec-${spec.chain_id}`} />;
+      return <LLMSpecDesigner spec={spec} key={`llm-spec-${spec.chain_id}`} />;
     case "sequential_spec":
-      return <SequentialSpecDesigner spec={spec} updateChainSpec={updateSpec} insertChain={insertChain} key={`sequential-spec-${spec.chain_id}`} />;
+      return <SequentialSpecDesigner spec={spec} key={`sequential-spec-${spec.chain_id}`} />;
     case "case_spec":
-      return <CaseSpecDesigner spec={spec} updateChainSpec={updateSpec} insertChain={insertChain} key={`case-spec-${spec.chain_id}`} />;
+      return <CaseSpecDesigner spec={spec} key={`case-spec-${spec.chain_id}`} />;
     case "reformat_spec":
-      return <ReformatSpecDesigner spec={spec} updateChainSpec={updateSpec} key={`reformat-spec-${spec.chain_id}`}/>;
+      return <ReformatSpecDesigner spec={spec} key={`reformat-spec-${spec.chain_id}`}/>;
     case "api_spec":
-      return <APISpecDesigner spec={spec} updateChainSpec={updateSpec} key={`api-spec-${spec.chain_id}`}/>;
+      return <APISpecDesigner spec={spec} key={`api-spec-${spec.chain_id}`}/>;
   }
 };
 
 const Designer = () => {
-  const { chainSpec: spec, insertChainSpec, updateChainSpec, isInteracting } = useContext(ChainSpecContext);
+  const { chainSpec: spec, insertChainSpec, isInteracting } = useContext(ChainSpecContext);
 
   return (
     <div className={`designer ${isInteracting ? 'interacting' : ''}`}>
       { spec 
-        ? renderChainSpec(spec, insertChainSpec, updateChainSpec)
+        ? renderChainSpec(spec)
         : <QuickMenu selectValue={(option) => insertChainSpec(option, 0, 0)} options={specTypeOptions}/> 
       }
     </div>

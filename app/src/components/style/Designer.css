@@ -205,3 +205,23 @@
   padding: .8rem 1rem;
   font-size: .75rem;
 }
+
+.designer .delete-spec {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 2em;
+  margin: 0;
+  padding: .4rem .4rem;
+  font-size: .75rem;
+}
+
+.designer .delete-spec .open-quick-menu {
+  width: 1.5rem;
+  height: 1.5rem;
+  line-height: 1.5rem;
+}
+
+.designer .delete-spec .quick-menu-selector {
+  top: 0;
+}
