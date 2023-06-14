@@ -86,7 +86,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
           task: null,
           model_kwargs: {
             temperature: 0.8,
-            max_new_tokens: 256,
+            max_length: 256,
             min_new_tokens: 128,
             max_time: 60,
           },

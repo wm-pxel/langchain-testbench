@@ -1,11 +1,12 @@
 import React, { createContext, useState, useCallback, useMemo } from "react";
 import { ChainSpec } from "../model/specs";
-import { findNextChainId, insertChainSpec as insertGeneratedChainSpec, updateChainSpec } from "../model/spec_control";
+import { findNextChainId, insertChainSpec as insertGeneratedChainSpec, deleteChainSpec, updateChainSpec } from "../model/spec_control";
 import { deepEquals } from "../util/sets";
 import { findByChainId } from "../model/spec_control";
 
 export type ChainRetriever = () => ChainSpec | null;
 export type UpdateSpecFunc = (spec: ChainSpec) => void;
+export type DeleteSpecFunc = (chainId: number) => void;
 
 export interface ChainSpecContextType {
   chainSpec: ChainSpec | null;
@@ -15,6 +16,7 @@ export interface ChainSpecContextType {
   revision: string | null;
   setRevision: (revision: string | null) => void,
   insertChainSpec: (type: string, chainId: number, index: number) => void,
+  deleteChainSpec: (chainId: number) => void,
   updateChainSpec: UpdateSpecFunc,
   latestChainSpec: ChainRetriever,
   findByChainId: (chainId: number) => ChainSpec | undefined,
@@ -31,6 +33,7 @@ const ChainSpecContext = createContext<ChainSpecContextType>({
   revision: null,
   setRevision: (_: string | null) => {},
   insertChainSpec: (_: string, _chainId: number, _index: number) => {},
+  deleteChainSpec: (_: number) => {},
   updateChainSpec: (_: ChainSpec) => {},
   latestChainSpec: () => null,
   findByChainId: (_: number) => undefined,
@@ -74,6 +77,11 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
     return findByChainId(chainId, dirtyChainSpec);
   }, [chainSpec]);
 
+  const deleteChain = useCallback((chainId: number): void => {
+    const newSpec = deleteChainSpec(dirtyChainSpec, chainId);
+    setChains(newSpec);
+  }, [dirtyChainSpec]);
+
   const updateDirtyChainSpec = useCallback((spec: ChainSpec): void => {
     const result = updateChainSpec(dirtyChainSpec, spec);
     if (!result.found) {
@@ -95,6 +103,7 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
       revision,
       setRevision,
       insertChainSpec,
+      deleteChainSpec: deleteChain,
       updateChainSpec: updateDirtyChainSpec,
       latestChainSpec,
       findByChainId: findChainInCurrentSpec,
