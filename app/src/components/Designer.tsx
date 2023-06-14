@@ -17,7 +17,7 @@ const specTypeOptions = {
   api_spec: 'API',
 };
 
-const DeleteComponent = ({ onDelete }: { onDelete: () => void }) => <QuickMenu
+const DeleteChainButton = ({ onDelete }: { onDelete: () => void }) => <QuickMenu
   menuClass="delete-spec"
   options={{ cancel: 'cancel', delete: 'delete' }}
   selectValue={(option: string) => {if (option === 'delete') onDelete()}}
@@ -62,7 +62,7 @@ const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
   return (
     <div className="llm-spec spec-designer">
       <h3 className="chain-id">LLM {spec.chain_id}</h3>
-      <DeleteComponent onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <HighlightedTextarea
         value={prompt}
         onChange={setPrompt}
@@ -90,7 +90,7 @@ const SequentialSpecDesigner = ({ spec }: SequentialSpecDesignerProps) => {
   return (
     <div className="sequential-spec spec-designer">
       <h3 className="chain-id">Sequential {spec.chain_id}</h3>
-      <DeleteComponent onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <QuickMenu selectValue={(option) => insertChainSpec(option, spec.chain_id, 0)} options={specTypeOptions} />
       {spec.chains.flatMap((chain: ChainSpec, idx: number) => [
         renderChainSpec(chain),
@@ -149,7 +149,7 @@ const CaseSpecDesigner = ({ spec }: CaseSpecDesignerProps) => {
   return (
     <div className="case-spec spec-designer">
       <h3 className="chain-id">Case {spec.chain_id}</h3>
-      <DeleteComponent onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <div className="form-element">
         <label>Category Key</label>
         <input className="var-name-input" value={categorizationKey} onChange={e => setCategorizationKey(e.target.value)} />
@@ -259,7 +259,7 @@ const ReformatSpecDesigner = ({ spec }: ReformatSpecDesignerProps) => {
   return (
     <div className="reformat-spec spec-designer">
       <h3 className="chain-id">Reformat {spec.chain_id}</h3>
-      <DeleteComponent onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <div className="formatters">
         { formatters.map(([key, value], idx) => (
           <div className="formatter form-element" key={`reformat-${idx}`}>
@@ -335,7 +335,7 @@ const APISpecDesigner = ({ spec }: APISpecDesignerProps) => {
   return (
     <div className="api-spec spec-designer">
       <h3 className="chain-id">API {spec.chain_id}</h3>
-      <DeleteComponent onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <div className="form-element">
         <label>URL</label>
         <input className="text-input" value={url} onChange={e => setUrl(e.target.value)} placeholder="URL" />

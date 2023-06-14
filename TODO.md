@@ -4,7 +4,6 @@ TODO:
 * Bug: Loding revision does not necessarily put it in the readyToInteract state.
 
 * UI shouldn't be editable until a new branch name is created or an existing one is loaded.
-* Add the ability to delete chains.
 * Validation (e.g. case must have categorization_key)
 * Add UI to view output from each response
 * Recording.
