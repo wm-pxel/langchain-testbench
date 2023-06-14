@@ -42,12 +42,7 @@ COPY . .
 EXPOSE 27017 4900
 
 # Set environment variables
-ENV MONGO_INITDB_ROOT_USERNAME=mongoadmin
-ENV MONGO_INITDB_ROOT_PASSWORD=[Mongo Password]
-ENV MONGODB_URL=mongodb://testbench:testbench@mongo:27017/admin
-ENV MONGODB_DATABASE=testbench
-ENV OPENAI_API_KEY=[Open AI API Key]
-ENV HUGGINGFACEHUB_API_TOKEN=[Hugging Face API Key]
+Copy docker-envs/server.env ./.env
 
 # Start the services
 CMD docker-compose up
