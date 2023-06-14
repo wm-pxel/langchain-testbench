@@ -111,6 +111,50 @@ export const createRevision = (parent: string | null, chain: ChainSpec, llms: Re
   return { parent, chain, llms }
 }
 
+export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
+  switch (type) {
+    case 'llm_spec':
+      return {
+        chain_type: "llm_spec",
+        prompt: "",
+        input_keys: [],
+        output_key: "text",
+        llm_key: "llm",
+      };
+    case 'sequential_spec':
+      return {
+        chain_type: "sequential_spec",
+        chains: [],
+        input_keys: [],
+        output_keys: [],
+      };
+    case 'case_spec':
+      return {
+        chain_type: "case_spec",
+        categorization_key: "",
+        cases: {},
+      };
+    case 'api_spec':
+      return {
+        chain_type: "api_spec",
+        url: "",
+        method: "GET",
+        headers: {},
+        body: "",
+        input_keys: [],
+        output_key: "results",
+      };
+    case 'reformat_spec':
+      return {
+        chain_type: "reformat_spec",
+        input_keys: [],
+        formatters: {'output_key_0': ''},
+      };
+    default:
+      throw new Error(`Unknown spec type: ${type}`);
+  }
+};
+
 export const insertChainSpec = (
   originalSpec: ChainSpec | null,
   nextChainId: number,
@@ -162,6 +206,34 @@ export const insertChainSpec = (
         }
       }
   }
+  return originalSpec;
+}
+
+export const deleteChainSpec = (originalSpec: ChainSpec | null, chainId: number): ChainSpec | null => {
+  if (!originalSpec || originalSpec.chain_id === chainId) return null;
+
+  switch (originalSpec.chain_type) {
+    case 'sequential_spec':
+      const chains = originalSpec.chains;
+      const newChains = [];
+      for (let i=0; i<chains.length; i++) {
+        const newChain = deleteChainSpec(chains[i], chainId)
+        if (newChain) newChains.push(newChain);
+      }
+      return {...originalSpec, chains: newChains};
+    case 'case_spec':
+      const cases = originalSpec.cases;
+      const newCases: Record<string, ChainSpec> = {};
+      for (const [key, chain] of Object.entries(cases)) {
+        const newChain = deleteChainSpec(chain, chainId);
+        if (newChain) newCases[key] = newChain;
+      }
+      return {...originalSpec,
+        cases: newCases,
+        default_case: deleteChainSpec(originalSpec.default_case, chainId)
+      };
+    }
+
   return originalSpec;
 }
 
@@ -229,48 +301,4 @@ export const updateChainSpec = (
   }
 
   return { found: false };
-}
-
-export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
-  switch (type) {
-    case 'llm_spec':
-      return {
-        chain_type: "llm_spec",
-        prompt: "",
-        input_keys: [],
-        output_key: "text",
-        llm_key: "llm",        
-      };
-    case 'sequential_spec':
-      return {
-        chain_type: "sequential_spec",
-        chains: [],
-        input_keys: [],
-        output_keys: [],
-      };
-    case 'case_spec':
-      return {
-        chain_type: "case_spec",
-        categorization_key: "",
-        cases: {},
-      };
-    case 'api_spec':
-      return {
-        chain_type: "api_spec",
-        url: "",
-        method: "GET",
-        headers: {},
-        body: "",
-        input_keys: [],
-        output_key: "results",
-      };
-    case 'reformat_spec':
-      return {
-        chain_type: "reformat_spec",
-        input_keys: [],
-        formatters: {'output_key_0': ''},
-      };
-    default:
-      throw new Error(`Unknown spec type: ${type}`);
-  }
 }

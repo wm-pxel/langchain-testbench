@@ -22,7 +22,7 @@ export interface CaseSpec extends BaseSpec {
   chain_type: "case_spec";
   cases: Record<string, ChainSpec>;
   categorization_key: string;
-  default_case: ChainSpec;
+  default_case: ChainSpec | null;
 }
 
 export interface ReformatSpec extends BaseSpec {
