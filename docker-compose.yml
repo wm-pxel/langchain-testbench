@@ -12,6 +12,8 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongoadmin
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
 
   server:
     build:
@@ -31,3 +33,7 @@ services:
     ports:
       - '5173:5173'
     command: sh -c "cd app && npm run dev -- --host 0.0.0.0"
+
+    
+volumes:
+  mongo_data:
