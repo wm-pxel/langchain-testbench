@@ -31,6 +31,13 @@ export interface ReformatSpec extends BaseSpec {
   input_keys: string[];
 }
 
+export interface TransformSpec extends BaseSpec {
+  chain_type: "transform_spec";
+  transform_func: string;
+  input_keys: string[];
+  output_keys: string[];
+}
+
 export interface APISpec extends BaseSpec {
   chain_type: "api_spec";
   url: string;
@@ -41,4 +48,4 @@ export interface APISpec extends BaseSpec {
   output_key: string;
 }
 
-export type ChainSpec = LLMSpec | SequentialSpec | CaseSpec | ReformatSpec | APISpec;
+export type ChainSpec = LLMSpec | SequentialSpec | CaseSpec | ReformatSpec | TransformSpec | APISpec;

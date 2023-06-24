@@ -100,7 +100,7 @@
   color: var(--standard-error-color);
 }
 
-.form-element .var-name-input, .form-element .text-input, .form-element textarea {
+.form-element .var-name-input, .var-name-output, .form-element .text-input, .form-element textarea {
   background-color: var(--main-background-color);
   color: #dadada;
   border: var(--standard-border);
@@ -113,7 +113,7 @@
   padding: .5em;
 }
 
-.form-element .var-name-input {
+.form-element .var-name-input, var-name-output {
   color: var(--variable-name-color);
   border: none;
 }

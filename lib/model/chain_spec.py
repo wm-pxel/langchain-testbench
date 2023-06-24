@@ -7,9 +7,10 @@ from lib.model.lang_chain_context import LangChainContext
 from lib.chains.case_chain import CaseChain
 from lib.chains.api_chain import APIChain
 from lib.chains.reformat_chain import ReformatChain
+from lib.chains.transform_chain import TransformChain
 from lib.chains.llm_recording_chain import LLMRecordingChain
 
-ChainSpec = Annotated[Union["APISpec", "SequentialSpec", "LLMSpec", "CaseSpec", "ReformatSpec"], Field(discriminator='chain_type')]
+ChainSpec = Annotated[Union["APISpec", "SequentialSpec", "LLMSpec", "CaseSpec", "ReformatSpec", "TransformSpec"], Field(discriminator='chain_type')]
 
 class BaseSpec(BaseModel):
   chain_id: int
@@ -120,6 +121,16 @@ class ReformatSpec(BaseSpec):
 
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     return ReformatChain(formatters=self.formatters, input_variables=self.input_keys)
+
+
+class TransformSpec(BaseSpec):
+  chain_type: Literal["transform_spec"]
+  transform_func: str
+  input_keys: List[str]
+  output_keys: List[str]
+
+  def to_lang_chain(self, ctx: LangChainContext) -> Chain:
+    return TransformChain(transform_func=self.transform_func, input_variables=self.input_keys, output_variables=self.output_keys)
 
 
 class APISpec(BaseSpec):
