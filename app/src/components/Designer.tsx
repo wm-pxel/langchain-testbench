@@ -330,7 +330,7 @@ const TransformSpecDesigner = ({ spec }: TransformSpecDesignerProps) => {
           <label>Input Keys</label>
           <input className="var-name-input" value={inputKeys} onChange={e => setInputKeys(e.target.value.split(","))} placeholder="input keys" />
         </div>
-        <div className="form-element">
+        <div className="spec-designer">
           <HighlightedTextarea
             value={spec.transform_func}
             onChange={(newValue) => updateTransformFunc(newValue)}
@@ -340,7 +340,7 @@ const TransformSpecDesigner = ({ spec }: TransformSpecDesignerProps) => {
         </div>
         <div className="form-element">
           <label>Output Keys</label>
-          <input className="var-name-output" value={outputKeys} onChange={e => setOutputKeys(e.target.value.split(","))} placeholder="output keys" />
+          <input className="var-name-input" value={outputKeys} onChange={e => setOutputKeys(e.target.value.split(","))} placeholder="output keys" />
         </div>
       </div>
     </div>
