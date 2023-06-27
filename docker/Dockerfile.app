@@ -3,7 +3,6 @@ FROM node:18
 # Create app directory
 WORKDIR /usr/src/app
 
-COPY app/public public
 COPY app/*.html .
 COPY app/*.json .
 COPY app/*.ts .
