@@ -10,6 +10,7 @@ import "./style/Header.css";
 
 
 const Header = () => {
+  const { isLLMActive, setIsLLMActive } = useContext(LLMContext);
   const { latestLLMs, setIsEditingLLMs, setLLMs } = useContext(LLMContext);
   const { 
     latestChainSpec, setChainName,  chainName, chainSpec, 
@@ -31,6 +32,7 @@ const Header = () => {
   }
 
   const newChain = (name: string) => {
+    setIsLLMActive(true);
     setChainName(name);
     setChainSpec(null);
     setLLMs(defaultLLMs);

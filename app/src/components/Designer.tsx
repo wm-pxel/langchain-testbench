@@ -383,13 +383,17 @@ const renderChainSpec = (spec: ChainSpec) => {
 
 const Designer = () => {
   const { chainSpec: spec, insertChainSpec, isInteracting } = useContext(ChainSpecContext);
+  const { isLLMActive, setIsLLMActive } = useContext(LLMContext);
 
   return (
     <div className={`designer ${isInteracting ? 'interacting' : ''}`}>
-      { spec 
-        ? renderChainSpec(spec)
-        : <QuickMenu selectValue={(option) => insertChainSpec(option, 0, 0)} options={specTypeOptions}/> 
-      }
+      {isLLMActive ? (
+        spec ? (
+          renderChainSpec(spec)
+        ) : (
+          <QuickMenu selectValue={(option) => insertChainSpec(option, 0, 0)} options={specTypeOptions} />
+        )
+      ) : null}
     </div>
   );
 };
