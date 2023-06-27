@@ -393,7 +393,7 @@ const Designer = () => {
         ) : (
           <QuickMenu selectValue={(option) => insertChainSpec(option, 0, 0)} options={specTypeOptions} />
         )
-      ) : "press new button"}
+      ) : "create new chain"}
     </div>
   );
 };
