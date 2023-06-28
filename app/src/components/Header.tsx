@@ -17,17 +17,22 @@ const Header = () => {
     isInteracting, setIsInteracting
   } = useContext(ChainSpecContext);
   const [revisions, setRevisions] = useState<Record<string, string>>({});
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
   useEffect(() => {
     listChains().then((chains) => setRevisions(chains));
   }, []);
 
   const loadLatest = async (name: string) => {
     setChainName(name);
-    const revision = await loadRevision(name);
-    if (revision.id) setRevision(revision.id);
-    setChainSpec(revision.chain);
-    setLLMs(revision.llms);
+    try {
+      const revision = await loadRevision(name);
+      if (revision.id) setRevision(revision.id);
+      setChainSpec(revision.chain);
+      setLLMs(revision.llms);
+    } catch (error) {
+      setErrorMessage("Error loading chain: " + (error as Error).message); 
+    }
   }
 
   const newChain = (name: string) => {
@@ -41,9 +46,10 @@ const Header = () => {
     var response = await listChains();
     var keys = Object.keys(response);
     if (keys.includes(text)) {
-      return "Chain already exists";
+      setErrorMessage("Chain name already exists");
+      return true;
     }
-    return null;
+    return false;
   } 
 
   const saveSpec = async () => {
@@ -53,8 +59,13 @@ const Header = () => {
     }
     const llms = latestLLMs();
     const nextRevision = createRevision(revision, spec, llms);
-    const nextRevisionId = await saveRevision(chainName, nextRevision);
-    setRevision(nextRevisionId.revision_id);
+    try {
+      const nextRevisionId = await saveRevision(chainName, nextRevision);
+      setRevision(nextRevisionId.revision_id);
+    } catch (error) {
+      setErrorMessage("Error saving chain: " + (error as Error).message); 
+      return;
+    }
     setChainSpec(spec);
 
     const chains = await listChains()
@@ -62,20 +73,23 @@ const Header = () => {
   }
 
   return (
-    <div className="header">
-      <div className="file-options">
-        <TextModal title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={(text) => isValid(text)} />
-        <FilterMenu title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
-        <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
-          Save
-        </button>
-      </div>
-      <div className="chain-name">{chainName || ""}</div>
-      <div className="actions">
-        <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>
-        <button disabled={!readyToInteract} onClick={() => setIsInteracting(!isInteracting)}>
-          Interact
-        </button>
+    <div className="page-top">
+      {errorMessage && <div className="error-message">{errorMessage}</div>}
+      <div className="header">
+        <div className="file-options">
+          <TextModal title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={(text) => isValid(text)} />
+          <FilterMenu title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
+          <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
+            Save
+          </button>
+        </div>
+        <div className="chain-name">{chainName || ""}</div>
+        <div className="actions">
+          <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>
+          <button disabled={!readyToInteract} onClick={() => setIsInteracting(!isInteracting)}>
+            Interact
+          </button>
+        </div>
       </div>
     </div>
   );
