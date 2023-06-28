@@ -37,6 +37,15 @@ const Header = () => {
     setRevision(null);
   }
 
+  const isValid = async (text: string) => {
+    var response = await listChains();
+    var keys = Object.keys(response);
+    if (keys.includes(text)) {
+      return "Chain already exists";
+    }
+    return null;
+  } 
+
   const saveSpec = async () => {
     const spec = latestChainSpec();
     if (!spec) {
@@ -55,7 +64,7 @@ const Header = () => {
   return (
     <div className="header">
       <div className="file-options">
-        <TextModal title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} />
+        <TextModal title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={(text) => isValid(text)} />
         <FilterMenu title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
         <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
           Save

@@ -8,7 +8,6 @@ TODO:
 * Add UI to view output from each response
 * Recording.
 * Recording playback.
-* Ensure user cannot create a new chain with an existing branch name.
 * Include nested inputs in the response
 * Error responses from server for saves and interactive tests.
 * Within Reformat Chains, outputs of formatters should be available as inputs to subsequent formatters. This will require an update to the ReformatChain and a modification of the FormatReducer logic for inputs in the designer.
