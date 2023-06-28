@@ -9,7 +9,6 @@ TODO:
 * Recording.
 * Recording playback.
 * Include nested inputs in the response
-* Error responses from server for saves and interactive tests.
 * Within Reformat Chains, outputs of formatters should be available as inputs to subsequent formatters. This will require an update to the ReformatChain and a modification of the FormatReducer logic for inputs in the designer.
 * Add a nextChainId field to revisions and associated logic so deleting and adding chains will not give unrelated chains the same id
 * Add inputs and outputs to the left and right side of the chain.
