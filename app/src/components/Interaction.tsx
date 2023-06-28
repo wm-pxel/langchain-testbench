@@ -53,6 +53,7 @@ const Interaction = () => {
   }
 
   const runChain = async () => {
+    setErrorMessage(null);
     const chainSpec = latestChainSpec()
     if (!chainSpec) return;
 

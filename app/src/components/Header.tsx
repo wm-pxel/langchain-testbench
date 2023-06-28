@@ -24,6 +24,7 @@ const Header = () => {
   }, []);
 
   const loadLatest = async (name: string) => {
+    setErrorMessage(null);
     setChainName(name);
     try {
       const revision = await loadRevision(name);
@@ -36,6 +37,7 @@ const Header = () => {
   }
 
   const newChain = (name: string) => {
+    setErrorMessage(null);
     setChainName(name);
     setChainSpec(null);
     setLLMs(defaultLLMs);
@@ -43,6 +45,7 @@ const Header = () => {
   }
 
   const isValid = async (text: string) => {
+    setErrorMessage(null);
     var response = await listChains();
     var keys = Object.keys(response);
     if (keys.includes(text)) {
@@ -53,6 +56,7 @@ const Header = () => {
   } 
 
   const saveSpec = async () => {
+    setErrorMessage(null);
     const spec = latestChainSpec();
     if (!spec) {
       throw new Error("No chain spec to save");
