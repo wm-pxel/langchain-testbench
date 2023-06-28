@@ -10,7 +10,6 @@ import "./style/Header.css";
 
 
 const Header = () => {
-  const { setIsLLMActive } = useContext(LLMContext);
   const { latestLLMs, setIsEditingLLMs, setLLMs } = useContext(LLMContext);
   const { 
     latestChainSpec, setChainName,  chainName, chainSpec, 
@@ -24,7 +23,6 @@ const Header = () => {
   }, []);
 
   const loadLatest = async (name: string) => {
-    setIsLLMActive(true);
     setChainName(name);
     const revision = await loadRevision(name);
     if (revision.id) setRevision(revision.id);
@@ -33,7 +31,6 @@ const Header = () => {
   }
 
   const newChain = (name: string) => {
-    setIsLLMActive(!!name);
     setChainName(name);
     setChainSpec(null);
     setLLMs(defaultLLMs);

@@ -12,8 +12,6 @@ export interface LLMContextType {
   LLMsNeedSave: boolean;
   isEditingLLMs: boolean;
   setIsEditingLLMs: (isEditingLLMs: boolean) => void;
-  isLLMActive: boolean;
-  setIsLLMActive: (isActive: boolean) => void; 
 }
 
 export const LLMContext = createContext<LLMContextType>({
@@ -26,8 +24,6 @@ export const LLMContext = createContext<LLMContextType>({
   isEditingLLMs: false,
   LLMsNeedSave: false,
   setIsEditingLLMs: (_: boolean) => {},
-  isLLMActive: false, // Initial value
-  setIsLLMActive: (_: boolean) => {},
 });
 
 export interface LLMProviderProps {
@@ -39,7 +35,6 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
   const [dirtyLLMs, setDirtyLLMs] = useState<Record<string, LLM>>({});
   const [isEditingLLMs, setIsEditingLLMs] = useState<boolean>(false);
   const [LLMsNeedSave, setLLMsNeedSave] = useState<boolean>(false);
-  const [isLLMActive, setIsLLMActive] = useState<boolean>(false); 
 
   const updateLLM = (index: number, name: string, llm: LLM): void => {
     const entries = Object.entries(dirtyLLMs);
@@ -118,8 +113,6 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
       isEditingLLMs,
       setIsEditingLLMs,
       LLMsNeedSave,
-      isLLMActive, 
-      setIsLLMActive, 
     }}>
       {children}
     </LLMContext.Provider>
