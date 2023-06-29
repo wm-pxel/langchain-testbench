@@ -88,7 +88,10 @@ export const computeChainIO = (spec: ChainSpec): [Set<string>, Set<string>] => {
 
     case 'reformat_spec':
       return [new Set(spec.input_keys), new Set(Object.keys(spec.formatters))];
-  }
+
+    case 'transform_spec':
+      return [new Set(spec.input_keys), new Set(spec.output_keys)];
+    }
 }
 
 export const updateChildIO = (spec: ChainSpec) => {
@@ -149,6 +152,13 @@ export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
         chain_type: "reformat_spec",
         input_keys: [],
         formatters: {'output_key_0': ''},
+      };
+    case 'transform_spec':
+      return {
+        chain_type: "transform_spec",
+        transform_func: "# transform inputs here\nreturn {'z': inputs['x'], 'w': inputs['y']}",
+        input_keys: ['x','y'],
+        output_keys: ['z','w'],
       };
     default:
       throw new Error(`Unknown spec type: ${type}`);
