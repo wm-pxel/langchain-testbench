@@ -44,12 +44,11 @@ const Header = () => {
     setRevision(null);
   }
 
-  const isValid = async (text: string) => {
+  const isNewChainNameValid = async (text: string) => {
     setErrorMessage(null);
     var response = await listChains();
-    var keys = Object.keys(response);
-    if (keys.includes(text)) {
-      setErrorMessage("Chain name already exists");
+    if (text in response) {
+      setErrorMessage(`Chain name ${text} already exists`);
       return true;
     }
     return false;
