@@ -36,3 +36,6 @@ services:
       - ./app/src:/usr/src/app/src
     ports:
       - '5173:5173'
+      
+volumes:
+  mongodb_data:
