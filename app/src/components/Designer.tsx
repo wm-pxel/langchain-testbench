@@ -291,26 +291,11 @@ const TransformSpecDesigner = ({ spec }: TransformSpecDesignerProps) => {
   const [transformFunc, setTransformFunc] = useState<string>(spec.transform_func ?? '');
   const [inputKeys, setInputKeys] = useState<string[]>(spec.input_keys);
   const [outputKeys, setOutputKeys] = useState<string[]>(spec.output_keys);
-  const [variables, setVariables] = useState<string[]>([]);
 
 
   useEffect(() => {
     setTransformFunc(spec.transform_func);
   }, [spec]);
-
-  const updateTransformFunc = useCallback((value: string) => {
-    setTransformFunc(value);
-  }, [transformFunc]);
-
-  const formatReducer = useMemo(() => new FormatReducer(
-    /{(.*?)}/g,
-    () => new Set<string>(),
-    (variables: Set<string>, _, variable) => [
-      variables.add(variable),
-      `<span class="expr">{<span class="var-name">${variable}</span>}</span>`
-    ],
-    (variables: Set<string>) => setTimeout(() => setVariables(Array.from(variables)), 0)
-  ), []);
 
   useEffect(() => {
     updateChainSpec({
@@ -330,11 +315,10 @@ const TransformSpecDesigner = ({ spec }: TransformSpecDesignerProps) => {
           <label>Input Keys</label>
           <input className="var-name-input" value={inputKeys} onChange={e => setInputKeys(e.target.value.split(","))} placeholder="input keys" />
         </div>
-        <div className="spec-designer">
-          <HighlightedTextarea
-            value={spec.transform_func}
-            onChange={(newValue) => updateTransformFunc(newValue)}
-            formatReducer={formatReducer}
+        <div className="highlighted-editor">
+          <textarea className="highlighted-input transform-func" 
+            value={transformFunc}
+            onChange={(event) => setTransformFunc(event.target.value)}
             placeholder="Enter python function."
           />
         </div>

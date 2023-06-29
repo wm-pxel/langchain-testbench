@@ -1,13 +1,14 @@
+import logging
+
 from typing import Annotated, Callable, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
-from langchain.chains import LLMChain, SequentialChain
+from langchain.chains import LLMChain, SequentialChain, TransformChain
 from langchain.prompts import PromptTemplate
 from lib.model.lang_chain_context import LangChainContext
 from lib.chains.case_chain import CaseChain
 from lib.chains.api_chain import APIChain
 from lib.chains.reformat_chain import ReformatChain
-from lib.chains.transform_chain import TransformChain
 from lib.chains.llm_recording_chain import LLMRecordingChain
 
 ChainSpec = Annotated[Union["APISpec", "SequentialSpec", "LLMSpec", "CaseSpec", "ReformatSpec", "TransformSpec"], Field(discriminator='chain_type')]
@@ -129,8 +130,15 @@ class TransformSpec(BaseSpec):
   input_keys: List[str]
   output_keys: List[str]
 
+  def create_function(self, body):
+    scope = {}
+    indented = body.replace("\n", "\n  ")
+    code = f"def f(inputs: dict):\n  {indented}"
+    exec(code , scope)
+    return scope["f"]
+
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
-    return TransformChain(transform_func=self.transform_func, input_variables=self.input_keys, output_variables=self.output_keys)
+    return TransformChain(input_variables=self.input_keys, output_variables=self.output_keys, transform=self.create_function(self.transform_func))
 
 
 class APISpec(BaseSpec):
