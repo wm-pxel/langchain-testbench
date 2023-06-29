@@ -53,13 +53,13 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   const { LLMsNeedSave } = useContext(LLMContext);
   const [chainName, setChainName] = useState<string>("");
 
-  // The chainSpec is what we expect the revisions spect to be in the database.
+  // The chainSpec is what we expect the revision's spec to be in the database.
   // It is only updated after a load or a successful save. It is maintained
   // to determine whether the UI is in sync with the database.
   const [chainSpec, setChainSpec] = useState<ChainSpec | null>(null);
 
   // The displaySpec is used to populate the UI. It is updated whenever chainSpec
-  // is updated or when there is a structural chance to the spec (insertions and deletions).
+  // is updated or when there is a structural change to the spec (insertions and deletions).
   const [displaySpec, setDisplaySpec] = useState<ChainSpec | null>(null);
 
   // Dirty spec receives all updates to the spec from the UI (ie. onchange events)
