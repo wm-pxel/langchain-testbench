@@ -51,9 +51,20 @@ interface ChainSpecProviderProps {
 
 export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }) => {
   const { LLMsNeedSave } = useContext(LLMContext);
-  const [chainSpec, setChainSpec] = useState<ChainSpec | null>(null);
   const [chainName, setChainName] = useState<string>("");
+
+  // The chainSpec is what we expect the revisions spect to be in the database.
+  // It is only updated after a load or a successful save. It is maintained
+  // to determine whether the UI is in sync with the database.
+  const [chainSpec, setChainSpec] = useState<ChainSpec | null>(null);
+
+  // The displaySpec is used to populate the UI. It is updated whenever chainSpec
+  // is updated or when there is a structural chance to the spec (insertions and deletions).
+  const [displaySpec, setDisplaySpec] = useState<ChainSpec | null>(null);
+
+  // Dirty spec receives all updates to the spec from the UI (ie. onchange events)
   const [dirtyChainSpec, setDirtyChainSpec] = useState<ChainSpec | null>(null);
+
   const [nextChainId, setNextChainId] = useState<number>(0);
   const [revision, setRevision] = useState<string|null>(null);
   const [isInteracting, setIsInteracting] = useState<boolean>(false);
@@ -69,7 +80,7 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   }, [dirtyChainSpec])
 
   const setChains = (spec: ChainSpec | null): void => {
-    setChainSpec(spec);
+    setDisplaySpec(spec);
     setDirtyChainSpec(spec);
     setNextChainId(spec ? Math.max(findNextChainId(spec), nextChainId) : 0);
   }
@@ -79,7 +90,7 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
       return undefined;
     }
     return findByChainId(chainId, dirtyChainSpec);
-  }, [chainSpec]);
+  }, [dirtyChainSpec]);
 
   const deleteChain = useCallback((chainId: number): void => {
     const newSpec = deleteChainSpec(dirtyChainSpec, chainId);
@@ -94,6 +105,11 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
     setDirtyChainSpec(result.chainSpec);
   }, [dirtyChainSpec]);
 
+  const setAllSpecs = (spec: ChainSpec | null): void => {
+    setChains(spec);
+    setChainSpec(spec); // any external update is presumed to be synced with the database.
+  }
+
   const readyToInteract = useMemo(() => {
     return !LLMsNeedSave && !!chainSpec && deepEquals(chainSpec, dirtyChainSpec);
   }, [chainSpec, dirtyChainSpec, LLMsNeedSave]);
@@ -104,8 +120,8 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
 
   return (
     <ChainSpecContext.Provider value={{ 
-      chainSpec,
-      setChainSpec: setChains,
+      chainSpec: displaySpec,
+      setChainSpec: setAllSpecs,
       chainName,
       setChainName,
       revision,
