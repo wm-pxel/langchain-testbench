@@ -30,7 +30,7 @@ const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
 
   const [prompt, setPrompt] = useState<string>(spec.prompt);
   const [outputKey, setOutputKey] = useState<string>(spec.output_key);
-  const [variables, setVariables] = useState<string[]>([]);
+  const [variables, setVariables] = useState<string[]>(spec.input_keys);
   const [llm, setLLM] = useState<string>(spec.llm_key);
 
   const formatReducer = useMemo(() => new FormatReducer(
