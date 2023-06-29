@@ -24,6 +24,7 @@ export interface ChainSpecContextType {
   readyToInteract: boolean,
   isInteracting: boolean,
   setIsInteracting: (isInteracting: boolean) => void,
+  isChainActive: boolean;
 }
 
 const ChainSpecContext = createContext<ChainSpecContextType>({
@@ -41,6 +42,7 @@ const ChainSpecContext = createContext<ChainSpecContextType>({
   readyToInteract: false,
   isInteracting: false,
   setIsInteracting: (_: boolean) => undefined,
+  isChainActive: false, // Initial value
 });
 
 interface ChainSpecProviderProps {
@@ -96,6 +98,10 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
     return !LLMsNeedSave && !!chainSpec && deepEquals(chainSpec, dirtyChainSpec);
   }, [chainSpec, dirtyChainSpec, LLMsNeedSave]);
 
+  const isChainActive = useMemo(() => {
+    return !!chainName;
+  }, [chainName]);
+
   return (
     <ChainSpecContext.Provider value={{ 
       chainSpec,
@@ -112,6 +118,7 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
       readyToInteract,
       isInteracting,
       setIsInteracting,
+      isChainActive, 
     }}>
       {children}
     </ChainSpecContext.Provider>
