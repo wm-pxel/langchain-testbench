@@ -19,6 +19,33 @@
 
 It's good to create separate API keys for separate projects/tools. That way if you need to disable a key for a project, you don't have to generate new keys for all your other projects.
 
+## Quickstart - Running with docker-compose
+
+Create a .env file in the langchain-testbench folder with your api keys and root pw.
+
+Note that the MONGO_URL needs to point to `dkrcomp-mongo`.
+
+```.env
+MONGO_ROOT_PASSWORD=[mongo root pw]
+OPENAI_API_KEY=[your openai API key]
+MONGODB_URL=mongodb://testbench:testbench@dkrcomp-mongo:27017/testbench
+MONGODB_DATABASE=testbench
+HUGGINGFACEHUB_API_TOKEN=[your hugging face API key]
+```
+
+Create another .env file in the app folder.
+
+```app/.env
+VITE_SERVER_URL=http://localhost:4900
+```
+
+Then run:
+```
+docker-compose up
+```
+
+You can then use testbench at http://localhost:5173. Editing in the `server` or `lib` directory will automatically update the server, and editing `app/src` will automatically update the client.
+
 ## Setting up Mongo
 
 Create an environment variable for `MONGO_ROOT_PASSWORD` and give it a value.
@@ -119,4 +146,4 @@ docker-compose build
 docker-compose up
 ```
 
-URL is http://localhost:5137
+URL is http://localhost:5173

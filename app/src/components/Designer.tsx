@@ -33,12 +33,13 @@ const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
   const [llm, setLLM] = useState<string>(spec.llm_key);
 
   const formatReducer = useMemo(() => new FormatReducer(
-    /{(.*?)}/g,
+    /(\{\{)|\{(.*?)\}/g,
     () => new Set<string>(),
-    (variables: Set<string>, _, variable) => [
+    (variables: Set<string>, _, escape, variable) => (
+      escape ? [variables, escape] : [
       variables.add(variable),
       `<span class="expr">{<span class="var-name">${variable}</span>}</span>`
-    ],
+    ]),
     (variables: Set<string>) => setTimeout(() => setVariables(Array.from(variables)), 0)
   ), []);
 
@@ -169,7 +170,7 @@ const CaseSpecDesigner = ({ spec }: CaseSpecDesignerProps) => {
 
 type ExtendedFormatterState = [inputs: Set<string>, internal: Set<string>];
 
-const extendedFormatterRegex = /\{(join|parse_json|let|expr|int|float):([^:\{\}]+)(:([^:\{\}]+))?\}|(\{([^\{\}]*)\})/g;
+const extendedFormatterRegex = /(\{\{)|\{(join|parse_json|let|expr|int|float):([^:\{\}]+)(:([^:\{\}]+))?\}|(\{([^\{\}]*)\})/g;
 const parseFormatExpression = (expr: string): [string, string] => {
   const variable = expr.match(/^[_A-Za-z0-9]+/)?.[0] || '';
   return [variable, expr.slice(variable.length)];
@@ -181,6 +182,7 @@ const condAdd = (set1: Set<string>, set2: Set<string>, item: string): Set<string
 const extendedFormatterReduceFunc = (
   [inputs, internal]: ExtendedFormatterState,
   _: string,
+  escape: string | undefined,
   exprType: string | undefined,
   exprParam1: string | undefined,
   _ep2Group: string | undefined,
@@ -188,6 +190,8 @@ const extendedFormatterReduceFunc = (
   stdExpr: string | undefined,
   stdExprVar: string | undefined,
 ): [ExtendedFormatterState, string] => {
+  if (escape) return [[inputs, internal], escape];
+
   const [newInputs, newInternal] = [new Set(inputs), new Set(internal)];
   if (exprType === 'parse_json' || exprType === 'let' || exprType === 'int' || exprType === 'float') {
     const [variable, expr] = parseFormatExpression(exprParam1 || '');
@@ -383,13 +387,17 @@ const renderChainSpec = (spec: ChainSpec) => {
 
 const Designer = () => {
   const { chainSpec: spec, insertChainSpec, isInteracting } = useContext(ChainSpecContext);
+  const { isChainActive } = useContext(ChainSpecContext);
 
   return (
     <div className={`designer ${isInteracting ? 'interacting' : ''}`}>
-      { spec 
-        ? renderChainSpec(spec)
-        : <QuickMenu selectValue={(option) => insertChainSpec(option, 0, 0)} options={specTypeOptions}/> 
-      }
+      {isChainActive ? (
+        spec ? (
+          renderChainSpec(spec)
+        ) : (
+          <QuickMenu selectValue={(option) => insertChainSpec(option, 0, 0)} options={specTypeOptions} />
+        )
+      ) : "click new or load to work with a chain"}
     </div>
   );
 };

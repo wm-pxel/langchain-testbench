@@ -12,28 +12,24 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongoadmin
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
-    volumes:
-      - mongo_data:/data/db
 
   server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.server
+    volumes:
+      - ./server:/app/server
+      - ./lib:/app/lib
     ports:
       - '4900:4900'
     environment:
-      - FLASK_APP=../server/testbench.py
       - FLASK_DEBUG=1
-    command: sh -c "cd app && ../venv/bin/python -m flask run --host=0.0.0.0 --port=4900"
 
   web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.app
+    volumes:
+      - ./app/src:/usr/src/app/src
     ports:
       - '5173:5173'
-    command: sh -c "cd app && npm run dev -- --host 0.0.0.0"
-
-    
-volumes:
-  mongo_data:

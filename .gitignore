@@ -5,3 +5,4 @@ testbench.egg-info
 node_modules
 /.vs
 /docker-envs/*.env
+/mongo-data
