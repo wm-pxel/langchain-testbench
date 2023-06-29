@@ -212,7 +212,7 @@ export const insertChainSpec = (
             key,
             insertChainSpec(chain, nextChainId, type, chainId, index)
           ])),
-          default_case: insertChainSpec(originalSpec.default_case, nextChainId, type, chainId, index)
+          default_case: originalSpec.default_case ? insertChainSpec(originalSpec.default_case, nextChainId, type, chainId, index) : null,
         }
       }
   }
@@ -295,9 +295,7 @@ export const updateChainSpec = (
         : updateChainSpec(chainSpec, newSubSpec);
       return {
         found: nextResult.found,
-        chainSpecs: nextResult.found
-          ? [...result.chainSpecs, [key, nextResult.chainSpec]]
-          : result.chainSpecs
+        chainSpecs: [...result.chainSpecs, [key, nextResult.found ? nextResult.chainSpec : chainSpec]]
       } as UpdateCaseResult;
     }, { found: false, chainSpecs: [] as [string, ChainSpec][] });
 

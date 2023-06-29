@@ -1,0 +1,31 @@
+# Base image
+FROM python:3.9-slim-buster
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        curl \
+        git \
+        libssl-dev \
+        libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the entire project
+COPY . server
+COPY ../lib lib
+COPY ../*.py .
+COPY ../requirements.txt .
+COPY ../.env .
+
+# Install Python dependencies
+RUN pip install -r requirements.txt
+
+# Expose ports
+EXPOSE 4900
+
+# CMD ["tail", "-f", "/dev/null"]
+CMD ["flask", "--app", "server.testbench:app", "run", "--host=0.0.0.0", "--port=4900"]
