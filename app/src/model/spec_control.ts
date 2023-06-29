@@ -156,9 +156,9 @@ export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
     case 'transform_spec':
       return {
         chain_type: "transform_spec",
-        transform_func: "",
-        input_keys: [],
-        output_keys: [],
+        transform_func: "# transform inputs here\nreturn {'z': inputs['x'], 'w': inputs['y']}",
+        input_keys: ['x','y'],
+        output_keys: ['z','w'],
       };
     default:
       throw new Error(`Unknown spec type: ${type}`);
