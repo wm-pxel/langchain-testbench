@@ -1,4 +1,4 @@
-from model.chain_spec import ChainSpec, LLMSpec, SequentialSpec, CaseSpec, APISpec, ReformatSpec
+from model.chain_spec import ChainSpec, LLMSpec, SequentialSpec, CaseSpec, APISpec, ReformatSpec, TransformSpec
 from model.chain_revision import ChainRevision
 from model.lang_chain_context import LangChainContext
 from langchain.llms.fake import FakeListLLM
@@ -308,6 +308,24 @@ def test_reformat_spec_to_lang_chain_creates_valid_chain():
     assert reformat_chain.output_keys == ["output1", "output2"]
     assert reformat_chain.formatters == {"output1": "formatter1", "output2": "formatter2"}
 
+
+def test_transform_spec_to_lang_chain_creates_valid_chain():
+    transform_spec = TransformSpec(
+        chain_id=4,
+        chain_type="transform_spec",
+        input_keys=["x", "y"],
+        output_keys=["z", "w"],
+        transform_func="""
+z = int(inputs['x']) + int(inputs['y'])
+w = int(inputs['x']) - int(inputs['y'])
+return {'z': z, 'w': w}"""
+    )
+    ctx = LangChainContext(llms={})
+    transform_chain = transform_spec.to_lang_chain(ctx)
+
+    assert transform_chain.input_keys == ["x", "y"]
+    assert transform_chain.output_keys == ["z", "w"]
+    assert transform_chain.transform({'x': 4, 'y': 3}) == {'z': 7, 'w': 1}
 
 class ChainDict:
     def __init__(self):
