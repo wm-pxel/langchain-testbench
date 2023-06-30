@@ -6,6 +6,7 @@ import { LLMContext } from "../contexts/LLMContext";
 import FilterMenu from "./FilterMenu";
 import TextModal from "./TextModal";
 import { defaultLLMs } from "../model/llm";
+import { SetMessage } from "../util/errorhandling";
 import "./style/Header.css";
 
 
@@ -32,7 +33,7 @@ const Header = () => {
       setChainSpec(revision.chain);
       setLLMs(revision.llms);
     } catch (error) {
-      setErrorMessage("Error loading chain: " + (error as Error).message); 
+      SetMessage(setErrorMessage, "Error loading chain: " + (error as Error).message); 
     }
   }
 
@@ -48,7 +49,7 @@ const Header = () => {
     setErrorMessage(null);
     var response = await listChains();
     if (text in response) {
-      setErrorMessage(`Chain name ${text} already exists`);
+      SetMessage(setErrorMessage, `Chain name ${text} already exists`);
       return true;
     }
     return false;
@@ -66,7 +67,7 @@ const Header = () => {
       const nextRevisionId = await saveRevision(chainName, nextRevision);
       setRevision(nextRevisionId.revision_id);
     } catch (error) {
-      setErrorMessage("Error saving chain: " + (error as Error).message); 
+      SetMessage(setErrorMessage, "Error saving chain: " + (error as Error).message); 
       return;
     }
     setChainSpec(spec);
@@ -80,7 +81,7 @@ const Header = () => {
       {errorMessage && <div className="error-message">{errorMessage}</div>}
       <div className="header">
         <div className="file-options">
-          <TextModal title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={(text) => isValid(text)} />
+          <TextModal title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={(text) => isNewChainNameValid(text)} />
           <FilterMenu title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
           <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
             Save

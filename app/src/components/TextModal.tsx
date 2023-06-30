@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { SetMessage } from "../util/errorhandling";
 import "./style/TextModal.css";
 
 interface TextModalProps {
@@ -12,12 +13,12 @@ interface TextModalProps {
 const TextModal = ({enterValue, title, buttonText, placeholder, validateInput}: TextModalProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [text, setText] = useState('');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [setErrorMessage] = useState<string | null>(null);
 
   const handleEnter = useCallback(async () => {
     const validationError = await validateInput(text);
     if (validationError) {
-      setErrorMessage(validationError);
+      SetMessage(setErrorMessage, validationError);
     } else {
       setErrorMessage(null);
       setText('');
