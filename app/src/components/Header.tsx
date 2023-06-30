@@ -31,10 +31,14 @@ const Header = () => {
   }
 
   const newChain = (name: string) => {
-    setChainName(name);
-    setChainSpec(null);
-    setLLMs(defaultLLMs);
-    setRevision(null);
+    if (name in revisions) {
+      alert("Branch name alredy exists. Please choose another name!")
+    } else {
+      setChainName(name);
+      setChainSpec(null);
+      setLLMs(defaultLLMs);
+      setRevision(null);
+    }
   }
 
   const saveSpec = async () => {
@@ -51,6 +55,7 @@ const Header = () => {
     const chains = await listChains()
     setRevisions(chains);
   }
+
 
   return (
     <div className="header">
