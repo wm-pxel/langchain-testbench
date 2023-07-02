@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function SetMessage(
+export function setTimedMessage(
     setFunction: React.Dispatch<React.SetStateAction<string | null>>,
     message: string,
   ): void {

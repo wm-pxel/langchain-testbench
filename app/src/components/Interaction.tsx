@@ -4,7 +4,7 @@ import { runOnce } from "../api/api";
 import { computeChainIO } from "../model/spec_control";
 import { escapeHTML } from "../util/html";
 import DOMPurify from 'dompurify';
-import { SetMessage } from "../util/errorhandling";
+import { setTimedMessage } from "../util/errorhandling";
 import "./style/Interaction.css"
 
 
@@ -88,7 +88,7 @@ const Interaction = () => {
       scrollDown();
     } catch (e) {
       console.error(e);
-      SetMessage(setErrorMessage, "Error running chain: " + (e as Error).message);
+      setTimedMessage(setErrorMessage, "Error running chain: " + (e as Error).message);
     } finally {
       setLoading(false);
     }

@@ -6,7 +6,7 @@ import { LLMContext } from "../contexts/LLMContext";
 import FilterMenu from "./FilterMenu";
 import TextModal from "./TextModal";
 import { defaultLLMs } from "../model/llm";
-import { SetMessage } from "../util/errorhandling";
+import { setTimedMessage } from "../util/errorhandling";
 import "./style/Header.css";
 
 
@@ -21,7 +21,7 @@ const Header = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   useEffect(() => {
-    listChains().then((chains) => setRevisions(chains));
+    listChainsAndUpdateRevisions();
   }, []);
 
   const loadLatest = async (name: string) => {
@@ -33,7 +33,7 @@ const Header = () => {
       setChainSpec(revision.chain);
       setLLMs(revision.llms);
     } catch (error) {
-      SetMessage(setErrorMessage, "Error loading chain: " + (error as Error).message); 
+      setTimedMessage(setErrorMessage, "Error loading chain: " + (error as Error).message); 
     }
   }
 
@@ -47,12 +47,12 @@ const Header = () => {
 
   const isNewChainNameValid = async (text: string) => {
     setErrorMessage(null);
-    var response = await listChains();
+    var response = await listChainsAndUpdateRevisions();
     if (text in response) {
-      SetMessage(setErrorMessage, `Chain name ${text} already exists`);
-      return true;
+      setTimedMessage(setErrorMessage, `Chain name ${text} already exists`);
+      return false;
     }
-    return false;
+    return true;
   } 
 
   const saveSpec = async () => {
@@ -67,13 +67,21 @@ const Header = () => {
       const nextRevisionId = await saveRevision(chainName, nextRevision);
       setRevision(nextRevisionId.revision_id);
     } catch (error) {
-      SetMessage(setErrorMessage, "Error saving chain: " + (error as Error).message); 
+      popupErrorMessage("Error saving chain: " + (error as Error).message); 
       return;
     }
     setChainSpec(spec);
+    listChainsAndUpdateRevisions(); 
+  }
 
+  const listChainsAndUpdateRevisions = async () =>  {
     const chains = await listChains()
     setRevisions(chains);
+    return chains;
+  }
+
+  const popupErrorMessage = (message: string) => {
+    setTimedMessage(setErrorMessage, message); 
   }
 
   return (
