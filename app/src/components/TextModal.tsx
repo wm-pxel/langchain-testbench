@@ -5,18 +5,21 @@ interface TextModalProps {
   title: string;
   buttonText: string;
   placeholder: string;
-  enterValue: (option: string) => void;  
+  enterValue: (option: string) => void;
+  validateInput: (input: string) => boolean;
 }
 
-const TextModal = ({enterValue, title, buttonText, placeholder}: TextModalProps) => {
+const TextModal = ({enterValue, title, buttonText, placeholder, validateInput}: TextModalProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [text, setText] = useState('');
 
-  const handleEnter = useCallback(() => {
-    setText('');
-    setModalOpen(false);
-    enterValue(text);
-  }, [text]);
+  const handleEnter = useCallback(async () => {
+    if (validateInput(text)) {
+      setText('');
+      setModalOpen(false);
+      enterValue(text);
+    }
+  }, [text, validateInput]);
 
   const handleCancel = useCallback(() => {
     setText('');

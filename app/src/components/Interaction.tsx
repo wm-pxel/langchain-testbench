@@ -4,6 +4,7 @@ import { runOnce } from "../api/api";
 import { computeChainIO } from "../model/spec_control";
 import { escapeHTML } from "../util/html";
 import DOMPurify from 'dompurify';
+import { setTimedMessage } from "../util/errorhandling";
 import "./style/Interaction.css"
 
 
@@ -21,6 +22,7 @@ const Interaction = () => {
   const conversationRef = useRef<HTMLDivElement>(null);
   const [activeInput, setActiveInput] = useState<string | null>(null);
   const [primaryInput, setPrimaryInput] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isInteracting || !readyToInteract) return;
@@ -52,6 +54,7 @@ const Interaction = () => {
   }
 
   const runChain = async () => {
+    setErrorMessage(null);
     const chainSpec = latestChainSpec()
     if (!chainSpec) return;
 
@@ -85,6 +88,7 @@ const Interaction = () => {
       scrollDown();
     } catch (e) {
       console.error(e);
+      setTimedMessage(setErrorMessage, "Error running chain: " + (e as Error).message);
     } finally {
       setLoading(false);
     }
@@ -92,7 +96,10 @@ const Interaction = () => {
 
   return (
     <div className={`interaction ${(readyToInteract && isInteracting) ? 'open' : ''}`}>
-      <button className="close" onClick={() => setIsInteracting(false)}>close</button>
+      <div className="page-top">
+        {errorMessage && <div className="error-message">{errorMessage}</div>}
+        <button className="close" onClick={() => setIsInteracting(false)}>close</button>
+      </div>
       <div className="conversation" ref={conversationRef}>
         {conversation.map((message, i) => (
           <div className={`message ${message.from}`} key={`message-${i}`} dangerouslySetInnerHTML={{__html: richText(message.text)}}>
