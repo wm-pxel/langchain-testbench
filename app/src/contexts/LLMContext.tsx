@@ -89,7 +89,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
       case "huggingface_hub":
         return {
           _type: "huggingface_hub",
-          repo_id: "google/flan-t5-xl",
+          repo_id: "google/flan-t5-xxl",
           task: null,
           model_kwargs: {
             temperature: 0.8,
