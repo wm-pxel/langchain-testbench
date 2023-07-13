@@ -1,5 +1,12 @@
+import logging
+from types import MappingProxyType
 from typing import Optional
-from lib.model.chain_revision import find_ancestor_ids
+import json
+
+from huggingface_hub.inference_api import InferenceApi
+from langchain import HuggingFaceHub, OpenAI
+from langchain.callbacks import SharedCallbackManager
+from lib.model.chain_revision import ChainRevision, find_ancestor_ids
 from lib.model.chain import Chain
 from lib.model.chain_spec import LLMSpec
 from lib.model.lang_chain_context import LangChainContext
@@ -7,7 +14,36 @@ from lib.db import chain_revision_repository, chain_repository, result_repositor
 from bson import ObjectId
 import dotenv
 
+logging.basicConfig(level=logging.INFO)
+global_logger = logging.getLogger("global")  # Create a logger for the class
+
 dotenv.load_dotenv()
+
+class CustomJSONEncoder(json.JSONEncoder):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)  # Create a logger for the class
+    
+    def default(self, obj):
+        self.logger.info(f"Encoding {type(obj).__name__ }")
+        if isinstance(obj, OpenAI):
+            return obj.__dict__
+        elif isinstance(obj, ChainRevision):
+            return obj.__dict__
+        elif isinstance(obj, type):
+            return obj.__dict__
+        elif isinstance(obj, SharedCallbackManager):
+            return obj.__dict__
+        elif isinstance(obj, MappingProxyType):
+            return dict(obj)  
+        elif isinstance(obj, classmethod):
+            return obj.__dict__
+        elif isinstance(obj, HuggingFaceHub):
+            return obj.__dict__
+        elif isinstance(obj, InferenceApi):
+            return obj.__dict__
+        # Handle other custom objects if needed
+        return super().default(obj)
 
 def save_revision(chain_name, revision) -> str:
   chain = chain_repository.find_one_by({"name": chain_name})
@@ -138,3 +174,70 @@ def results(revision_id: str, ancestors: bool, chain_id: Optional[str] = None):
     revision_ids += [ObjectId(i) for i in ancestors_id]
 
   return result_repository.find_by({"revision": {"$in": revision_ids}, "chain_id": int(chain_id)})
+
+def export_chain(chain_name: str) -> str:
+    global_logger.info(f"Exporting chain {chain_name}")
+
+    chain = chain_repository.find_one_by({"name": chain_name})
+    if chain is None:
+        return None
+
+    chain_revision = chain_revision_repository.find_one_by_id(chain.revision)
+    if chain_revision is None:
+        return None
+
+    ancestor_ids = find_ancestor_ids(chain_revision.id, chain_revision_repository)
+    chain_revisions = [chain_revision]
+
+    for ancestor_id in ancestor_ids:
+        ancestor_revision = chain_revision_repository.find_one_by_id(ancestor_id)
+        if ancestor_revision:
+            chain_revisions.append(ancestor_revision)
+
+    exported_chain = {
+        "name": chain.name,
+        "revisions": []
+    }
+
+    for revision in chain_revisions:
+        exported_revision = {
+            "_id": str(revision.id),
+            "parent": str(revision.parent) if revision.parent else None,
+            "chain": revision.chain.dict(),
+            "llms": []
+        }
+        for llm in revision.llms:
+            global_logger.info(f"Exporting llms {type(llm)}")
+            exported_revision["llms"].append(llm)
+
+        exported_chain["revisions"].append(exported_revision)
+
+    return json.dumps(
+        exported_chain,
+        indent=2,
+        cls=CustomJSONEncoder
+    )
+
+
+def import_chain(chain_name, json_string):
+    data = json.loads(json_string)
+
+    id_mapping = {}
+
+    for revision in data["revisions"]:
+        old_id = revision["_id"]
+        new_id = ObjectId()
+
+        id_mapping[old_id] = new_id
+        revision["_id"] = new_id
+
+    for revision in data["revisions"]:
+
+        if revision["parent"]:
+            revision["parent"] = id_mapping[revision["parent"]]
+
+        newRevision = ChainRevision(**revision)
+        chain_revision_repository.insert_one(newRevision)
+
+    chain = Chain(name=chain_name, revision=data["revisions"][-1]["_id"])
+    chain_repository.insert_one(chain)

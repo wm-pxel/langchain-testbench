@@ -1,0 +1,60 @@
+/* Modal styles */
+.chain-import-modal {
+    position: fixed; /* Fixed/sticky position */
+    display: flex;   /* Use flexbox for alignment */
+    justify-content: center; /* Center the modal horizontally */
+    align-items: center; /* Center the modal vertically */
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0; /* Full width and height */
+  }
+  
+  .modal-content {
+    background-color: rgba(48, 48, 48, 1); 
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(192, 192, 192, 0.2);
+    max-width: 400px;
+    width: 100%;
+  }
+
+  .input-group {
+    margin-bottom: 10px;
+  }
+
+  input[type="text"]{
+    border-radius: 4px;
+  }
+
+  input[type="file"] {
+    columns: white;
+    background-color: black;
+  }
+  label {
+    margin-right: 5px;
+  }
+  
+
+  button {
+    margin-top: 10px;
+    margin-right: 10px;   
+  }
+  
+
+  .drop-area-outer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(32, 32, 32, 1);
+    border-radius: 4px;
+  }
+
+  .drop-area-outer .button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+  }
+  /* Add more styles as needed */
+  

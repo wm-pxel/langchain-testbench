@@ -27,6 +27,7 @@ class ChainRevision(BaseModel):
       ObjectIdField: str,
     }
     json_dumps = dump_json
+    extra = "allow"
 
 ChainRevision.update_forward_refs()
 

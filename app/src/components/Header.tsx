@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { listChains, loadRevision, saveRevision } from "../api/api";
+import { listChains, loadRevision, saveRevision, exportChain, importChain } from "../api/api";
 import { createRevision } from "../model/spec_control";
 import ChainSpecContext from "../contexts/ChainSpecContext";
 import { LLMContext } from "../contexts/LLMContext";
@@ -8,6 +8,7 @@ import TextModal from "./TextModal";
 import { defaultLLMs } from "../model/llm";
 import { setTimedMessage } from "../util/errorhandling";
 import "./style/Header.css";
+import ImportChain from "./ImportChain";
 
 
 const Header = () => {
@@ -19,9 +20,11 @@ const Header = () => {
   } = useContext(ChainSpecContext);
   const [revisions, setRevisions] = useState<Record<string, string>>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   
   useEffect(() => {
     listChainsAndUpdateRevisions();
+    console.log('isImportModalOpen:', isImportModalOpen);
   }, []);
 
   const loadLatest = async (name: string) => {
@@ -45,9 +48,9 @@ const Header = () => {
     setRevision(null);
   }
 
-  const isNewChainNameValid = async (text: string) => {
+  const isNewChainNameValid = (text: string) => {
     setErrorMessage(null);
-    var response = await listChainsAndUpdateRevisions();
+    var response = listChainsAndUpdateRevisions();
     if (text in response) {
       setTimedMessage(setErrorMessage, `Chain name ${text} already exists`);
       return false;
@@ -74,6 +77,32 @@ const Header = () => {
     listChainsAndUpdateRevisions(); 
   }
 
+  const exportChainClick = async () => {
+    setErrorMessage(null);
+    try {
+      const blob = await exportChain(chainName);
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      // Create a link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${chainName}_exported_chain.json`;
+      // Programmatically click the link to trigger the download
+      link.click();
+      // Clean up the temporary URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      popupErrorMessage("Export failed: " + error);
+    }    
+  }
+
+  const importChainClick = async () => {
+    console.log('Import button clicked');
+    setIsImportModalOpen(true);
+    setErrorMessage(null);
+  }
+
+
   const listChainsAndUpdateRevisions = async () =>  {
     const chains = await listChains()
     setRevisions(chains);
@@ -95,6 +124,13 @@ const Header = () => {
           <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
             Save
           </button>
+          <button disabled={!(chainSpec && chainName)} onClick={exportChainClick}>
+            Export
+          </button>
+          <button onClick={importChainClick}>
+            Import
+          </button>
+          <ImportChain isImportModalOpen={isImportModalOpen} setIsImportModalOpen={setIsImportModalOpen} />
         </div>
         <div className="chain-name">{chainName || ""}</div>
         <div className="actions">

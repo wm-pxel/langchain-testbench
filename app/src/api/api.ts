@@ -22,6 +22,31 @@ export const saveRevision = async (chainName: string, revision: Revision) => {
   return await response.json();
 }
 
+export const exportChain = async(chainName: string) => {
+  const response = await fetch(`${API_URL}/chain/${chainName}/export`);
+  if (response.ok) {
+    return await response.blob();
+  } else {
+    throw new Error('Failed to export chain');
+  }  
+}
+
+export const importChain = async(chainName: string, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${API_URL}/chain/${chainName}/import`, {
+    method: 'POST',
+    body: formData,  // send FormData object
+  });
+
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw new Error('Failed to import chain');
+  }  
+}
+
 export const runOnce = async (chainName: string, input: Record<string, string>) => {
   const response = await fetch(`${API_URL}/chain/${chainName}/run`, {
     method: 'POST',

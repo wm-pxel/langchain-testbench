@@ -3,6 +3,7 @@ from flask_pymongo import PyMongo
 from bson.json_util import dumps
 from flask_cors import CORS
 from lib.model.chain_revision import ChainRevision
+from werkzeug.exceptions import BadRequest
 import lib.chain_service as chain_service
 
 app = Flask(__name__)
@@ -63,3 +64,56 @@ def run_chain(chain_name):
 
 if __name__ == "__main__":
   app.run(debug=True)
+
+@app.route("/chain/<chain_name>/export", methods=["GET"])
+def export_chain(chain_name):
+    exported_chain = chain_service.export_chain(chain_name)
+    if exported_chain:
+        filename = f"{chain_name}_exported_chain.json"
+        return Response(
+            exported_chain,
+            mimetype="application/json",
+            headers={
+                "Content-Disposition": f"attachment;filename={filename}"
+            }
+        )
+    else:
+        return Response(
+            dumps({"error": f"Chain '{chain_name}' not found."}),
+            mimetype="application/json",
+            status=404
+        )
+    
+
+@app.route("/chain/<chain_name>/import", methods=["POST"])
+def import_chain_route(chain_name):
+    if 'file' not in request.files:
+        raise BadRequest("File not present in request")
+    file = request.files['file']
+    if file.filename == '':
+        raise BadRequest("File name is not present in request")
+    if file and allowed_file(file.filename):
+        json_string = file.read().decode('utf-8')
+        try:
+            chain_service.import_chain(chain_name, json_string)
+            return Response(
+                dumps({"success": f"Import of '{chain_name}' successful."}),
+                mimetype="application/json",
+                status=200
+            )
+        except Exception as e:
+            return Response(
+                dumps({"error": f"Import of '{chain_name}' failed. Reason: {str(e)}"}),
+                mimetype="application/json",
+                status=400
+            )
+    else:
+        return Response(
+            dumps({"error": "No selected file or wrong file type"}),
+            mimetype="application/json",
+            status=400
+        )
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'json'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
