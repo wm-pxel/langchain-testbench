@@ -1,3 +1,4 @@
+import logging
 import json
 from typing import Dict, Optional
 from pydantic import BaseModel, validator
@@ -5,13 +6,16 @@ from pydantic_mongo import AbstractRepository, ObjectIdField
 from lib.model.chain_spec import APISpec, SequentialSpec, LLMSpec, CaseSpec, ReformatSpec, TransformSpec, ChainSpec
 from langchain.llms.loading import load_llm_from_config
 
+logging.basicConfig(level=logging.INFO)
+cr_logger = logging.getLogger("flask")
+
 def dump_json(obj: object, **kwargs):
   obj['id'] = str(obj['id']) if obj['id'] is not None else None
   obj['parent'] = str(obj['parent']) if obj['parent'] is not None else None
   return json.dumps(obj, **kwargs)
 
-
 class ChainRevision(BaseModel):
+  
   id: ObjectIdField = None
   parent: Optional[ObjectIdField]
   chain: ChainSpec
@@ -19,6 +23,7 @@ class ChainRevision(BaseModel):
 
   @validator("llms", pre=True)
   def validate_llms(cls, llms):
+    cr_logger.info(f"Validating llms: {type(llms)}")
     maybe_decode = lambda value: load_llm_from_config(value) if isinstance(value, dict) else value
     return {key: maybe_decode(value) for key, value in llms.items()}
 

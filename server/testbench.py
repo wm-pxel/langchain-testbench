@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, Response, request
 from flask_pymongo import PyMongo
 from bson.json_util import dumps
@@ -5,6 +6,9 @@ from flask_cors import CORS
 from lib.model.chain_revision import ChainRevision
 from werkzeug.exceptions import BadRequest
 import lib.chain_service as chain_service
+
+logging.basicConfig(level=logging.INFO)
+flask_logger = logging.getLogger("flask")
 
 app = Flask(__name__)
 
@@ -95,6 +99,7 @@ def import_chain_route(chain_name):
     if file and allowed_file(file.filename):
         json_string = file.read().decode('utf-8')
         try:
+            flask_logger.info(f"Importing chain '{chain_name}'")
             chain_service.import_chain(chain_name, json_string)
             return Response(
                 dumps({"success": f"Import of '{chain_name}' successful."}),
@@ -102,6 +107,7 @@ def import_chain_route(chain_name):
                 status=200
             )
         except Exception as e:
+            flask_logger.info(f"Importing chain exception '{e}'")
             return Response(
                 dumps({"error": f"Import of '{chain_name}' failed. Reason: {str(e)}"}),
                 mimetype="application/json",
