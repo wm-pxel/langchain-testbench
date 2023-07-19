@@ -59,7 +59,7 @@ In a separate command prompt window:
 
 ``` Create-User
 docker exec -it dkrcomp-mongo mongosh -u mongoadmin -p %MONGO_ROOT_PASSWORD%  --authenticationDatabase admin
-use admin
+use testbench
 db.createUser({user: "testbench", pwd: "testbench", roles: [{ role: "readWrite", db: "testbench" }]})
 exit
 ```
@@ -109,33 +109,15 @@ Create a .env file in the langchain-testbench folder with your api keys and root
 ```.env
 MONGO_ROOT_PASSWORD=[mongo root pw]
 OPENAI_API_KEY=[your openai API key]
-MONGODB_URL=mongodb://testbench:testbench@localhost:27017/testbench
+MONGODB_URL=mongodb://testbench:testbench@dkrcomp-mongo:27017/testbench
 MONGODB_DATABASE=testbench
 HUGGINGFACEHUB_API_TOKEN=[your hugging face API key]
-```
-
-Create a copy of this .env file and place it in the docker-envs folder and call it server.env. In the docker-envs version,
-replace "localhost" with "mongo":
-```
-MONGODB_URL=mongodb://testbench:testbench@mongo:27017/testbench
 ```
 
 Create another .env file in the app folder.
 
 ```app/.env
 VITE_SERVER_URL=http://localhost:4900
-```
-
-MONGODB_URL=mongodb://testbench:testbench@mongo:27017/testbench
-
-## Configuring Dockerfile
-
-Edit these environment variables
-
-```
-ENV MONGO_INITDB_ROOT_PASSWORD=[Mongo Password]
-ENV OPENAI_API_KEY=[Open AI API Key]
-ENV HUGGINGFACEHUB_API_TOKEN=[Hugging Face API Key]
 ```
 
 ## Running it
