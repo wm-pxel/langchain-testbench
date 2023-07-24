@@ -69,8 +69,18 @@ const Interaction = () => {
       }
 
       const response = await runOnce(chainName, input);
+
+      let showInputs = "INPUTS:\n"
+      for (const [key, value] of Object.entries<string>(response)) {
+        if (key !== "output") {
+          showInputs += `${key}: ${value.toString().replace(/\n/g, "")}\n`;
+        }
+      }
+      showInputs += "\nOUTPUT:\n";
+
       const output = response.output || response[Object.keys(response)[0]];
-      setConversation([...newConversation, { from: 'chain', text: output }]);
+      console.log(response);
+      setConversation([...newConversation, { from: 'chain', text: showInputs.concat(output) }]);
       Object.entries(response).forEach(([key, value]) => console.log(`${key}:`, value))
 
       let nextInput = input;
