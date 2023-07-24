@@ -18,7 +18,9 @@ const specTypeOptions = {
   api_spec: 'API',
 };
 
-const DeleteChainButton = ({ onDelete }: { onDelete: () => void }) => <QuickMenu
+
+const DeleteChainButton = ({ onDelete, modalKey }: { onDelete: () => void, modalKey: string }) => <QuickMenu
+  modalKey= {modalKey}
   menuClass="delete-spec"
   options={{ cancel: 'cancel', delete: 'delete' }}
   selectValue={(option: string) => {if (option === 'delete') onDelete()}}
@@ -64,7 +66,7 @@ const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
   return (
     <div className="llm-spec spec-designer">
       <h3 className="chain-id">LLM {spec.chain_id}</h3>
-      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <DeleteChainButton modalKey={`delete-menu-${spec.chain_id}`} onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <HighlightedTextarea
         value={prompt}
         onChange={setPrompt}
@@ -92,11 +94,11 @@ const SequentialSpecDesigner = ({ spec }: SequentialSpecDesignerProps) => {
   return (
     <div className="sequential-spec spec-designer">
       <h3 className="chain-id">Sequential {spec.chain_id}</h3>
-      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
-      <QuickMenu selectValue={(option) => insertChainSpec(option, spec.chain_id, 0)} options={specTypeOptions} />
+      <DeleteChainButton  modalKey={`delete-menu-${spec.chain_id}`} onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <QuickMenu modalKey={`add-menu-${spec.chain_id}-0`} selectValue={(option) => insertChainSpec(option, spec.chain_id, 0)} options={specTypeOptions} />
       {spec.chains.flatMap((chain: ChainSpec, idx: number) => [
         renderChainSpec(chain),
-        <QuickMenu selectValue={(option) => insertChainSpec(option, spec.chain_id, idx+1)} options={specTypeOptions} key={`button-${idx+1}`}/>
+        <QuickMenu modalKey={`add-menu-${spec.chain_id}-${idx+1}`} selectValue={(option) => insertChainSpec(option, spec.chain_id, idx+1)} options={specTypeOptions} key={`button-${idx+1}`}/>
       ])}
     </div>
   );
@@ -151,18 +153,18 @@ const CaseSpecDesigner = ({ spec }: CaseSpecDesignerProps) => {
   return (
     <div className="case-spec spec-designer">
       <h3 className="chain-id">Case {spec.chain_id}</h3>
-      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <DeleteChainButton  modalKey={`delete-menu-${spec.chain_id}`} onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <div className="form-element">
         <label>Category Key</label>
         <input className="var-name-input" value={categorizationKey} onChange={e => setCategorizationKey(e.target.value)} />
       </div>
-      <QuickMenu selectValue={(option) => insertChainSpec(option, spec.chain_id, 0)} options={specTypeOptions} />
+      <QuickMenu modalKey={`add-menu-${spec.chain_id}-0`} selectValue={(option) => insertChainSpec(option, spec.chain_id, 0)} options={specTypeOptions} />
       {cases.flatMap((item: [string, ChainSpec], idx: number) => [
         <div className="case-spec-case" key={`spec-case-${item[1].chain_id}`}>
           <input className="case-spec-case__key" defaultValue={item[0]} onChange={(e) => updateCaseKey(idx, e.target.value)} />
           {renderChainSpec(item[1] as ChainSpec)}
         </div>,
-        <QuickMenu selectValue={(option) => insertChainSpec(option, spec.chain_id, idx+1)} options={specTypeOptions} key={`button-${idx+1}`}/>,
+        <QuickMenu modalKey={`add-menu-${spec.chain_id}-${idx+1}`} selectValue={(option) => insertChainSpec(option, spec.chain_id, idx+1)} options={specTypeOptions} key={`button-${idx+1}`}/>,
       ])}
     </div>
   );
@@ -264,7 +266,7 @@ const ReformatSpecDesigner = ({ spec }: ReformatSpecDesignerProps) => {
   return (
     <div className="reformat-spec spec-designer">
       <h3 className="chain-id">Reformat {spec.chain_id}</h3>
-      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <DeleteChainButton  modalKey={`delete-menu-${spec.chain_id}`} onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <div className="formatters">
         { formatters.map(([key, value], idx) => (
           <div className="formatter form-element" key={`reformat-${idx}`}>
@@ -313,7 +315,7 @@ const TransformSpecDesigner = ({ spec }: TransformSpecDesignerProps) => {
   return (
     <div className="transform-spec spec-designer">
       <h3 className="chain-id">Transform {spec.chain_id}</h3>
-      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <DeleteChainButton  modalKey={`delete-menu-${spec.chain_id}`} onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <div className="transformfuncs">
         <div className="form-element">
           <label>Input Keys</label>
@@ -387,7 +389,7 @@ const APISpecDesigner = ({ spec }: APISpecDesignerProps) => {
   return (
     <div className="api-spec spec-designer">
       <h3 className="chain-id">API {spec.chain_id}</h3>
-      <DeleteChainButton onDelete={() => deleteChainSpec(spec.chain_id)}/>
+      <DeleteChainButton  modalKey={`delete-menu-${spec.chain_id}`} onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <div className="form-element">
         <label>URL</label>
         <input className="text-input" value={url} onChange={e => setUrl(e.target.value)} placeholder="URL" />
@@ -445,7 +447,7 @@ const Designer = () => {
         spec ? (
           renderChainSpec(spec)
         ) : (
-          <QuickMenu selectValue={(option) => insertChainSpec(option, 0, 0)} options={specTypeOptions} />
+          <QuickMenu modalKey={`add-menu-0-0`} selectValue={(option) => insertChainSpec(option, 0, 0)} options={specTypeOptions} />
         )
       ) : "click new or load to work with a chain"}
     </div>

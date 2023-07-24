@@ -192,7 +192,7 @@ const EditLLMs = () => {
           }
         })}
         <div className="llm-actions">
-          <QuickMenu selectValue={addLLM} options={{ openai: 'Open AI', huggingface_hub: 'Hugging Face' }} />
+          <QuickMenu modalKey="add-llm-menu" selectValue={addLLM} options={{ openai: 'Open AI', huggingface_hub: 'Hugging Face' }} />
         </div>
       </div>
     </div>
