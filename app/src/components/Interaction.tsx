@@ -79,7 +79,6 @@ const Interaction = () => {
       showInputs += "\nOUTPUT:\n";
 
       const output = response.output || response[Object.keys(response)[0]];
-      console.log(response);
       setConversation([...newConversation, { from: 'chain', text: showInputs.concat(output) }]);
       Object.entries(response).forEach(([key, value]) => console.log(`${key}:`, value))
 
