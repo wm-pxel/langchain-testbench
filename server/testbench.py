@@ -6,8 +6,6 @@ from lib.model.chain_revision import ChainRevision
 from werkzeug.exceptions import BadRequest
 import lib.chain_service as chain_service
 
-logging.basicConfig(level=logging.INFO)
-
 app = Flask(__name__)
 
 CORS(app)

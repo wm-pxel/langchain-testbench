@@ -5,8 +5,6 @@ from pydantic_mongo import AbstractRepository, ObjectIdField
 from lib.model.chain_spec import APISpec, SequentialSpec, LLMSpec, CaseSpec, ReformatSpec, TransformSpec, ChainSpec
 from langchain.llms.loading import load_llm_from_config
 
-logging.basicConfig(level=logging.INFO)
-
 def dump_json(obj: object, **kwargs):
   obj['id'] = str(obj['id']) if obj['id'] is not None else None
   obj['parent'] = str(obj['parent']) if obj['parent'] is not None else None
