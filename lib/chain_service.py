@@ -1,4 +1,3 @@
-import logging
 import traceback
 from types import MappingProxyType
 from typing import Optional, Dict
@@ -15,8 +14,6 @@ from lib.db import chain_revision_repository, chain_repository, result_repositor
 from bson import ObjectId
 import dotenv
 
-logging.basicConfig(level=logging.INFO)
-cs_logger = logging.getLogger("chain_service")
 
 
 dotenv.load_dotenv()

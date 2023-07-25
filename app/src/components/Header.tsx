@@ -96,8 +96,7 @@ const Header = () => {
     }    
   }
 
-  const importChainClick = async () => {
-    console.log('Import button clicked');
+  const importChainClick = () => {
     setIsImportModalOpen(true);
     setErrorMessage(null);
   }
@@ -130,8 +129,10 @@ const Header = () => {
           <button onClick={importChainClick}>
             Import
           </button>
-          <ImportChain isImportModalOpen={isImportModalOpen} setIsImportModalOpen={setIsImportModalOpen} />
-        </div>
+          <ImportChain
+            isImportModalOpen={isImportModalOpen}
+            onClose={() => setIsImportModalOpen(false)}
+      />        </div>
         <div className="chain-name">{chainName || ""}</div>
         <div className="actions">
           <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>

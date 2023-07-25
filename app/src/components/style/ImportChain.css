@@ -1,23 +1,29 @@
 /* Modal styles */
 .chain-import-modal {
-    position: fixed; /* Fixed/sticky position */
-    display: flex;   /* Use flexbox for alignment */
-    justify-content: center; /* Center the modal horizontally */
-    align-items: center; /* Center the modal vertically */
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0; /* Full width and height */
-  }
+  display: none; /* Initially hide the modal */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+  z-index: 1000;
+}
   
-  .modal-content {
-    background-color: rgba(48, 48, 48, 1); 
-    padding: 20px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(192, 192, 192, 0.2);
-    max-width: 400px;
-    width: 100%;
-  }
+.chain-import-modal.open {
+  display: flex; /* Display the modal when the "open" class is present */
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+}
 
   .input-group {
     margin-bottom: 10px;

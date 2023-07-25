@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
 import { importChain } from '../api/api';
 import "./style/ImportChain.css";
 
 interface ImportChainProps {
   isImportModalOpen: boolean;
-  setIsImportModalOpen: (value: boolean) => void;
+  onClose: () => void;
 }
 
-const ImportChain: React.FC<ImportChainProps> = ({ isImportModalOpen, setIsImportModalOpen }) => {
-  console.log('Rendering ImportChain'); // Add this line
+const ImportChain: React.FC<ImportChainProps> = ({ isImportModalOpen, onClose }) => {
+  console.log('Rendering ImportChain');
+
   const [chainName, setChainName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isFileDragOver, setIsFileDragOver] = useState(false);
@@ -26,10 +26,10 @@ const ImportChain: React.FC<ImportChainProps> = ({ isImportModalOpen, setIsImpor
 
   const handleImport = async () => {
     if (!chainName || !selectedFile) return;
-    
+
     try {
       await importChain(chainName, selectedFile);
-      setIsImportModalOpen(false);
+      onClose(); // Close the modal after successful import
     } catch (error) {
       console.error('Error importing chain:', error);
       // Handle error condition, e.g., display an error message to the user
@@ -37,7 +37,7 @@ const ImportChain: React.FC<ImportChainProps> = ({ isImportModalOpen, setIsImpor
   };
 
   const handleCancel = () => {
-    setIsImportModalOpen(false);
+    onClose(); // Close the modal when cancel is clicked
   };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
@@ -63,58 +63,48 @@ const ImportChain: React.FC<ImportChainProps> = ({ isImportModalOpen, setIsImpor
     if (fileInput) {
       fileInput.click();
     }
-  };  
+  };
+
   const isImportDisabled = !chainName || !selectedFile;
 
-  // Check if the target container element exists
-  const containerElement = document.getElementById('chain-import-modal');
-  if (!containerElement) {
-    return null; // Return null if the container element is not found
-  }
-
-  // Render the ImportChain component using ReactDOM.createPortal
-  return ReactDOM.createPortal(
-    <>
-      {isImportModalOpen && (
-        <div className="chain-import-modal">
-          <div className="modal-content">
-            <div className='input-group'>
-              <label htmlFor="chain_name">Chain Name:</label>
-              <input
-                type="text"
-                id="chain_name"
-                value={chainName}
-                onChange={handleChainNameChange}
-              />
+  // Render the ImportChain modal as a floating dialog
+  return (
+    <div className={`chain-import-modal ${isImportModalOpen ? 'open' : ''}`}>
+      <div className="modal-content">
+        <div className='input-group'>
+          <label htmlFor="chain_name">Chain Name:</label>
+          <input
+            type="text"
+            id="chain_name"
+            value={chainName}
+            onChange={handleChainNameChange}
+          />
+        </div>
+        <div className='drop-area-outer'>
+          <div
+            className={`drop-area ${isFileDragOver ? 'drag-over' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={handleBrowseClick}
+          >
+            <p>Drag and drop a file in this area</p>
+            <p>or click the button below to upload.</p>
+            <div className='button-container'>
+              <button type="button">Browse</button>
             </div>
-            <div className='drop-area-outer'>
-              <div
-                className={`drop-area ${isFileDragOver ? 'drag-over' : ''}`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={handleBrowseClick}
-              >
-                <p>Drag and drop a file in this are</p>
-                <p>or click the button below to upload.</p>
-                <div className='button-container'>
-                  <button type="button">Browse</button>
-                </div>
-              </div>
-            </div>
-            <input
-              type="file"
-              id="file_upload"
-              onChange={handleFileUpload}
-              style={{ display: 'none' }}
-            />
-            <button disabled={isImportDisabled} onClick={handleImport}>Import</button>
-            <button onClick={handleCancel}>Cancel</button>
           </div>
         </div>
-      )}
-    </>,
-    containerElement // Use the container element as the target for ReactDOM.createPortal
+        <input
+          type="file"
+          id="file_upload"
+          onChange={handleFileUpload}
+          style={{ display: 'none' }}
+        />
+        <button disabled={isImportDisabled} onClick={handleImport}>Import</button>
+        <button onClick={handleCancel}>Cancel</button>
+      </div>
+    </div>
   );
 };
 

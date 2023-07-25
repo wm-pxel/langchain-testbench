@@ -5,6 +5,7 @@ import { ChainSpecProvider } from '../contexts/ChainSpecContext'
 import LLMContextProvider from '../contexts/LLMContext'
 import Interaction from '../components/Interaction'
 import EditLLMs from './EditLLMs'
+import ImportChain  from './ImportChain'
 
 function App() {
   return (
