@@ -224,6 +224,8 @@ def once(chain_name, input, record):
   input_json = buffer.decode('utf-8')
   input = json.loads(input_json)
 
+  chain_service.initialize_services()
+
   output = chain_service.run_once(chain_name, input, record)
 
   print(json.dumps(output, indent=2))
@@ -281,6 +283,8 @@ def interactive(chain_name, record):
   else:
     raise Exception("Chain must have exactly one output key that is not also an input key or an output key called 'output'")
   
+  chain_service.initialize_services()
+
   inputs = {key: "" for key in input_keys if key != user_input_key}
   while True:
     inputs[user_input_key] = input(f"{user_input_key}> ")

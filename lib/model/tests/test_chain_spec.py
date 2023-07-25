@@ -1,4 +1,4 @@
-from model.chain_spec import ChainSpec, LLMSpec, SequentialSpec, CaseSpec, APISpec, ReformatSpec, TransformSpec
+from model.chain_spec import ChainSpec, LLMSpec, SequentialSpec, CaseSpec, APISpec, ReformatSpec, TransformSpec, VectorSearchSpec
 from model.chain_revision import ChainRevision
 from model.lang_chain_context import LangChainContext
 from langchain.llms.fake import FakeListLLM
@@ -326,6 +326,25 @@ return {'z': z, 'w': w}"""
     assert transform_chain.input_keys == ["x", "y"]
     assert transform_chain.output_keys == ["z", "w"]
     assert transform_chain.transform({'x': 4, 'y': 3}) == {'z': 7, 'w': 1}
+
+
+def test_vector_search_spec_serialization():
+    vector_search_spec = VectorSearchSpec(
+        chain_id=3,
+        chain_type="vector_search_spec",
+        input_keys=["input1", "input2"],
+        output_key="output",
+        embedding_engine="openai",
+        embedding_params={"openai_api_key": "test"},
+        database="pinecone",
+        database_params={"index": "test", "text_key": "text"},
+        num_results=10,
+        query="How does {input}?"
+    )
+    serialized = vector_search_spec.json()
+    deserialized = VectorSearchSpec.parse_raw(serialized)
+    assert deserialized == vector_search_spec
+
 
 class ChainDict:
     def __init__(self):
