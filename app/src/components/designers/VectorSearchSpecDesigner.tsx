@@ -92,11 +92,11 @@ const VectorSearchSpecDesigner = ({ spec }: VectorSearchSpecDesignerProps) => {
       </div>
       <div className="form-element">
         <label>Results</label>
-        <input className="text-input" value={numResults} onChange={e => setNumResults(parseInt(e.target.value) || 0)} />
+        <input className="text-input" type="number" value={numResults} onChange={e => setNumResults(parseInt(e.target.value) || 0)} />
       </div>
       <div className="form-element">
-        <label>Minimum score</label>
-        <input className="text-input" value={minScore} onChange={e => setMinScore(parseFloat(e.target.value) || 0)} />
+        <label>Min score</label>
+        <input className="text-input" type="number" value={minScore} onChange={e => setMinScore(parseFloat(e.target.value) || 0)} />
       </div>
       <div className="form-element">
         <label>Output Key</label>
