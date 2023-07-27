@@ -61,7 +61,7 @@ const VectorSearchSpecDesigner = ({ spec }: VectorSearchSpecDesignerProps) => {
 
   return (
     <div className="vector-search-spec spec-designer">
-      <h3 className="chain-id">LLM {spec.chain_id}</h3>
+      <h3 className="chain-id">Vector {spec.chain_id}</h3>
       <DeleteChainButton modalKey={`delete-menu-${spec.chain_id}`} onDelete={() => deleteChainSpec(spec.chain_id)}/>
       <HighlightedTextarea
         value={query}
