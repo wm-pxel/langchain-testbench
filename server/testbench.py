@@ -1,4 +1,3 @@
-import typing as t
 from flask import Flask, Response, request
 from flask_pymongo import PyMongo
 from bson.json_util import dumps
@@ -6,12 +5,7 @@ from flask_cors import CORS
 from lib.model.chain_revision import ChainRevision
 import lib.chain_service as chain_service
 
-class TestbenchServer(Flask):
-  def run(self, host: str or None = None, port: int or None = None, debug: bool or None = None, load_dotenv: bool = True, **options: t.Any) -> None:
-    chain_service.initialize_services()
-    return super().run(host, port, debug, load_dotenv, **options)
-  
-app = TestbenchServer(__name__)
+app = Flask(__name__)
 
 CORS(app)
 
