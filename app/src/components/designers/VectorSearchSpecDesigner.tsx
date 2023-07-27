@@ -91,11 +91,11 @@ const VectorSearchSpecDesigner = ({ spec }: VectorSearchSpecDesignerProps) => {
         <ParameterEditor parameters={databaseParams} onChange={setDatabaseParams} editorKey={`db-params-${spec.chain_id}`} />
       </div>
       <div className="form-element">
-        <label>Num Results</label>
+        <label>Results</label>
         <input className="text-input" value={numResults} onChange={e => setNumResults(parseInt(e.target.value) || 0)} />
       </div>
       <div className="form-element">
-        <label>Min Score</label>
+        <label>Minimum score</label>
         <input className="text-input" value={minScore} onChange={e => setMinScore(parseFloat(e.target.value) || 0)} />
       </div>
       <div className="form-element">
