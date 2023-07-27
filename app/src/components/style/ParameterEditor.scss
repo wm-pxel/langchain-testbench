@@ -1,0 +1,31 @@
+.designer .parameter-editor {
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 5rem);
+
+  .form-element {
+    margin: .2rem 0 0;
+    padding: 0;
+    justify-content: space-between;
+
+    .text-input {
+      padding: .2em .5em;
+      flex: 1;
+    }  
+
+    .text-input:first-child {
+      margin-right: .2rem;
+    }  
+
+    button {
+      padding: 0.2rem 0.5rem;
+      margin-left: 0.5rem;
+    }
+  }
+
+  .add-button {
+    margin-top: .4rem;
+    align-self: flex-end;
+    padding: .2rem .5rem;
+  }
+}

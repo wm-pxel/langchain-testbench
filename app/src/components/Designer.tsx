@@ -2,7 +2,7 @@ import { useContext } from "react";
 import QuickMenu from "./QuickMenu";
 import ChainSpecContext from "../contexts/ChainSpecContext";
 import { renderChainSpec, specTypeOptions } from "./designers/util";
-import "./style/Designer.css"
+import "./style/Designer.scss"
 
 const Designer = () => {
   const { chainSpec: spec, insertChainSpec, isInteracting } = useContext(ChainSpecContext);

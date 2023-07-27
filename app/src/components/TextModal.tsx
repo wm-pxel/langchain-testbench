@@ -1,6 +1,6 @@
 import { useCallback, useState, useContext, useEffect } from "react";
 import { ModalContext } from "../contexts/ModalContext";
-import "./style/TextModal.css";
+import "./style/TextModal.scss";
 
 interface TextModalProps {
   modalKey: string
@@ -8,7 +8,7 @@ interface TextModalProps {
   buttonText: string;
   placeholder: string;
   enterValue: (option: string) => void;
-  validateInput: (input: string) => boolean;
+  validateInput: (input: string) => Promise<boolean>;
 }
 
 const TextModal = ({enterValue, title, buttonText, placeholder, validateInput, modalKey}: TextModalProps) => {
@@ -23,7 +23,7 @@ const TextModal = ({enterValue, title, buttonText, placeholder, validateInput, m
   }, [modalOpen, activeModalId]);
 
   const handleEnter = useCallback(async () => {
-    if (validateInput(text)) {
+    if (await validateInput(text)) {
       setText('');
       setModalOpen(false);
       enterValue(text);

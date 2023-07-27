@@ -48,4 +48,17 @@ export interface APISpec extends BaseSpec {
   output_key: string;
 }
 
-export type ChainSpec = LLMSpec | SequentialSpec | CaseSpec | ReformatSpec | TransformSpec | APISpec;
+export interface VectorSearchSpec extends BaseSpec {
+  chain_type: "vector_search_spec";
+  query: string;
+  embedding_engine: string;
+  embedding_params: Record<string, any>;
+  database: string;
+  database_params: Record<string, any>;
+  num_results: number;
+  min_score: number;
+  input_variables: string[];
+  output_key: string;
+}
+
+export type ChainSpec = LLMSpec | SequentialSpec | CaseSpec | ReformatSpec | TransformSpec | APISpec | VectorSearchSpec;

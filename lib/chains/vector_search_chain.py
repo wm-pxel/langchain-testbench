@@ -1,7 +1,9 @@
 import json
+import os
 from typing import Dict, List, Any
 from langchain.chains.base import Chain
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.vectorstores.base import VectorStore
 
 class VectorSearchChain(Chain):
@@ -27,23 +29,29 @@ class VectorSearchChain(Chain):
     if self.database == 'pinecone':
       if 'index' not in self.database_params:
         raise ValueError('Missing index parameter for Pinecone database')
-      if 'text_key' not in self.database_params:
-        raise ValueError('Missing text_key parameter for Pinecone database')
-      print("IMPORTING PINECONE")
 
       # import just-in-time so auth will happen after env vars are loaded
       import pinecone
       from langchain.vectorstores.pinecone import Pinecone
       
       index = pinecone.Index(self.database_params['index'])
-      return Pinecone(index, query, self.database_params['text_key'])
+      return Pinecone(
+        index,
+        query,
+        self.database_params.get('text_key') or 'text',
+        namespace=self.database_params.get('namespace') or ''
+      )
     else:
       raise ValueError(f'Unknown database: {self.database}')
 
 
   def _call(self, inputs: Dict[str, str]) -> Dict[str, str]:
     if self.embedding_engine == 'openai':
+      self.embedding_params['openai_api_key'] = os.environ.get("OPENAI_API_KEY")
       embeddings = OpenAIEmbeddings(**self.embedding_params)
+    elif self.embedding_engine == 'huggingface':
+      model = self.embedding_params.get('model_name') or 'all-mpnet-base-v2'
+      embeddings = HuggingFaceEmbeddings(**self.embedding_params, model_name=model)
     else:
       raise ValueError(f'Unknown embedding engine: {self.embedding_engine}')
 

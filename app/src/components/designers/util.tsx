@@ -5,6 +5,7 @@ import CaseSpecDesigner from "./CaseSpecDesigner";
 import ReformatSpecDesigner from "./ReformatSpecDesigner";
 import TransformSpecDesigner from "./TransformSpecDesigner";
 import APISpecDesigner from "./APISpecDesigner";
+import VectorSearchSpecDesigner from "./VectorSearchSpecDesigner";
 
 export const renderChainSpec = (spec: ChainSpec) => {
   switch (spec.chain_type) {
@@ -19,8 +20,10 @@ export const renderChainSpec = (spec: ChainSpec) => {
     case "transform_spec":
       return <TransformSpecDesigner spec={spec} key={`transform-spec-${spec.chain_id}`}/>;
     case "api_spec":
-    return <APISpecDesigner spec={spec} key={`api-spec-${spec.chain_id}`}/>;
-  }
+      return <APISpecDesigner spec={spec} key={`api-spec-${spec.chain_id}`}/>;
+    case "vector_search_spec":
+      return <VectorSearchSpecDesigner spec={spec} key={`vector-search-spec-${spec.chain_id}`}/>;
+    }
 };
 
 export const specTypeOptions = {
@@ -30,4 +33,5 @@ export const specTypeOptions = {
   reformat_spec: 'Reformat',
   transform_spec: 'Transform',
   api_spec: 'API',
+  vector_search_spec: 'Vector',
 };

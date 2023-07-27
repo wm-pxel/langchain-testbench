@@ -7,7 +7,7 @@ import FilterMenu from "./FilterMenu";
 import TextModal from "./TextModal";
 import { defaultLLMs } from "../model/llm";
 import { setTimedMessage } from "../util/errorhandling";
-import "./style/Header.css";
+import "./style/Header.scss";
 
 
 const Header = () => {

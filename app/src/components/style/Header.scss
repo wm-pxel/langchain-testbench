@@ -1,0 +1,46 @@
+.page-top {
+  top:0;
+  left: 0;
+  position: fixed;
+  width: 100%;
+  z-index: 1;
+
+  .header {
+    box-sizing: border-box;
+    left: 0;
+    padding: 1rem 2rem;
+    height: 5rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    background-color: rgba(150, 150, 150, .1);
+    backdrop-filter: blur(5px) opacity(1);
+    border-bottom: .05rem solid rgba(204, 204, 204, .25);
+
+
+    .chain-name {
+      color: #dadada;
+      font-family: Georgia, serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      text-align: center;
+      margin: 0;
+      padding: .25em;
+    }
+
+    .actions, .file-options {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1em;
+    }
+  }
+
+  .error-message {
+    display: block;
+    background-color: red;
+    text-align: left;
+  }
+}
+

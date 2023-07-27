@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { ModalContext } from "../contexts/ModalContext";
-import "./style/FilterMenu.css";
+import "./style/FilterMenu.scss";
 
 interface FilterMenuProps {
   modalKey: string
