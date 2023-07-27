@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Any, Iterable, Optional, List, Tuple
 from unittest.mock import patch
 from langchain.vectorstores.base import VectorStore
@@ -24,6 +25,8 @@ class MockVectorStore(VectorStore):
 
 
 def test_openai_pinecone_search():
+  os.environ.setdefault("OPENAI_API_KEY", "test")
+ 
   chain = VectorSearchChain(
     query="How do I open a can of {can_type}?",
     embedding_engine="openai",
