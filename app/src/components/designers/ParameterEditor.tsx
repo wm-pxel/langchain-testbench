@@ -1,4 +1,3 @@
-// This React component acts as a form control to edit a object of key value pairs. It accepts an object as a parameter, allows editing of all key value pairs and provides controls to add and remove pairs.
 import React, { useState, useEffect } from "react";
 import "../style/ParameterEditor.scss";
 
