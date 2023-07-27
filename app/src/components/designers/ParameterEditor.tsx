@@ -14,8 +14,12 @@ const ParameterEditor: React.FC<ParameterEditorProps> = ({ editorKey, parameters
     onChange(Object.fromEntries(entries));
   }, [entries]);
 
-  const updateEntry = (idx: number, key: string, value: string) => (
-    setEntries([...entries.slice(0,idx), [key, value], ...entries.slice(idx+1)])
+  const updateKey = (idx: number, key: string) => (
+    setEntries([...entries.slice(0,idx), [key, entries[idx][1]], ...entries.slice(idx+1)])
+  )
+  
+  const updateValue = (idx: number, value: string) => (
+    setEntries([...entries.slice(0,idx), [entries[idx][0], value], ...entries.slice(idx+1)])
   )
   
   const removeEntry = (idx: number) => (
@@ -26,8 +30,8 @@ const ParameterEditor: React.FC<ParameterEditorProps> = ({ editorKey, parameters
     <div className="parameter-editor">
       {entries.map(([key, value], idx) => (
         <div className="form-element" key={`${editorKey}-${idx}`}>
-          <input className="text-input key" value={key} onChange={e => updateEntry(idx, e.target.value, value)} />
-          <input className="text-input value" value={value} onChange={e => updateEntry(idx, key, e.target.value)} />
+          <input className="text-input key" value={key} onChange={e => updateKey(idx, e.target.value)} />
+          <input className="text-input value" value={value} onChange={e => updateValue(idx, e.target.value)} />
           <button onClick={() => removeEntry(idx)}>x</button>
         </div>
       ))}
