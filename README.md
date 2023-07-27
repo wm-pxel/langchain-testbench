@@ -67,7 +67,7 @@ exit
 
 ## Generate ssh key for github
 
-``` 
+```
 ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
 
 ## Assuming key is placed in default id_rsa for following instructions.
