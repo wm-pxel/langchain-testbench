@@ -20,7 +20,7 @@ const TextModal = ({enterValue, title, buttonText, placeholder, validateInput, m
     if (activeModalId !== modalKey) {
       setModalOpen(false);
     }
-  }, [modalOpen, activeModalId]);
+  }, [activeModalId]);
 
   const handleEnter = useCallback(async () => {
     if (validateInput(text)) {
@@ -36,10 +36,10 @@ const TextModal = ({enterValue, title, buttonText, placeholder, validateInput, m
   }, [text]);
 
   const handleClick = () => {
-    setModalOpen(!modalOpen);
     if (!modalOpen) {
       setActiveModalId(modalKey);
     }
+    setModalOpen(!modalOpen);
   };
 
 

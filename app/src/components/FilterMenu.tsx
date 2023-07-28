@@ -18,7 +18,7 @@ const FilterMenu = ({ selectValue, options, title, modalKey }: FilterMenuProps) 
     if (activeModalId !== modalKey) {
       setModalOpen(false);
     }
-  }, [modalOpen, activeModalId]);
+  }, [activeModalId]);
 
   useEffect(() => setFilteredOptions(filter === '' 
     ? options
@@ -31,10 +31,10 @@ const FilterMenu = ({ selectValue, options, title, modalKey }: FilterMenuProps) 
   };
 
   const handleClick = () => {
-    setModalOpen(!modalOpen);
     if (!modalOpen) {
       setActiveModalId(modalKey);
     }
+    setModalOpen(!modalOpen);
   };
 
   return (
