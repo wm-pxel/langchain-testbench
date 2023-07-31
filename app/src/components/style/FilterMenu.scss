@@ -1,0 +1,56 @@
+
+.filter-menu {
+  position: relative;
+
+  input[type="text"] {
+    background-color: var(--main-background-color);
+    color: #dadada;
+    border: var(--standard-border);
+    border-width: .1rem;
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: left;
+    margin: 0;
+    padding: .5em;
+    width: calc(100% - 3.5rem);
+  }
+
+  .close-filter-menu {
+    position: absolute;
+    top: .25rem;
+    right: 0;
+    padding: .25rem;
+    width: 2rem;
+  }
+
+  .filter-menu-selector {
+    display: none;
+    position: absolute;
+    top: 0rem;
+    left: 0;
+    flex-direction: column;
+    justify-content: space-around;
+    background-color: var(--button-background-color);
+    border: var(--standard-border);
+    border-width: .1rem;
+    border-radius: var(--standard-border-radius);
+    z-index: 1;
+  }
+
+  .filter-menu-selector button {
+    white-space: nowrap;
+  }
+
+  .filter-menu-entries {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    max-height: 75vh;
+    overflow-y: scroll;
+  }
+
+  &.open .filter-menu-selector {
+    display: flex;
+  }
+}

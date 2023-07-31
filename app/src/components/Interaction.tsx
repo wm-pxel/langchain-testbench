@@ -5,7 +5,7 @@ import { computeChainIO } from "../model/spec_control";
 import { escapeHTML } from "../util/html";
 import DOMPurify from 'dompurify';
 import { setTimedMessage } from "../util/errorhandling";
-import "./style/Interaction.css"
+import "./style/Interaction.scss"
 
 
 interface Message {

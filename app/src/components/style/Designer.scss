@@ -1,0 +1,234 @@
+
+.designer {
+  padding-top: 5rem;
+  transition: padding-right 0.5s;
+
+  &.interacting {
+    padding-right: 35rem;
+  }
+  
+  .spec-designer {
+    border: var(--standard-border);
+    border-radius: var(--standard-border-radius);
+    position: relative;
+    display: flex;
+    padding: 2.5rem 1rem 1rem;
+    min-width: 10rem;
+    min-height: 5rem;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: .25rem;
+  }
+  
+  .sequential-spec {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  
+  .highlighted-editor {
+    position: relative;
+    min-height: 10rem;
+  }
+  
+  .highlighted-input, .highlighted-display {
+    color: #dadada;
+    border: none;
+    font-family: Georgia, serif;
+    font-weight: 600;
+    font-size: 1rem;
+    position: relative;
+    text-align: left;
+    padding: .5em;
+    margin: 0;
+    line-height: 1.5em;
+    overflow: scroll;
+    min-width: calc(100% - 1rem);
+    min-height: 10rem;
+  }
+  
+  .highlighted-input {
+    background: none;
+    color: rgba(0,0,0,0);
+    caret-color: #ffffff;
+  }
+  
+  .highlighted-display {
+    background-color: var(--main-background-color);
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: calc(100% - 1.5rem);
+  }
+  
+  .highlighted-display .expr {
+    color: #aaaada;
+  }
+  
+  .highlighted-display .var-name {
+    color: var(--variable-name-color);
+  }
+  
+  .form-element {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 1rem;
+
+    label {
+      font-size: .75rem;
+      text-align: right;
+      padding-right: .5rem;
+      width: 5rem;
+      align-self: flex-start;
+      margin-top: .55rem;
+    }
+  
+    &.text {
+      flex-direction: column;
+      align-items: flex-start;  
+
+      label {
+        text-align: left;
+        width: 100%;
+      }
+    }
+
+    &.error label {
+      color: var(--standard-error-color);
+    }
+
+    .var-name-input, .text-input, textarea {
+      background-color: var(--main-background-color);
+      color: #dadada;
+      border: var(--standard-border);
+      border-width: .1rem;
+      font-family: Georgia, serif;
+      font-weight: 600;
+      font-size: 1rem;
+      text-align: left;
+      margin: 0;
+      padding: .5em;
+    }
+    
+    .var-name-input {
+      color: var(--variable-name-color);
+      border: none;
+    }
+    
+    textarea {
+      min-width: 18rem;
+      min-height: 5rem;
+    }
+    
+    &.error textarea {
+      border-color: var(--standard-error-color);
+    }
+    
+    select {
+      background-color: var(--main-background-color);
+      color: #dadada;
+      border: var(--standard-border);
+      border-width: .1rem;
+      font-family: Georgia, serif;
+      font-weight: 600;
+      font-size: 1rem;
+      text-align: left;
+      margin: 0;
+      padding: .5em;
+      min-width: 16rem;
+    }
+  }
+    
+  .case-spec {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5em;
+  }
+  
+  .case-spec .case-spec-case {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .case-spec .case-spec-case__key {
+    background-color: var(--main-background-color);
+    color: #ffffff;
+    border: none;
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: .8rem;
+    width: 100%;
+    margin-bottom: .5rem;
+  }
+  
+  .reformat-spec .formatters {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 1em;
+  }
+  
+  .reformat-spec .formatter {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: .2em;
+  }
+  
+  .reformat-spec .highlighted-input, .reformat-spec .highlighted-editor, .reformat-spec .highlighted-display {
+    min-height: 5rem;
+  }
+  
+  .add-formatter {
+    align-self: center;
+  }
+  
+  .reformat-spec .reformat-input {
+    background-color: var(--main-background-color);
+    color: var(--primary-font-color);
+    border: none;
+  }
+  
+  .chain-id {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 2em;
+    text-align: right;
+    margin: 0;
+    padding: .8rem 1rem;
+    font-size: .75rem;
+  }
+  
+  .delete-spec {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 2em;
+    margin: 0;
+    padding: .4rem .4rem;
+    font-size: .75rem;
+  }
+  
+  .delete-spec .open-quick-menu {
+    width: 1.5rem;
+    height: 1.5rem;
+    line-height: 1.5rem;
+  }
+  
+  .delete-spec .quick-menu-selector {
+    top: 0;
+  }
+  
+  .transform-func {
+    color: #fff !important;
+  
+  }
+}

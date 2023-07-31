@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import "./style/QuickMenu.css";
+import "./style/QuickMenu.scss";
 import { ModalContext } from "../contexts/ModalContext";
 
 

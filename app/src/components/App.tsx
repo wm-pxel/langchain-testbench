@@ -1,4 +1,4 @@
-import './style/App.css'
+import './style/App.scss'
 import Header from '../components/Header'
 import Designer from '../components/Designer'
 import { ChainSpecProvider } from '../contexts/ChainSpecContext'
