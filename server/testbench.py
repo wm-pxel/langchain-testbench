@@ -1,9 +1,13 @@
+import json
 from flask import Flask, Response, request
 from flask_pymongo import PyMongo
 from bson.json_util import dumps
 from flask_cors import CORS
 from lib.model.chain_revision import ChainRevision
 from werkzeug.exceptions import BadRequest
+from pydantic.json import pydantic_encoder
+from pydantic import parse_obj_as
+from typing import List
 import lib.chain_service as chain_service
 
 app = Flask(__name__)
@@ -68,10 +72,12 @@ if __name__ == "__main__":
 @app.route("/chain/<chain_name>/export", methods=["GET"])
 def export_chain(chain_name):
     exported_chain = chain_service.export_chain(chain_name)
+    chain_json = json.dumps(exported_chain, default=pydantic_encoder)
+
     if exported_chain:
         filename = f"{chain_name}_exported_chain.json"
         return Response(
-            exported_chain,
+            chain_json,
             mimetype="application/json",
             headers={
                 "Content-Disposition": f"attachment;filename={filename}"
@@ -94,8 +100,11 @@ def import_chain_route(chain_name):
         raise BadRequest("File name is not present in request")
     if file and allowed_file(file.filename):
         json_string = file.read().decode('utf-8')
+        json_data = json.loads(json_string)
+        revisions = parse_obj_as(List[ChainRevision], json_data) 
+
         try:
-            chain_service.import_chain(chain_name, json_string)
+            chain_service.import_chain(chain_name, revisions)
             return Response(
                 dumps({"success": f"Import of '{chain_name}' successful."}),
                 mimetype="application/json",

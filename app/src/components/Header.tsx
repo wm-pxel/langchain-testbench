@@ -24,7 +24,6 @@ const Header = () => {
   
   useEffect(() => {
     listChainsAndUpdateRevisions();
-    console.log('isImportModalOpen:', isImportModalOpen);
   }, []);
 
   const loadLatest = async (name: string) => {

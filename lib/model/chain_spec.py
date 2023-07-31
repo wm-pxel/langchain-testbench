@@ -1,5 +1,3 @@
-import logging
-
 from typing import Annotated, Callable, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel, Field
 from langchain.chains.base import Chain

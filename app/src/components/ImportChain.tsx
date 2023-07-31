@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { importChain } from '../api/api';
 import "./style/ImportChain.css";
 
@@ -8,11 +8,11 @@ interface ImportChainProps {
 }
 
 const ImportChain: React.FC<ImportChainProps> = ({ isImportModalOpen, onClose }) => {
-  console.log('Rendering ImportChain');
 
   const [chainName, setChainName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isFileDragOver, setIsFileDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleChainNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChainName(event.target.value);
@@ -59,9 +59,8 @@ const ImportChain: React.FC<ImportChainProps> = ({ isImportModalOpen, onClose })
   };
 
   const handleBrowseClick = () => {
-    const fileInput = document.getElementById('file_upload');
-    if (fileInput) {
-      fileInput.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -98,6 +97,7 @@ const ImportChain: React.FC<ImportChainProps> = ({ isImportModalOpen, onClose })
         <input
           type="file"
           id="file_upload"
+          ref={fileInputRef}
           onChange={handleFileUpload}
           style={{ display: 'none' }}
         />
