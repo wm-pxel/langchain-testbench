@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { listChains, loadRevision, saveRevision, exportChain, importChain } from "../api/api";
+import { listChains, loadRevision, saveRevision } from "../api/api";
 import { createRevision } from "../model/spec_control";
 import ChainSpecContext from "../contexts/ChainSpecContext";
 import { LLMContext } from "../contexts/LLMContext";
@@ -9,6 +9,7 @@ import { defaultLLMs } from "../model/llm";
 import { setTimedMessage } from "../util/errorhandling";
 import "./style/Header.scss";
 import ImportChain from "./ImportChain";
+import { downloadChain } from "../util/download";
 
 
 const Header = () => {
@@ -79,17 +80,7 @@ const Header = () => {
   const exportChainClick = async () => {
     setErrorMessage(null);
     try {
-      const blob = await exportChain(chainName);
-      // Create a temporary URL for the blob
-      const url = window.URL.createObjectURL(blob);
-      // Create a link element
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${chainName}_exported_chain.json`;
-      // Programmatically click the link to trigger the download
-      link.click();
-      // Clean up the temporary URL
-      window.URL.revokeObjectURL(url);
+      downloadChain(chainName);
     } catch (error) {
       popupErrorMessage("Export failed: " + error);
     }    
