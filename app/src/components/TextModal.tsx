@@ -1,20 +1,29 @@
-import { useCallback, useState } from "react";
-import "./style/TextModal.css";
+import { useCallback, useState, useContext, useEffect } from "react";
+import { ModalContext } from "../contexts/ModalContext";
+import "./style/TextModal.scss";
 
 interface TextModalProps {
+  modalKey: string
   title: string;
   buttonText: string;
   placeholder: string;
   enterValue: (option: string) => void;
-  validateInput: (input: string) => boolean;
+  validateInput: (input: string) => Promise<boolean>;
 }
 
-const TextModal = ({enterValue, title, buttonText, placeholder, validateInput}: TextModalProps) => {
+const TextModal = ({enterValue, title, buttonText, placeholder, validateInput, modalKey}: TextModalProps) => {
+  const { activeModalId, setActiveModalId } = useContext(ModalContext);
   const [modalOpen, setModalOpen] = useState(false);
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    if (activeModalId !== modalKey) {
+      setModalOpen(false);
+    }
+  }, [activeModalId]);
 
   const handleEnter = useCallback(async () => {
-    if (validateInput(text)) {
+    if (await validateInput(text)) {
       setText('');
       setModalOpen(false);
       enterValue(text);
@@ -26,9 +35,17 @@ const TextModal = ({enterValue, title, buttonText, placeholder, validateInput}: 
     setModalOpen(false);
   }, [text]);
 
+  const handleClick = () => {
+    if (!modalOpen) {
+      setActiveModalId(modalKey);
+    }
+    setModalOpen(!modalOpen);
+  };
+
+
   return (
     <div className={`text-modal ${modalOpen ? 'open' : ''}`}>
-      <button onClick={()=>setModalOpen(!modalOpen)} className="open-text-modal">{title}</button>
+      <button onClick={handleClick} className="open-text-modal">{title}</button>
       <div className="text-modal-selector">
         <input type="text" value={text} onChange={(e) => setText(e.target.value)} placeholder={placeholder} />
         <div className="text-modal-actions">

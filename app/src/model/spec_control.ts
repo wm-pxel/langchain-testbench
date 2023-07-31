@@ -91,6 +91,8 @@ export const computeChainIO = (spec: ChainSpec): [Set<string>, Set<string>] => {
 
     case 'transform_spec':
       return [new Set(spec.input_keys), new Set(spec.output_keys)];
+    case 'vector_search_spec':
+      return [new Set(spec.input_variables), new Set([spec.output_key])];
     }
 }
 
@@ -160,6 +162,23 @@ export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
         input_keys: ['x','y'],
         output_keys: ['z','w'],
       };
+    case 'vector_search_spec':
+      return {
+        chain_type: "vector_search_spec",
+        query: "",
+        embedding_engine: "huggingface",
+        embedding_params: {},
+        database: "pinecone",
+        database_params: {
+          index: "test", 
+          text_key: "text"
+        },
+        num_results: 10,
+        min_score: 0.0,
+        input_variables: [],
+        output_key: "results",
+      };
+
     default:
       throw new Error(`Unknown spec type: ${type}`);
   }

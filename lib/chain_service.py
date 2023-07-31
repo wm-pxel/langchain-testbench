@@ -13,8 +13,14 @@ from lib.model.lang_chain_context import LangChainContext
 from lib.db import chain_revision_repository, chain_repository, result_repository
 from bson import ObjectId
 import dotenv
+import os
+import pinecone
 
 dotenv.load_dotenv()
+
+def initialize_services():
+  if os.getenv("PINECONE_API_KEY") is not None:
+    pinecone.init(api_key=os.getenv("PINECONE_API_KEY"), environment=os.getenv("PINECONE_ENVIRONMENT"))
 
 def save_revision(chain_name, revision) -> str:
   chain = chain_repository.find_one_by({"name": chain_name})

@@ -1,15 +1,24 @@
-import { useEffect, useState } from "react";
-import "./style/FilterMenu.css";
+import { useEffect, useState, useContext } from "react";
+import { ModalContext } from "../contexts/ModalContext";
+import "./style/FilterMenu.scss";
 
 interface FilterMenuProps {
+  modalKey: string
   title: string;
   options: string[];
   selectValue: (option: string) => void;
 }
-const FilterMenu = ({selectValue, options, title}: FilterMenuProps) => {
+const FilterMenu = ({ selectValue, options, title, modalKey }: FilterMenuProps) => {
+  const { activeModalId, setActiveModalId } = useContext(ModalContext);
   const [modalOpen, setModalOpen] = useState(false);
-  const [filter, setFilter] = useState('');
+  const [filter, setFilter] = useState("");
   const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (activeModalId !== modalKey) {
+      setModalOpen(false);
+    }
+  }, [activeModalId]);
 
   useEffect(() => setFilteredOptions(filter === '' 
     ? options
@@ -19,11 +28,18 @@ const FilterMenu = ({selectValue, options, title}: FilterMenuProps) => {
   const handleInsert = (option: string) => {
     setModalOpen(false);
     selectValue(option);
-  }
+  };
+
+  const handleClick = () => {
+    if (!modalOpen) {
+      setActiveModalId(modalKey);
+    }
+    setModalOpen(!modalOpen);
+  };
 
   return (
     <div className={`filter-menu ${modalOpen ? 'open' : ''}`}>
-      <button onClick={()=>setModalOpen(!modalOpen)} className="open-filter-menu">{title}</button>
+      <button onClick={handleClick} className="open-filter-menu">{title}</button>
       <div className="filter-menu-selector">
         <input type="text" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="filter" />
         <button onClick={()=>setModalOpen(false)} className="close-filter-menu">x</button>

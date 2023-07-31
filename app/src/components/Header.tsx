@@ -7,6 +7,7 @@ import FilterMenu from "./FilterMenu";
 import TextModal from "./TextModal";
 import { defaultLLMs } from "../model/llm";
 import { setTimedMessage } from "../util/errorhandling";
+import "./style/Header.scss";
 import "./style/Header.css";
 import ImportChain from "./ImportChain";
 
@@ -117,8 +118,8 @@ const Header = () => {
       {errorMessage && <div className="error-message">{errorMessage}</div>}
       <div className="header">
         <div className="file-options">
-          <TextModal title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={(text) => isNewChainNameValid(text)} />
-          <FilterMenu title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
+          <TextModal modalKey="new-menu" title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={(text) => isNewChainNameValid(text)} />
+          <FilterMenu modalKey="load-menu" title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
           <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
             Save
           </button>

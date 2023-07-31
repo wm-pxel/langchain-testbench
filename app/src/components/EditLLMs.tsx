@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { LLMContext } from "../contexts/LLMContext";
 import { HuggingFaceHubLLM, LLM, OpenAILLM } from "../model/llm";
-import "./style/EditLLMs.css";
+import "./style/EditLLMs.scss";
 import QuickMenu from "./QuickMenu";
 
 export interface OpenAILLMEditorProps {
@@ -192,7 +192,7 @@ const EditLLMs = () => {
           }
         })}
         <div className="llm-actions">
-          <QuickMenu selectValue={addLLM} options={{ openai: 'Open AI', huggingface_hub: 'Hugging Face' }} />
+          <QuickMenu modalKey="add-llm-menu" selectValue={addLLM} options={{ openai: 'Open AI', huggingface_hub: 'Hugging Face' }} />
         </div>
       </div>
     </div>

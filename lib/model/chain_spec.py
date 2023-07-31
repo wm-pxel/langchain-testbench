@@ -8,8 +8,17 @@ from lib.chains.case_chain import CaseChain
 from lib.chains.api_chain import APIChain
 from lib.chains.reformat_chain import ReformatChain
 from lib.chains.llm_recording_chain import LLMRecordingChain
+from lib.chains.vector_search_chain import VectorSearchChain
 
-ChainSpec = Annotated[Union["APISpec", "SequentialSpec", "LLMSpec", "CaseSpec", "ReformatSpec", "TransformSpec"], Field(discriminator='chain_type')]
+ChainSpec = Annotated[Union[
+  "APISpec",
+  "SequentialSpec",
+  "LLMSpec",
+  "CaseSpec",
+  "ReformatSpec",
+  "TransformSpec",
+  "VectorSearchSpec"
+  ], Field(discriminator='chain_type')]
 
 class BaseSpec(BaseModel):
   chain_id: int
@@ -158,6 +167,30 @@ class APISpec(BaseSpec):
       output_variable=self.output_key,
     )
 
+class VectorSearchSpec(BaseSpec):
+  chain_type: Literal["vector_search_spec"]
+  query: str
+  embedding_engine: str
+  embedding_params: Dict[str, Any]
+  database: str
+  database_params: Dict[str, Any]
+  num_results: int
+  min_score: float = 0.0
+  input_variables: List[str] = []
+  output_key: str = 'results'
+
+  def to_lang_chain(self, ctx: LangChainContext) -> Chain:
+    return VectorSearchChain(
+      query=self.query,
+      embedding_engine=self.embedding_engine,
+      embedding_params=self.embedding_params,
+      database=self.database,
+      database_params=self.database_params,
+      input_variables=self.input_variables,
+      num_results=self.num_results,
+      output_key=self.output_key,
+      min_score=self.min_score,
+    )
 
 SequentialSpec.update_forward_refs()
 CaseSpec.update_forward_refs()
