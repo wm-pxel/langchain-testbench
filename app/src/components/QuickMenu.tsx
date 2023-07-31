@@ -21,7 +21,7 @@ const QuickMenu = ({modalKey, selectValue, options, buttonText, menuClass }: Qui
     if (activeModalId !== modalKey) {
       setModalOpen(false);
     }
-  }, [modalOpen, activeModalId]);
+  }, [activeModalId]);
 
   const handleInsert = (option: string) => {
     setModalOpen(false);
@@ -29,10 +29,10 @@ const QuickMenu = ({modalKey, selectValue, options, buttonText, menuClass }: Qui
   }
 
   const handleClick = () => {
-    setModalOpen(!modalOpen);
     if (!modalOpen) {
       setActiveModalId(modalKey);
     }
+    setModalOpen(!modalOpen);
   };
 
   return (
