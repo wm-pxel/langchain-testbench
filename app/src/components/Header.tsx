@@ -8,7 +8,6 @@ import TextModal from "./TextModal";
 import { defaultLLMs } from "../model/llm";
 import { setTimedMessage } from "../util/errorhandling";
 import "./style/Header.scss";
-import "./style/Header.css";
 import ImportChain from "./ImportChain";
 
 

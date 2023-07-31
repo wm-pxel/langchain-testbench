@@ -1,4 +1,4 @@
-from typing import Annotated, Callable, Dict, List, Literal, Optional, Union
+from typing import Annotated, Callable, Dict, List, Literal, Optional, Union, Any
 from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
 from langchain.chains import LLMChain, SequentialChain, TransformChain

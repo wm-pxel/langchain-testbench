@@ -5,7 +5,6 @@ import json
 
 from huggingface_hub.inference_api import InferenceApi
 from langchain import HuggingFaceHub, OpenAI
-from langchain.callbacks import SharedCallbackManager
 from lib.model.chain_revision import ChainRevision, find_ancestor_ids
 from lib.model.chain import Chain
 from lib.model.chain_spec import LLMSpec
