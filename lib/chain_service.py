@@ -1,7 +1,7 @@
 from typing import Optional
 from lib.model.chain_revision import find_ancestor_ids
 from lib.model.chain import Chain
-from lib.model.chain_spec import LLMSpec
+from lib.model.chain_spec import LLMChainSpec
 from lib.model.lang_chain_context import LangChainContext
 from lib.db import chain_revision_repository, chain_repository, result_repository
 from bson import ObjectId

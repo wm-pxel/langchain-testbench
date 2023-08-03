@@ -2,7 +2,7 @@ import json
 from typing import Dict, Optional
 from pydantic import BaseModel, validator
 from pydantic_mongo import AbstractRepository, ObjectIdField
-from lib.model.chain_spec import APISpec, SequentialSpec, LLMSpec, CaseSpec, ReformatSpec, TransformSpec, VectorSearchSpec, ChainSpec
+from lib.model.chain_spec import APIChainSpec, SequentialChainSpec, LLMChainSpec, CaseChainSpec, ReformatChainSpec, TransformChainSpec, VectorSearchChainSpec, ChainSpec
 from langchain.llms.loading import load_llm_from_config
 
 def dump_json(obj: object, **kwargs):

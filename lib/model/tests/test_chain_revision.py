@@ -1,7 +1,7 @@
 import os
 from typing import List
 from model.chain_revision import ChainRevision
-from model.chain_spec import LLMSpec
+from model.chain_spec import LLMChainSpec
 from langchain.llms import OpenAI
 
 
@@ -13,13 +13,13 @@ def test_chain_revision_serialization():
 
   chain_revision = ChainRevision(
       chain_id=1,
-      chain=LLMSpec(
+      chain=LLMChainSpec(
           chain_id=1,
           input_keys=["input1", "input2"],
           output_key="output1",
           prompt="prompt",
           llm_key="llm_key",
-          chain_type="llm_spec",
+          chain_type="llm_chain_spec",
       ),
       llms={"llm": llm},
   )
