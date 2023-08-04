@@ -78,10 +78,7 @@ def export_chain(chain_name):
         filename = f"{chain_name}_exported_chain.json"
         return Response(
             chain_json,
-            mimetype="application/json",
-            headers={
-                "Content-Disposition": f"attachment;filename={filename}"
-            }
+            mimetype="application/json"
         )
     else:
         return Response(

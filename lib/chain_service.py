@@ -1,3 +1,5 @@
+import logging
+
 import traceback
 from types import MappingProxyType
 from typing import Optional, Dict
@@ -14,6 +16,8 @@ from bson import ObjectId
 import dotenv
 import os
 import pinecone
+
+logging.basicConfig(level=logging.INFO)
 
 dotenv.load_dotenv()
 
@@ -150,25 +154,20 @@ def results(revision_id: str, ancestors: bool, chain_id: Optional[str] = None):
   return result_repository.find_by({"revision": {"$in": revision_ids}, "chain_id": int(chain_id)})
 
 def export_chain(chain_name: str) -> str:
-    chain = chain_repository.find_one_by({"name": chain_name})
-    if chain is None:
+    export_ids = history_by_chain_name(chain_name)
+
+    if export_ids is None:
         return None
+    chain_revisions = [chain_revision_repository.find_one_by_id(id) for id in export_ids]
+    if not all(chain_revisions):
+        missing_id = next((id for id, revision in zip(export_ids, chain_revisions) if not revision), None)
+        raise Exception("Could not find revision with id: " + missing_id)
 
-    chain_revision = chain_revision_repository.find_one_by_id(chain.revision)
-    if chain_revision is None:
-        return None
-
-    ancestor_ids = find_ancestor_ids(chain_revision.id, chain_revision_repository)
-    chain_revisions = [chain_revision]
-
-    for ancestor_id in ancestor_ids:
-        ancestor_revision = chain_revision_repository.find_one_by_id(ancestor_id)
-        if ancestor_revision:
-            chain_revisions.append(ancestor_revision)
+    # reverse the order
+    chain_revisions = chain_revisions[::-1]
 
     exported_chain = json.loads('[' + ','.join(revision.json() for revision in chain_revisions) + ']')
     return exported_chain
-    
 
 def determine_llm_type(llm):
     if isinstance(llm, OpenAI):
@@ -186,8 +185,7 @@ def import_chain(chain_name, chain_details):
           try:
             if not revision.parent:
               root_revision = revision
-            chain_revision = ChainRevision(**revision)
-            chain_revision_repository.save(chain_revision)
+            chain_revision_repository.save(revision)
           except Exception as e:
             traceback.print_exc()
 
@@ -199,7 +197,6 @@ def import_chain(chain_name, chain_details):
       traceback.print_exc()
 
 def find_leaf_revision(revisions, current_revision):
-    
     if (current_revision is None):
        return current_revision.id
     id = current_revision.id
