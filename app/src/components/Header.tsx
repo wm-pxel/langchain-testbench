@@ -48,9 +48,9 @@ const Header = () => {
     setRevision(null);
   }
 
-  const isNewChainNameValid = (text: string) => {
+  const isNewChainNameValid = async (text: string) => {
     setErrorMessage(null);
-    var response = listChainsAndUpdateRevisions();
+    var response = await listChainsAndUpdateRevisions();
     if (text in response) {
       setTimedMessage(setErrorMessage, `Chain name ${text} already exists`);
       return false;
@@ -108,7 +108,7 @@ const Header = () => {
       {errorMessage && <div className="error-message">{errorMessage}</div>}
       <div className="header">
         <div className="file-options">
-          <TextModal modalKey="new-menu" title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={(text) => isNewChainNameValid(text)} />
+          <TextModal modalKey="new-menu" title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={async (text) => await isNewChainNameValid(text)} />
           <FilterMenu modalKey="load-menu" title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
           <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
             Save
