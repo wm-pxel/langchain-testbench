@@ -75,7 +75,6 @@ def export_chain(chain_name):
     chain_json = json.dumps(exported_chain, default=pydantic_encoder)
 
     if exported_chain:
-        filename = f"{chain_name}_exported_chain.json"
         return Response(
             chain_json,
             mimetype="application/json"
