@@ -1,7 +1,6 @@
 from typing import Optional
 from lib.model.chain_revision import find_ancestor_ids
 from lib.model.chain import Chain
-from lib.model.chain_spec import LLMChainSpec
 from lib.model.lang_chain_context import LangChainContext
 from lib.db import chain_revision_repository, chain_repository, result_repository
 from bson import ObjectId
@@ -73,6 +72,7 @@ def save_patch(chain_name, patch) -> str:
 
   return revision.id
 
+
 def branch(chain_name, branch_name):
   """Branch a chain revision.
   This will create a new chain that points to the same revision
@@ -122,7 +122,11 @@ def run_once(chain_name, input, record):
   chain = chain_repository.find_one_by({"name": chain_name})
   revision = chain_revision_repository.find_one_by_id(chain.revision)
 
-  ctx = LangChainContext(llms=revision.llms, recording=True)
+  filledLLMs = {}
+  for key, llm in revision.llms.items():
+    filledLLMs[key] = llm.to_lang_llm()
+
+  ctx = LangChainContext(llms=filledLLMs, recording=True)
   lang_chain = revision.chain.to_lang_chain(ctx)
   output = lang_chain._call(input)
 
