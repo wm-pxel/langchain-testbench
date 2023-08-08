@@ -22,7 +22,7 @@ ChainSpec = Annotated[Union[
   "VectorSearchChainSpec"
   ], Field(discriminator='chain_type')]
 
-class BaseSpec(BaseModel):
+class BaseChainSpec(BaseModel):
   chain_id: int
 
   @property
@@ -55,10 +55,10 @@ class BaseSpec(BaseModel):
     return replace(self).copy(deep=True)
 
 
-class LLMChainSpec(BaseSpec):
+class LLMChainSpec(BaseChainSpec):
   input_keys: List[str]
   output_key: str
-  chain_type: Literal["llm_chain_spec"]
+  chain_type: Literal["llm_chain_spec"] = "llm_chain_spec"
   prompt: str
   llm_key: str
 
@@ -78,10 +78,10 @@ class LLMChainSpec(BaseSpec):
     return LLMChain(llm=llm, prompt=promptTemplate, output_key=self.output_key)
 
 
-class SequentialChainSpec(BaseSpec):
+class SequentialChainSpec(BaseChainSpec):
   input_keys: List[str]
   output_keys: List[str]
-  chain_type: Literal["sequential_chain_spec"]
+  chain_type: Literal["sequential_chain_spec"] = "sequential_chain_spec"
   chains: List[ChainSpec]
 
   @property
@@ -98,8 +98,8 @@ class SequentialChainSpec(BaseSpec):
     return sequential
 
 
-class CaseChainSpec(BaseSpec):
-  chain_type: Literal["case_chain_spec"]
+class CaseChainSpec(BaseChainSpec):
+  chain_type: Literal["case_chain_spec"] = "case_chain_spec"
   cases: Dict[str, ChainSpec]
   categorization_key: str
   default_case: ChainSpec
@@ -123,8 +123,8 @@ class CaseChainSpec(BaseSpec):
     return case_chain
 
 
-class ReformatChainSpec(BaseSpec):
-  chain_type: Literal["reformat_chain_spec"]
+class ReformatChainSpec(BaseChainSpec):
+  chain_type: Literal["reformat_chain_spec"] = "reformat_chain_spec"
   formatters: Dict[str, str]
   input_keys: List[str]
 
@@ -132,8 +132,8 @@ class ReformatChainSpec(BaseSpec):
     return ReformatChain(formatters=self.formatters, input_variables=self.input_keys)
 
 
-class TransformChainSpec(BaseSpec):
-  chain_type: Literal["transform_chain_spec"]
+class TransformChainSpec(BaseChainSpec):
+  chain_type: Literal["transform_chain_spec"] = "transform_chain_spec"
   transform_func: str
   input_keys: List[str]
   output_keys: List[str]
@@ -149,8 +149,8 @@ class TransformChainSpec(BaseSpec):
     return TransformChain(input_variables=self.input_keys, output_variables=self.output_keys, transform=self.create_function(self.transform_func))
 
 
-class APIChainSpec(BaseSpec):
-  chain_type: Literal["api_chain_spec"]
+class APIChainSpec(BaseChainSpec):
+  chain_type: Literal["api_chain_spec"] = "api_chain_spec"
   url: str
   method: str
   headers: Optional[Dict[str, str]]
@@ -168,8 +168,8 @@ class APIChainSpec(BaseSpec):
       output_variable=self.output_key,
     )
 
-class VectorSearchChainSpec(BaseSpec):
-  chain_type: Literal["vector_search_chain_spec"]
+class VectorSearchChainSpec(BaseChainSpec):
+  chain_type: Literal["vector_search_chain_spec"] = "vector_search_chain_spec"
   query: str
   embedding_engine: str
   embedding_params: Dict[str, Any]

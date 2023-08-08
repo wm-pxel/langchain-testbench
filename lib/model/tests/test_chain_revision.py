@@ -1,15 +1,12 @@
 import os
-from typing import List
 from model.chain_revision import ChainRevision
 from model.chain_spec import LLMChainSpec
-from langchain.llms import OpenAI
+from model.llm_spec import OpenAILLMSpec
 
 
 def test_chain_revision_serialization():
   if os.environ.get("OPENAI_API_KEY") is None:
     os.environ["OPENAI_API_KEY"] = "set me!"
-
-  llm = OpenAI()
 
   chain_revision = ChainRevision(
       chain_id=1,
@@ -21,10 +18,9 @@ def test_chain_revision_serialization():
           llm_key="llm_key",
           chain_type="llm_chain_spec",
       ),
-      llms={"llm": llm},
+      llms={"llm": OpenAILLMSpec(llm_id=0, llm_key="test")},
   )
 
   serialized = chain_revision.json()
   deserialized = ChainRevision.parse_raw(serialized)
-  assert deserialized.llms["llm"] == llm
   assert deserialized == chain_revision
