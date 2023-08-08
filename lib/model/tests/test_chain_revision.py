@@ -8,6 +8,9 @@ def test_chain_revision_serialization():
   if os.environ.get("OPENAI_API_KEY") is None:
     os.environ["OPENAI_API_KEY"] = "set me!"
 
+  llm = OpenAILLMSpec(model_name="davinci", temperature=0.5, max_tokens=10, top_p=1.0, frequency_penalty=0.0,
+                      presence_penalty=0.0, n=1, best_of=1, request_timeout=10, logit_bias=None)
+
   chain_revision = ChainRevision(
       chain_id=1,
       chain=LLMChainSpec(
@@ -18,7 +21,7 @@ def test_chain_revision_serialization():
           llm_key="llm_key",
           chain_type="llm_chain_spec",
       ),
-      llms={"llm": OpenAILLMSpec(llm_id=0, llm_key="test")},
+      llms={"llm": llm},
   )
 
   serialized = chain_revision.json()
