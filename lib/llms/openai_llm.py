@@ -2,6 +2,7 @@ from typing import Any, Optional, Dict, Mapping
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM
 from langchain.llms.openai import OpenAI
+import json
 
 
 class OpenAILLM(LLM):
@@ -13,14 +14,14 @@ class OpenAILLM(LLM):
   presence_penalty: float
   n: int
   best_of: int
-  request_timeout: int | None
-  logit_bias: Dict[int, int]
+  request_timeout: Optional[int]
+  logit_bias: Optional[Dict[int, int]]
 
-  llm: Any = None
+  llm: OpenAI = None
 
   def __init__(self, model_name: str, temperature: float = 0.0, max_tokens: int = 64, top_p: float = 1.0,
                frequency_penalty: float = 0.0, presence_penalty: float = 0.0, n: int = 1, best_of: int = 1,
-               request_timeout: int | None = None, logit_bias: Dict[int, int] = None):
+               request_timeout: Optional[int] = None, logit_bias: Dict[int, int] = None):
     super(OpenAILLM, self).__init__(model_name=model_name, temperature=temperature, max_tokens=max_tokens,
                                     top_p=top_p, frequency_penalty=frequency_penalty, presence_penalty=presence_penalty,
                                     n=n, best_of=best_of, request_timeout=request_timeout, logit_bias=logit_bias)

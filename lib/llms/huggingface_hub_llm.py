@@ -7,16 +7,16 @@ from langchain.llms.huggingface_hub import HuggingFaceHub
 class HuggingFaceHubLLM(LLM):
   temperature: float
   max_length: int
-  min_new_tokens: int | None
-  max_time: int | None
+  min_new_tokens: Optional[int]
+  max_time: Optional[int]
   repo_id: str
-  task: str | None
+  task: Optional[str]
 
-  llm: Any = None
+  llm: HuggingFaceHub = None
 
 
-  def __init__(self, temperature: float = 0.0, max_length: int = 64, min_new_tokens: int | None = None,
-               max_time: int | None = None, repo_id: str = "hf", task: str | None = None):
+  def __init__(self, temperature: float = 0.0, max_length: int = 64, min_new_tokens: Optional[int] = None,
+               max_time: Optional[int] = None, repo_id: str = "hf", task: Optional[str] = None):
     super(HuggingFaceHubLLM, self).__init__(temperature=temperature, max_length=max_length, min_new_tokens=min_new_tokens,
                                             max_time=max_time, repo_id=repo_id, task=task)
     self.llm = HuggingFaceHub(repo_id=repo_id, task=task, model_kwargs={
