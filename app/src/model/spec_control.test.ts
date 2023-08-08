@@ -2,13 +2,13 @@ import { computeChainIO, deleteChainSpec, findByChainId, insertChainSpec, update
 import { CaseSpec, LLMSpec, SequentialSpec } from './specs';
 
 const exampleSpec1 = (): SequentialSpec => ({
-  chain_type: 'sequential_spec',
+  chain_type: 'sequential_chain_spec',
   chain_id: 1,
   input_keys: [],
   output_keys: [],
   chains: [
     {
-      chain_type: 'llm_spec',
+      chain_type: 'llm_chain_spec',
       chain_id: 2,
       input_keys: ['fish', 'cat'],
       output_key: 'dog',
@@ -16,7 +16,7 @@ const exampleSpec1 = (): SequentialSpec => ({
       llm_key: ''          
     },
     {
-      chain_type: 'llm_spec',
+      chain_type: 'llm_chain_spec',
       chain_id: 3,
       input_keys: ['dog', 'octopus'],
       output_key: 'tree',
@@ -27,13 +27,13 @@ const exampleSpec1 = (): SequentialSpec => ({
 });
 
 const exampleSpec2 = (): SequentialSpec => ({
-  chain_type: 'sequential_spec',
+  chain_type: 'sequential_chain_spec',
   chain_id: 1,
   input_keys: [],
   output_keys: [],
   chains: [
     {
-      chain_type: 'llm_spec',
+      chain_type: 'llm_chain_spec',
       chain_id: 2,
       input_keys: ['fish', 'cat'],
       output_key: 'dog',
@@ -41,12 +41,12 @@ const exampleSpec2 = (): SequentialSpec => ({
       llm_key: ''          
     },
     {
-      chain_type: 'case_spec',
+      chain_type: 'case_chain_spec',
       chain_id: 3,
       categorization_key: 'baz',
       cases: {
         '1': {
-          chain_type: 'llm_spec',
+          chain_type: 'llm_chain_spec',
           chain_id: 4,
           input_keys: ['dog', 'octopus'],
           output_key: 'tree',
@@ -55,7 +55,7 @@ const exampleSpec2 = (): SequentialSpec => ({
         }
       },
       default_case: {
-        chain_type: 'llm_spec',
+        chain_type: 'llm_chain_spec',
         chain_id: 5,
         input_keys: ['train', 'octopus'],
         output_key: 'tree',
@@ -70,7 +70,7 @@ const exampleSpec2 = (): SequentialSpec => ({
 describe('findByChainId', () => {
   it('should return the chain spec with the given chain id', () => {
     expect(findByChainId(3, exampleSpec1())).toEqual({
-      chain_type: 'llm_spec',
+      chain_type: 'llm_chain_spec',
       chain_id: 3,
       input_keys: ['dog', 'octopus'],
       output_key: 'tree',
@@ -125,37 +125,37 @@ describe('updateChildIO', () => {
 });
 
 describe('insertChainSpec', () => {
-  const expectedNewSpec = {chain_type: 'llm_spec', chain_id: 10, input_keys: [], output_key: 'text', prompt: '', llm_key: 'llm'};
+  const expectedNewSpec = {chain_type: 'llm_chain_spec', chain_id: 10, input_keys: [], output_key: 'text', prompt: '', llm_key: 'llm'};
 
   it('should replace an empty chain with the inserted spec', () => {
-    const newSpec = insertChainSpec(null, 10, 'llm_spec', 0, 0);
+    const newSpec = insertChainSpec(null, 10, 'llm_chain_spec', 0, 0);
     expect(newSpec).toEqual(expectedNewSpec);
   });
 
   it('should insert a chain spec into the beginning of a sequential spec', () => {
     const example = exampleSpec1();
-    const newSpec = insertChainSpec(example, 10, 'llm_spec', 1, 0);
+    const newSpec = insertChainSpec(example, 10, 'llm_chain_spec', 1, 0);
     expect(newSpec).not.toBe(example);
     expect(newSpec).toEqual({...example, chains: [expectedNewSpec, ...example.chains]});
   });
 
   it('should insert a chain spec into the middle of a sequential spec', () => {
     const example = exampleSpec1();
-    const newSpec = insertChainSpec(example, 10, 'llm_spec', 1, 1);
+    const newSpec = insertChainSpec(example, 10, 'llm_chain_spec', 1, 1);
     expect(newSpec).not.toBe(example);
     expect(newSpec).toEqual({...example, chains: [example.chains[0], expectedNewSpec, example.chains[1]]});
   });
 
   it('should insert a chain spec into the end of a sequential spec', () => {
     const example = exampleSpec1();
-    const newSpec = insertChainSpec(example, 10, 'llm_spec', 1, 2);
+    const newSpec = insertChainSpec(example, 10, 'llm_chain_spec', 1, 2);
     expect(newSpec).not.toBe(example);
     expect(newSpec).toEqual({...example, chains: [...example.chains, expectedNewSpec]});
   });
 
   it('should insert into a case spec', () => {
     const example = exampleSpec2();
-    const newSpec = insertChainSpec(example, 10, 'llm_spec', 3, 0);
+    const newSpec = insertChainSpec(example, 10, 'llm_chain_spec', 3, 0);
 
     const exampleCase = example.chains[1] as CaseSpec;
     const expectedCaseSpec = {
@@ -176,7 +176,7 @@ describe('insertChainSpec', () => {
     // modify case so it has a sequential spec case and no default
     exampleCase.default_case = null;
     const exampleSeq: SequentialSpec = {
-      chain_type: 'sequential_spec',
+      chain_type: 'sequential_chain_spec',
       chain_id: 7,
       input_keys: [],
       output_keys: [],
@@ -184,7 +184,7 @@ describe('insertChainSpec', () => {
     }
     exampleCase.cases['1'] = exampleSeq;
 
-    const newSpec = insertChainSpec(example, 10, 'llm_spec', 7, 0);
+    const newSpec = insertChainSpec(example, 10, 'llm_chain_spec', 7, 0);
 
     const expectedCaseSpec = {
       ...exampleCase,
@@ -322,7 +322,7 @@ describe('updateChainSpec', () => {
     const example = exampleSpec2();
 
     const updated: LLMSpec = {
-      chain_type: 'llm_spec',
+      chain_type: 'llm_chain_spec',
       chain_id: 10,
       llm_key: 'new_llm',
       prompt: 'new_prompt',
