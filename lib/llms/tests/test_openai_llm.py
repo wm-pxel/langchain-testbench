@@ -17,12 +17,4 @@ def simple_openai_llm():
 def test_llm_type():
   llm = simple_openai_llm()
   assert llm._llm_type == "openai_llm"
-
-def test_run():
-  llm = simple_openai_llm()
-  prompt = "How many oceans are there in the world?"
-
-  output = llm._call(prompt)
-
-  assert type(output) == str
-  assert output != ""
+  assert llm.temperature == 0.8

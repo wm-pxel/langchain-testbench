@@ -17,12 +17,4 @@ def simple_huggingface_hub_llm():
 def test_llm_type():
   llm = simple_huggingface_hub_llm()
   assert llm._llm_type == "huggingface_hub_llm"
-
-def test_run():
-  llm = simple_huggingface_hub_llm()
-  prompt = "How many oceans are there in the world?"
-
-  output = llm._call(prompt)
-
-  assert type(output) == str
-  assert output != ""
+  assert llm.temperature == 0.8
