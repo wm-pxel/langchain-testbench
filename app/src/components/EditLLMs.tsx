@@ -31,7 +31,7 @@ const OpenAILLMEditor = ({ llmKey, llm, updateLLM }: OpenAILLMEditorProps) => {
       best_of: 1,
       request_timeout: null,
       logit_bias: {},
-      _type: 'openai',
+      llm_type: 'openai_llm',
     });
   }, [name, modelName, temperature, maxTokens, topP, frequencyPenalty, presencePenalty]);
 
@@ -105,12 +105,14 @@ const HuggingFaceLLMEditor = ({ llmKey, llm, updateLLM }: HuggingFaceHubLLMEdito
 
   useEffect((): void => {
     updateLLM(name, { 
-      _type: 'huggingface_hub',
+      llm_type: 'huggingface_hub_llm',
       repo_id: repoId,
       task: null,
       model_kwargs: {
         temperature: temperature,
         max_length: maxLength,
+        min_new_tokens: null,
+        max_time: null
       }
     });
   }, [name, repoId, temperature, maxLength]);
@@ -185,14 +187,14 @@ const EditLLMs = () => {
       </div>
       <div className="llms">
         {Object.entries(llms).map(([llmKey, llm], idx) => {
-          if (llm._type === 'openai') {
+          if (llm.llm_type === 'openai_llm') {
             return <OpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
-          } else if (llm._type === 'huggingface_hub') {
+          } else if (llm.llm_type === 'huggingface_hub_llm') {
             return <HuggingFaceLLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           }
         })}
         <div className="llm-actions">
-          <QuickMenu modalKey="add-llm-menu" selectValue={addLLM} options={{ openai: 'Open AI', huggingface_hub: 'Hugging Face' }} />
+          <QuickMenu modalKey="add-llm-menu" selectValue={addLLM} options={{ openai_llm: 'Open AI', huggingface_hub_llm: 'Hugging Face' }} />
         </div>
       </div>
     </div>
