@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { LLMContext } from "../contexts/LLMContext";
-import { HuggingFaceHubLLM, LLM, OpenAILLM } from "../model/llm";
+import { HuggingFaceHubLLM, LLM, OpenAILLM, ChatOpenAILLM } from "../model/llm";
 import "./style/EditLLMs.scss";
 import QuickMenu from "./QuickMenu";
 
@@ -152,6 +152,67 @@ const HuggingFaceLLMEditor = ({ llmKey, llm, updateLLM }: HuggingFaceHubLLMEdito
   );
 }
 
+export interface ChatOpenAILLMEditorProps {
+  llmKey: string,
+  llm: ChatOpenAILLM
+  updateLLM: (llmKey: string, llm: LLM) => void
+}
+
+const ChatOpenAILLMEditor = ({ llmKey, llm, updateLLM }: ChatOpenAILLMEditorProps) => {
+  const [name, setName] = useState(llmKey);
+  const [modelName, setModelName] = useState(llm.model_name);
+  const [temperature, setTemperature] = useState<number>(llm.temperature);
+  const [maxTokens, setMaxTokens] = useState<number>(llm.max_tokens);
+
+  useEffect((): void => {
+    updateLLM(name, {
+      llm_type: 'chat_openai',
+      model_name: modelName,
+      temperature: temperature,
+      max_tokens: maxTokens,
+      n: 1,
+      request_timeout: null,
+    });
+  }, [name, modelName, temperature, maxTokens]);
+
+  useEffect((): void => {
+    setName(llmKey);
+    setModelName(llm.model_name);
+    setTemperature(llm.temperature);
+    setMaxTokens(llm.max_tokens);
+  }, [llm]);
+
+  useEffect((): void => {
+    setName(llmKey);
+  }, [llmKey]);
+
+  return (
+    <div className="llm">
+      <div className="llm-key">
+        <input type="text" className="llm-key-input"
+          defaultValue={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div className="llm-params">
+        <div className="llm-param">
+          <div className="llm-param-name">model name</div>
+          <input type="text" className="llm-param-value"
+            defaultValue={modelName} onChange={(e) => setModelName(e.target.value)} />
+        </div>
+        <div className="llm-param">
+          <div className="llm-param-name">temperature</div>
+          <input type="text" className="llm-param-value"
+            defaultValue={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} />
+        </div>
+        <div className="llm-param">
+          <div className="llm-param-name">max tokens</div>
+          <input type="text" className="llm-param-value"
+            defaultValue={maxTokens} onChange={(e) => setMaxTokens(parseFloat(e.target.value))} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const EditLLMs = () => {
   const { llms, addLLM, updateLLM, latestLLMs, isEditingLLMs,  setIsEditingLLMs } = useContext(LLMContext);
   const backgroundRef = useRef<HTMLDivElement>(null);
@@ -189,10 +250,12 @@ const EditLLMs = () => {
             return <OpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           } else if (llm.llm_type === 'huggingface_hub') {
             return <HuggingFaceLLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
+          } else if (llm.llm_type == 'chat_openai') {
+            return <ChatOpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           }
         })}
         <div className="llm-actions">
-          <QuickMenu modalKey="add-llm-menu" selectValue={addLLM} options={{ openai: 'Open AI', huggingface_hub: 'Hugging Face' }} />
+          <QuickMenu modalKey="add-llm-menu" selectValue={addLLM} options={{ openai: 'Open AI', huggingface_hub: 'Hugging Face', chat_openai: "Chat GPT" }} />
         </div>
       </div>
     </div>
