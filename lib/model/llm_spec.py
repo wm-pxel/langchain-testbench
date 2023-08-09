@@ -37,6 +37,7 @@ class OpenAILLMSpec(BaseLLMSpec):
                      presence_penalty=self.presence_penalty, n=self.n, best_of=self.best_of,
                      request_timeout=self.request_timeout, logit_bias=self.logit_bias)
 
+
 class HuggingFaceHubLLMSpec(BaseLLMSpec):
   class ModelKwargs(TypedDict):
     temperature: float
