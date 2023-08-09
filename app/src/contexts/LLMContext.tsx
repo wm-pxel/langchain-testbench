@@ -72,9 +72,9 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
 
   const defaultLLM = (llmType: string): LLM => {
     switch (llmType) {
-      case "openai_llm":
+      case "openai":
         return {
-          llm_type: "openai_llm",
+          llm_type: "openai",
           model_name: "text-davinci-003",
           temperature: 0.8,
           max_tokens: 256,
@@ -86,9 +86,9 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
           request_timeout: null,
           logit_bias: {}
         }
-      case "huggingface_hub_llm":
+      case "huggingface_hub":
         return {
-          llm_type: "huggingface_hub_llm",
+          llm_type: "huggingface_hub",
           repo_id: "google/flan-t5-xxl",
           task: null,
           model_kwargs: {

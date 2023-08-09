@@ -1,5 +1,5 @@
 export interface OpenAILLM {
-  llm_type: "openai_llm";
+  llm_type: "openai";
   model_name: string;
   temperature: number;
   max_tokens: number;
@@ -20,7 +20,7 @@ export interface HuggingFaceHubArgs {
 }
 
 export interface HuggingFaceHubLLM {
-  llm_type: "huggingface_hub_llm";
+  llm_type: "huggingface_hub";
   repo_id: string;
   task: string | null;
   model_kwargs: HuggingFaceHubArgs;
@@ -30,7 +30,7 @@ export type LLM = OpenAILLM | HuggingFaceHubLLM;
 
 export const defaultLLMs: Record<string, LLM> = {
   llm: {
-    "llm_type": "openai_llm",
+    "llm_type": "openai",
     "model_name": "text-davinci-003",
     "temperature": 0.8,
     "max_tokens": 256,

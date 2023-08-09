@@ -122,9 +122,7 @@ def run_once(chain_name, input, record):
   chain = chain_repository.find_one_by({"name": chain_name})
   revision = chain_revision_repository.find_one_by_id(chain.revision)
 
-  filledLLMs = {}
-  for key, llm in revision.llms.items():
-    filledLLMs[key] = llm.to_lang_llm()
+  filledLLMs = {key: llm.to_llm() for key, llm in revision.llms.items()}
 
   ctx = LangChainContext(llms=filledLLMs, recording=True)
   lang_chain = revision.chain.to_lang_chain(ctx)

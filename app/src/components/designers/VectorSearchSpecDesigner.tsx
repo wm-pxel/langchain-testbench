@@ -72,7 +72,7 @@ const VectorSearchSpecDesigner = ({ spec }: VectorSearchSpecDesignerProps) => {
       <div className="form-element">
         <label>Embed&nbsp;Engine</label>
         <select value={embeddingEngine} onChange={e => setEmbeddingEngine(e.target.value)}>
-        <option key="openai_llm" value="openai_llm">openai</option>
+        <option key="openai" value="openai">openai</option>
         <option key="hugging_face_llm" value="hugging_face_llm">huggingface</option>
         </select>
       </div>
