@@ -4,6 +4,7 @@ from langchain.llms.base import BaseLLM
 from lib.model.result import Result
 from datetime import datetime
 
+
 # provides context for generating lang chains including llms and prompts
 class LangChainContext(BaseModel):
   llms: Dict[str, BaseLLM]

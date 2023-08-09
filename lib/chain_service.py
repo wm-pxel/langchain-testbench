@@ -10,9 +10,11 @@ import pinecone
 
 dotenv.load_dotenv()
 
+
 def initialize_services():
   if os.getenv("PINECONE_API_KEY") is not None:
     pinecone.init(api_key=os.getenv("PINECONE_API_KEY"), environment=os.getenv("PINECONE_ENVIRONMENT"))
+
 
 def save_revision(chain_name, revision) -> str:
   chain = chain_repository.find_one_by({"name": chain_name})
@@ -29,7 +31,7 @@ def save_revision(chain_name, revision) -> str:
 
     chain = Chain(name=chain_name, revision=revision.id)
     chain_repository.save(chain)
-  
+
   return revision.id
 
 
@@ -80,10 +82,7 @@ def branch(chain_name, branch_name):
   """
   chain = chain_repository.find_one_by({"name": chain_name})
 
-  new_chain = Chain(
-    name = branch_name,
-    revision = chain.revision,
-  )
+  new_chain = Chain(name=branch_name, revision=chain.revision)
   chain_repository.save(new_chain)
 
 
@@ -103,7 +102,6 @@ def reset(chain_name, revision):
 def list_chains():
   """List all chains."""
   return {chain_name.name: str(chain_name.revision) for chain_name in chain_repository.find_by({})}
-
 
 
 def save_results(ctx: LangChainContext, revision_id: str):
