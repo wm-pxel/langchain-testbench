@@ -13,4 +13,3 @@ class Chain(BaseModel):
 class ChainRepository(AbstractRepository[Chain]):
   class Meta:
     collection_name = 'chains'
-

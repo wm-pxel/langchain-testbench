@@ -31,7 +31,7 @@ const OpenAILLMEditor = ({ llmKey, llm, updateLLM }: OpenAILLMEditorProps) => {
       best_of: 1,
       request_timeout: null,
       logit_bias: {},
-      _type: 'openai',
+      llm_type: 'openai',
     });
   }, [name, modelName, temperature, maxTokens, topP, frequencyPenalty, presencePenalty]);
 
@@ -105,12 +105,12 @@ const HuggingFaceLLMEditor = ({ llmKey, llm, updateLLM }: HuggingFaceHubLLMEdito
 
   useEffect((): void => {
     updateLLM(name, { 
-      _type: 'huggingface_hub',
+      llm_type: 'huggingface_hub',
       repo_id: repoId,
       task: null,
       model_kwargs: {
         temperature: temperature,
-        max_length: maxLength,
+        max_length: maxLength
       }
     });
   }, [name, repoId, temperature, maxLength]);
@@ -185,9 +185,9 @@ const EditLLMs = () => {
       </div>
       <div className="llms">
         {Object.entries(llms).map(([llmKey, llm], idx) => {
-          if (llm._type === 'openai') {
+          if (llm.llm_type === 'openai') {
             return <OpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
-          } else if (llm._type === 'huggingface_hub') {
+          } else if (llm.llm_type === 'huggingface_hub') {
             return <HuggingFaceLLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           }
         })}

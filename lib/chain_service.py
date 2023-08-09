@@ -1,7 +1,6 @@
 from typing import Optional
 from lib.model.chain_revision import find_ancestor_ids
 from lib.model.chain import Chain
-from lib.model.chain_spec import LLMSpec
 from lib.model.lang_chain_context import LangChainContext
 from lib.db import chain_revision_repository, chain_repository, result_repository
 from bson import ObjectId
@@ -11,9 +10,11 @@ import pinecone
 
 dotenv.load_dotenv()
 
+
 def initialize_services():
   if os.getenv("PINECONE_API_KEY") is not None:
     pinecone.init(api_key=os.getenv("PINECONE_API_KEY"), environment=os.getenv("PINECONE_ENVIRONMENT"))
+
 
 def save_revision(chain_name, revision) -> str:
   chain = chain_repository.find_one_by({"name": chain_name})
@@ -30,7 +31,7 @@ def save_revision(chain_name, revision) -> str:
 
     chain = Chain(name=chain_name, revision=revision.id)
     chain_repository.save(chain)
-  
+
   return revision.id
 
 
@@ -73,6 +74,7 @@ def save_patch(chain_name, patch) -> str:
 
   return revision.id
 
+
 def branch(chain_name, branch_name):
   """Branch a chain revision.
   This will create a new chain that points to the same revision
@@ -80,10 +82,7 @@ def branch(chain_name, branch_name):
   """
   chain = chain_repository.find_one_by({"name": chain_name})
 
-  new_chain = Chain(
-    name = branch_name,
-    revision = chain.revision,
-  )
+  new_chain = Chain(name=branch_name, revision=chain.revision)
   chain_repository.save(new_chain)
 
 
@@ -105,7 +104,6 @@ def list_chains():
   return {chain_name.name: str(chain_name.revision) for chain_name in chain_repository.find_by({})}
 
 
-
 def save_results(ctx: LangChainContext, revision_id: str):
   results = ctx.results(revision_id)
   for result in results:
@@ -122,7 +120,9 @@ def run_once(chain_name, input, record):
   chain = chain_repository.find_one_by({"name": chain_name})
   revision = chain_revision_repository.find_one_by_id(chain.revision)
 
-  ctx = LangChainContext(llms=revision.llms, recording=True)
+  filledLLMs = {key: llm.to_llm() for key, llm in revision.llms.items()}
+
+  ctx = LangChainContext(llms=filledLLMs, recording=True)
   lang_chain = revision.chain.to_lang_chain(ctx)
   output = lang_chain._call(input)
 

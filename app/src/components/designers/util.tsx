@@ -9,29 +9,29 @@ import VectorSearchSpecDesigner from "./VectorSearchSpecDesigner";
 
 export const renderChainSpec = (spec: ChainSpec) => {
   switch (spec.chain_type) {
-    case "llm_spec":
+    case "llm_chain_spec":
       return <LLMSpecDesigner spec={spec} key={`llm-spec-${spec.chain_id}`} />;
-    case "sequential_spec":
+    case "sequential_chain_spec":
       return <SequentialSpecDesigner spec={spec} key={`sequential-spec-${spec.chain_id}`} />;
-    case "case_spec":
+    case "case_chain_spec":
       return <CaseSpecDesigner spec={spec} key={`case-spec-${spec.chain_id}`} />;
-    case "reformat_spec":
+    case "reformat_chain_spec":
       return <ReformatSpecDesigner spec={spec} key={`reformat-spec-${spec.chain_id}`}/>;
-    case "transform_spec":
+    case "transform_chain_spec":
       return <TransformSpecDesigner spec={spec} key={`transform-spec-${spec.chain_id}`}/>;
-    case "api_spec":
+    case "api_chain_spec":
       return <APISpecDesigner spec={spec} key={`api-spec-${spec.chain_id}`}/>;
-    case "vector_search_spec":
+    case "vector_search_chain_spec":
       return <VectorSearchSpecDesigner spec={spec} key={`vector-search-spec-${spec.chain_id}`}/>;
     }
 };
 
 export const specTypeOptions = {
-  llm_spec: 'LLM',
-  sequential_spec: 'Sequential',
-  case_spec: 'Case',
-  reformat_spec: 'Reformat',
-  transform_spec: 'Transform',
-  api_spec: 'API',
-  vector_search_spec: 'Vector',
+  llm_chain_spec: 'LLM',
+  sequential_chain_spec: 'Sequential',
+  case_chain_spec: 'Case',
+  reformat_chain_spec: 'Reformat',
+  transform_chain_spec: 'Transform',
+  api_chain_spec: 'API',
+  vector_search_chain_spec: 'Vector',
 };

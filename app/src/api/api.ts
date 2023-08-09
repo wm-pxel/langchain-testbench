@@ -13,7 +13,7 @@ export const loadRevision = async (chainName: string): Promise<Revision> => {
   return await response.json();
 }
 
-export const saveRevision = async (chainName: string, revision: Revision) => {  
+export const saveRevision = async (chainName: string, revision: Revision) => {
   const response = await fetch(`${API_URL}/chain/${chainName}/revision`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},

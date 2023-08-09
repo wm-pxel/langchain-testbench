@@ -26,7 +26,7 @@ export const findByChainId = (chainId: number, chainSpec: ChainSpec): ChainSpec 
     return chainSpec;
   }
   switch (chainSpec.chain_type) {
-    case 'sequential_spec':
+    case 'sequential_chain_spec':
       for (const chain of chainSpec.chains) {
         const result = findByChainId(chainId, chain);
         if (result) {
@@ -34,7 +34,7 @@ export const findByChainId = (chainId: number, chainSpec: ChainSpec): ChainSpec 
         }
       }
       break;
-    case 'case_spec':
+    case 'case_chain_spec':
       if (chainSpec.default_case && chainSpec.default_case.chain_id === chainId) {
         return chainSpec.default_case;
       }
@@ -51,9 +51,9 @@ export const findByChainId = (chainId: number, chainSpec: ChainSpec): ChainSpec 
 
 export const findNextChainId = (chainSpec: ChainSpec): number => {
   switch (chainSpec.chain_type) {
-    case 'sequential_spec':
+    case 'sequential_chain_spec':
       return chainSpec.chains.reduce((acc, chain) => Math.max(acc, findNextChainId(chain)), chainSpec.chain_id + 1);
-    case 'case_spec':
+    case 'case_chain_spec':
       return [...Object.values(chainSpec.cases), chainSpec.default_case].reduce((acc, chain) => {
         if (chain == null) return acc;
         return Math.max(acc, findNextChainId(chain));
@@ -65,10 +65,10 @@ export const findNextChainId = (chainSpec: ChainSpec): number => {
 
 export const computeChainIO = (spec: ChainSpec): [Set<string>, Set<string>] => {
   switch (spec.chain_type) {
-    case 'llm_spec':
+    case 'llm_chain_spec':
       return [new Set(spec.input_keys), new Set([spec.output_key])];
 
-    case 'sequential_spec':
+    case 'sequential_chain_spec':
       const [sin, sout] = spec.chains.reduce(([inputs, outputs], child) => {
         const [specIn, specOut] = computeChainIO(child);
         return [union(inputs, difference(specIn, outputs)), union(outputs, specOut)];
@@ -76,35 +76,35 @@ export const computeChainIO = (spec: ChainSpec): [Set<string>, Set<string>] => {
 
       return [sin, sout];
 
-    case 'case_spec':
+    case 'case_chain_spec':
       return [...Object.values(spec.cases), spec.default_case].reduce(([inputs, outputs], spec, idx) => {
         if (spec == null) return [inputs, outputs];
         const [specIn, specOut] = computeChainIO(spec);
         return [union(inputs, specIn), idx ? intersection(outputs, specOut) : specOut];
       }, [new Set(), new Set()] as [Set<string>, Set<string>]);
 
-    case 'api_spec':
+    case 'api_chain_spec':
       return [new Set(spec.input_keys), new Set([spec.output_key])];
 
-    case 'reformat_spec':
+    case 'reformat_chain_spec':
       return [new Set(spec.input_keys), new Set(Object.keys(spec.formatters))];
 
-    case 'transform_spec':
+    case 'transform_chain_spec':
       return [new Set(spec.input_keys), new Set(spec.output_keys)];
-    case 'vector_search_spec':
+    case 'vector_search_chain_spec':
       return [new Set(spec.input_variables), new Set([spec.output_key])];
     }
 }
 
 export const updateChildIO = (spec: ChainSpec) => {
   switch (spec.chain_type) {
-    case 'sequential_spec':
+    case 'sequential_chain_spec':
       spec.chains.forEach(updateChildIO);
       const [inKeys, outKeys] = computeChainIO(spec);
       spec.input_keys = Array.from(inKeys);
       spec.output_keys = Array.from(outKeys);
       return;
-    case 'case_spec':
+    case 'case_chain_spec':
       Object.values(spec.cases).forEach(updateChildIO);
       if (spec.default_case) updateChildIO(spec.default_case);
       return;
@@ -118,30 +118,30 @@ export const createRevision = (parent: string | null, chain: ChainSpec, llms: Re
 
 export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
   switch (type) {
-    case 'llm_spec':
+    case 'llm_chain_spec':
       return {
-        chain_type: "llm_spec",
+        chain_type: "llm_chain_spec",
         prompt: "",
         input_keys: [],
         output_key: "text",
         llm_key: "llm",
       };
-    case 'sequential_spec':
+    case 'sequential_chain_spec':
       return {
-        chain_type: "sequential_spec",
+        chain_type: "sequential_chain_spec",
         chains: [],
         input_keys: [],
         output_keys: [],
       };
-    case 'case_spec':
+    case 'case_chain_spec':
       return {
-        chain_type: "case_spec",
+        chain_type: "case_chain_spec",
         categorization_key: "",
         cases: {},
       };
-    case 'api_spec':
+    case 'api_chain_spec':
       return {
-        chain_type: "api_spec",
+        chain_type: "api_chain_spec",
         url: "",
         method: "GET",
         headers: {},
@@ -149,22 +149,22 @@ export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
         input_keys: [],
         output_key: "results",
       };
-    case 'reformat_spec':
+    case 'reformat_chain_spec':
       return {
-        chain_type: "reformat_spec",
+        chain_type: "reformat_chain_spec",
         input_keys: [],
         formatters: {'output_key_0': ''},
       };
-    case 'transform_spec':
+    case 'transform_chain_spec':
       return {
-        chain_type: "transform_spec",
+        chain_type: "transform_chain_spec",
         transform_func: "# transform inputs here\nreturn {'z': inputs['x'], 'w': inputs['y']}",
         input_keys: ['x','y'],
         output_keys: ['z','w'],
       };
-    case 'vector_search_spec':
+    case 'vector_search_chain_spec':
       return {
-        chain_type: "vector_search_spec",
+        chain_type: "vector_search_chain_spec",
         query: "",
         embedding_engine: "huggingface",
         embedding_params: {},
@@ -199,7 +199,7 @@ export const insertChainSpec = (
     return originalSpec;
   }
   switch (originalSpec.chain_type) {
-    case 'sequential_spec':
+    case 'sequential_chain_spec':
       if (chainId === originalSpec.chain_id) {
         return {...originalSpec, chains: [
           ...originalSpec.chains.slice(0, index), 
@@ -213,7 +213,7 @@ export const insertChainSpec = (
         };
       }
       break;
-    case 'case_spec':
+    case 'case_chain_spec':
       const caseEntries = Object.entries(originalSpec.cases)
       if (chainId === originalSpec.chain_id) {
         return {
@@ -242,7 +242,7 @@ export const deleteChainSpec = (originalSpec: ChainSpec | null, chainId: number)
   if (!originalSpec || originalSpec.chain_id === chainId) return null;
 
   switch (originalSpec.chain_type) {
-    case 'sequential_spec':
+    case 'sequential_chain_spec':
       const chains = originalSpec.chains;
       const newChains = [];
       for (let i=0; i<chains.length; i++) {
@@ -250,7 +250,7 @@ export const deleteChainSpec = (originalSpec: ChainSpec | null, chainId: number)
         if (newChain) newChains.push(newChain);
       }
       return {...originalSpec, chains: newChains};
-    case 'case_spec':
+    case 'case_chain_spec':
       const cases = originalSpec.cases;
       const newCases: Record<string, ChainSpec> = {};
       for (const [key, chain] of Object.entries(cases)) {
@@ -278,7 +278,7 @@ export const updateChainSpec = (
     return {chainSpec: newSubSpec, found: true};
   }
 
-  if (originalSpec.chain_type === 'sequential_spec') {
+  if (originalSpec.chain_type === 'sequential_chain_spec') {
     const chains =  originalSpec.chains.reduce((result, chainSpec) => {
       const nextResult: UpdateChainResult = result.found 
         ? { found: true, chainSpec }
@@ -297,7 +297,7 @@ export const updateChainSpec = (
       : { found: false };
   }
       
-  if (originalSpec.chain_type === 'case_spec') {
+  if (originalSpec.chain_type === 'case_chain_spec') {
     if (originalSpec.default_case) {
       const nextResult = updateChainSpec(originalSpec.default_case, newSubSpec);
       if (nextResult.found) {

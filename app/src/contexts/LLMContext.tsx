@@ -74,7 +74,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
     switch (llmType) {
       case "openai":
         return {
-          _type: "openai",
+          llm_type: "openai",
           model_name: "text-davinci-003",
           temperature: 0.8,
           max_tokens: 256,
@@ -88,14 +88,12 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
         }
       case "huggingface_hub":
         return {
-          _type: "huggingface_hub",
+          llm_type: "huggingface_hub",
           repo_id: "google/flan-t5-xxl",
           task: null,
           model_kwargs: {
             temperature: 0.8,
-            max_length: 256,
-            min_new_tokens: 128,
-            max_time: 60,
+            max_length: 256
           },
         }
     }
