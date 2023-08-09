@@ -1,12 +1,12 @@
 from typing import Dict
 from pydantic import BaseModel
-from langchain.llms.base import LLM
+from langchain.llms.base import BaseLLM
 from lib.model.result import Result
 from datetime import datetime
 
 # provides context for generating lang chains including llms and prompts
 class LangChainContext(BaseModel):
-  llms: Dict[str, LLM]
+  llms: Dict[str, BaseLLM]
 
   verbose: bool = False
   recording: bool = False

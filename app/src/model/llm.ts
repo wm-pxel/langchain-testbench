@@ -15,8 +15,6 @@ export interface OpenAILLM {
 export interface HuggingFaceHubArgs {
   temperature: number;
   max_length: number;
-  min_new_tokens?: number;
-  max_time?: number;
 }
 
 export interface HuggingFaceHubLLM {

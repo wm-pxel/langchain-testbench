@@ -41,8 +41,6 @@ class HuggingFaceHubLLMSpec(BaseLLMSpec):
   class ModelKwargs(TypedDict):
     temperature: float
     max_length: int
-    min_new_tokens: Optional[int]
-    max_time: Optional[int]
 
   llm_type: Literal["huggingface_hub"] = "huggingface_hub"
   repo_id: str
@@ -50,6 +48,4 @@ class HuggingFaceHubLLMSpec(BaseLLMSpec):
   model_kwargs: Optional[ModelKwargs]
 
   def to_llm(self) -> LLM:
-    return HuggingFaceHub(temperature=self.model_kwargs['temperature'], max_length=self.model_kwargs["max_length"],
-                             min_new_tokens=self.model_kwargs["min_new_tokens"], max_time=self.model_kwargs["max_time"],
-                             repo_id=self.repo_id, task=self.task)
+    return HuggingFaceHub(model_kwargs=self.model_kwargs, repo_id=self.repo_id, task=self.task)

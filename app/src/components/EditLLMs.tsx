@@ -110,9 +110,7 @@ const HuggingFaceLLMEditor = ({ llmKey, llm, updateLLM }: HuggingFaceHubLLMEdito
       task: null,
       model_kwargs: {
         temperature: temperature,
-        max_length: maxLength,
-        min_new_tokens: null,
-        max_time: null
+        max_length: maxLength
       }
     });
   }, [name, repoId, temperature, maxLength]);
