@@ -26,7 +26,7 @@ Create a .env file in the langchain-testbench folder with your api keys and root
 Note that the MONGO_URL needs to point to `dkrcomp-mongo`.
 
 ```.env
-MONGO_ROOT_PASSWORD=[mongo root pw]
+MONGO_ROOT_PASSWORD=[mongo root pw, use a strong password you create]
 OPENAI_API_KEY=[your openai API key]
 MONGODB_URL=mongodb://testbench:testbench@dkrcomp-mongo:27017/testbench
 MONGODB_DATABASE=testbench
@@ -48,7 +48,7 @@ You can then use testbench at http://localhost:5173. Editing in the `server` or 
 
 ## Setting up Mongo
 
-Create an environment variable for `MONGO_ROOT_PASSWORD` and give it a value.
+Create an environment variable for `MONGO_ROOT_PASSWORD` and give it a value, or just replace %MONGO_ROOT_PASSWORD% in the command below. Note: If you used Quickstart above the `MONGO_ROOT_PASSWORD` you chose above must be the same
 
 ``` Launch-Mongo
 cd into langchain-testbench folder
@@ -57,8 +57,11 @@ docker-compose up
 
 In a separate command prompt window:
 
-``` Create-User
+``` Launch-Mongo-Shell
 docker exec -it dkrcomp-mongo mongosh -u mongoadmin -p %MONGO_ROOT_PASSWORD%  --authenticationDatabase admin
+```
+then at the new prompt run
+``` Create-User
 use testbench
 db.createUser({user: "testbench", pwd: "testbench", roles: [{ role: "readWrite", db: "testbench" }]})
 exit
