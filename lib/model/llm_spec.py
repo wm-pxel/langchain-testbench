@@ -64,4 +64,4 @@ class ChatOpenAILLMSpec(BaseLLMSpec):
 
   def to_llm(self) -> LLM:
     return ChatOpenAI(model_name=self.model_name, temperature=self.temperature,
-                            max_tokens=self.max_tokens, n=self.n, request_timeout=self.request_timeout)
+                      max_tokens=self.max_tokens, n=self.n, request_timeout=self.request_timeout)
