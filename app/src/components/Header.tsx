@@ -8,6 +8,8 @@ import TextModal from "./TextModal";
 import { defaultLLMs } from "../model/llm";
 import { setTimedMessage } from "../util/errorhandling";
 import "./style/Header.scss";
+import ImportChain from "./ImportChain";
+import { downloadChain } from "../util/download";
 
 
 const Header = () => {
@@ -19,6 +21,7 @@ const Header = () => {
   } = useContext(ChainSpecContext);
   const [revisions, setRevisions] = useState<Record<string, string>>({});
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   
   useEffect(() => {
     listChainsAndUpdateRevisions();
@@ -74,6 +77,21 @@ const Header = () => {
     listChainsAndUpdateRevisions(); 
   }
 
+  const exportChainClick = async () => {
+    setErrorMessage(null);
+    try {
+      downloadChain(chainName);
+    } catch (error) {
+      popupErrorMessage("Export failed: " + error);
+    }    
+  }
+
+  const importChainClick = () => {
+    setIsImportModalOpen(true);
+    setErrorMessage(null);
+  }
+
+
   const listChainsAndUpdateRevisions = async () =>  {
     const chains = await listChains()
     setRevisions(chains);
@@ -90,12 +108,21 @@ const Header = () => {
       {errorMessage && <div className="error-message">{errorMessage}</div>}
       <div className="header">
         <div className="file-options">
-          <TextModal modalKey="new-menu" title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={(text) => isNewChainNameValid(text)} />
+          <TextModal modalKey="new-menu" title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={async (text) => await isNewChainNameValid(text)} />
           <FilterMenu modalKey="load-menu" title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
           <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
             Save
           </button>
-        </div>
+          <button disabled={!(chainSpec && chainName)} onClick={exportChainClick}>
+            Export
+          </button>
+          <button onClick={importChainClick}>
+            Import
+          </button>
+          <ImportChain
+            isImportModalOpen={isImportModalOpen}
+            onClose={() => setIsImportModalOpen(false)}
+      />        </div>
         <div className="chain-name">{chainName || ""}</div>
         <div className="actions">
           <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>

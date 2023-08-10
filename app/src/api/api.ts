@@ -1,4 +1,3 @@
-
 import { Revision } from '../model/revision';
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
@@ -20,6 +19,32 @@ export const saveRevision = async (chainName: string, revision: Revision) => {
     body: JSON.stringify(revision),
   });
   return await response.json();
+}
+
+export const exportChain = async(chainName: string) => {
+  const response = await fetch(`${API_URL}/chain/${chainName}/export`);
+  if (response.ok) {
+    return await response.blob();
+  } else {
+    throw new Error('Failed to export chain');
+  }  
+}
+
+export const importChain = async (chainName: string, file: File) => {
+  const fileContent = await file.text();
+  const jsonContent = JSON.parse(fileContent);
+  
+  const response = await fetch(`${API_URL}/chain/${chainName}/import`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(jsonContent),
+  });
+
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw new Error('Failed to import chain');
+  }
 }
 
 export const runOnce = async (chainName: string, input: Record<string, string>) => {

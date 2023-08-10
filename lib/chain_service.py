@@ -1,5 +1,13 @@
-from typing import Optional
-from lib.model.chain_revision import find_ancestor_ids
+import logging
+
+import traceback
+from types import MappingProxyType
+from typing import Optional, Dict
+import json
+
+from huggingface_hub.inference_api import InferenceApi
+from langchain import HuggingFaceHub, OpenAI
+from lib.model.chain_revision import ChainRevision, find_ancestor_ids
 from lib.model.chain import Chain
 from lib.model.lang_chain_context import LangChainContext
 from lib.db import chain_revision_repository, chain_repository, result_repository
@@ -7,6 +15,8 @@ from bson import ObjectId
 import dotenv
 import os
 import pinecone
+
+logging.basicConfig(level=logging.INFO)
 
 dotenv.load_dotenv()
 
@@ -144,3 +154,43 @@ def results(revision_id: str, ancestors: bool, chain_id: Optional[str] = None):
     revision_ids += [ObjectId(i) for i in ancestors_id]
 
   return result_repository.find_by({"revision": {"$in": revision_ids}, "chain_id": int(chain_id)})
+
+def export_chain(chain_name: str) -> str:
+    export_ids = history_by_chain_name(chain_name)
+
+    chain_revisions = [chain_revision_repository.find_one_by_id(id) for id in export_ids]
+    if not all(chain_revisions):
+        missing_id = next((id for id, revision in zip(export_ids, chain_revisions) if not revision), None)
+        raise Exception("Could not find revision with id: " + missing_id)
+
+    # reverse the order
+    chain_revisions = chain_revisions[::-1]
+
+    exported_chain = json.loads('[' + ','.join(revision.json() for revision in chain_revisions) + ']')
+    return exported_chain
+
+def import_chain(chain_name, chain_details):
+    root_revision = None
+    for revision in chain_details:
+        try:
+          if not revision.parent:
+            root_revision = revision
+          chain_revision_repository.save(revision)
+        except Exception as e:
+          traceback.print_exc()
+
+    leaf_revision = find_leaf_revision(chain_details, root_revision)
+
+    chain = Chain(name=chain_name, revision=leaf_revision)
+    chain_repository.save(chain)
+
+def find_leaf_revision(revisions, current_revision):
+    if (current_revision is None):
+       return current_revision.id
+    id = current_revision.id
+    for revision in revisions:
+        if revision.parent == current_revision.id:
+            return find_leaf_revision(revisions, revision)
+    return current_revision.id
+
+
