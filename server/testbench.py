@@ -2,7 +2,6 @@ import logging
 
 import json
 from flask import Flask, Response, request
-from flask_pymongo import PyMongo
 from bson.json_util import dumps
 from flask_cors import CORS
 from lib.model.chain_revision import ChainRevision
