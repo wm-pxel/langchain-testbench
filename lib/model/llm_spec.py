@@ -3,10 +3,12 @@ from pydantic import BaseModel, Field
 from langchain.llms.base import LLM
 from langchain.llms.openai import OpenAI
 from langchain.llms.huggingface_hub import HuggingFaceHub
+from langchain.chat_models.openai import ChatOpenAI
 
 LLMSpec = Annotated[Union[
   "OpenAILLMSpec",
-  "HuggingFaceHubLLMSpec"
+  "HuggingFaceHubLLMSpec",
+  "ChatOpenAILLMSpec",
   ], Field(discriminator='llm_type')]
 
 
@@ -38,7 +40,6 @@ class OpenAILLMSpec(BaseLLMSpec):
                   request_timeout=self.request_timeout, logit_bias=self.logit_bias)
 
 
-
 class HuggingFaceHubLLMSpec(BaseLLMSpec):
   class ModelKwargs(TypedDict):
     temperature: float
@@ -51,3 +52,16 @@ class HuggingFaceHubLLMSpec(BaseLLMSpec):
 
   def to_llm(self) -> LLM:
     return HuggingFaceHub(model_kwargs=self.model_kwargs, repo_id=self.repo_id, task=self.task)
+
+
+class ChatOpenAILLMSpec(BaseLLMSpec):
+  llm_type: Literal["chat_openai"] = "chat_openai"
+  model_name: str
+  temperature: float
+  max_tokens: int
+  n: int
+  request_timeout: Optional[int]
+
+  def to_llm(self) -> LLM:
+    return ChatOpenAI(model_name=self.model_name, temperature=self.temperature,
+                      max_tokens=self.max_tokens, n=self.n, request_timeout=self.request_timeout)

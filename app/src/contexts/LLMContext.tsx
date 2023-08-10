@@ -96,6 +96,15 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
             max_length: 256
           },
         }
+      case "chat_openai":
+        return {
+          llm_type: "chat_openai",
+          model_name: "gpt-3.5-turbo",
+          temperature: 0.7,
+          max_tokens: 256,
+          n: 1,
+          request_timeout: null,
+        }
     }
     throw new Error(`Unknown LLM type: ${llmType}`);
   };
