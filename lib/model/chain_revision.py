@@ -10,8 +10,8 @@ def dump_json(obj: object, **kwargs):
   obj['parent'] = str(obj['parent']) if obj['parent'] is not None else None
   return json.dumps(obj, **kwargs)
 
+
 class ChainRevision(BaseModel):
-  
   id: ObjectIdField = None
   parent: Optional[ObjectIdField]
   chain: ChainSpec

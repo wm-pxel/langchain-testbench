@@ -1,4 +1,3 @@
-
 import { Revision } from '../model/revision';
 
 const API_URL = import.meta.env.VITE_SERVER_URL;
@@ -31,20 +30,21 @@ export const exportChain = async(chainName: string) => {
   }  
 }
 
-export const importChain = async(chainName: string, file: File) => {
-  const formData = new FormData();
-  formData.append('file', file);
-
+export const importChain = async (chainName: string, file: File) => {
+  const fileContent = await file.text();
+  const jsonContent = JSON.parse(fileContent);
+  
   const response = await fetch(`${API_URL}/chain/${chainName}/import`, {
     method: 'POST',
-    body: formData,  // send FormData object
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(jsonContent),
   });
 
   if (response.ok) {
     return await response.json();
   } else {
     throw new Error('Failed to import chain');
-  }  
+  }
 }
 
 export const runOnce = async (chainName: string, input: Record<string, string>) => {

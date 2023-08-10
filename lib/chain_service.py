@@ -156,8 +156,6 @@ def results(revision_id: str, ancestors: bool, chain_id: Optional[str] = None):
 def export_chain(chain_name: str) -> str:
     export_ids = history_by_chain_name(chain_name)
 
-    if export_ids is None:
-        return None
     chain_revisions = [chain_revision_repository.find_one_by_id(id) for id in export_ids]
     if not all(chain_revisions):
         missing_id = next((id for id, revision in zip(export_ids, chain_revisions) if not revision), None)
@@ -169,32 +167,20 @@ def export_chain(chain_name: str) -> str:
     exported_chain = json.loads('[' + ','.join(revision.json() for revision in chain_revisions) + ']')
     return exported_chain
 
-def determine_llm_type(llm):
-    if isinstance(llm, OpenAI):
-        return "openai"
-    elif isinstance(llm, HuggingFaceHub):
-        return "huggingface_hub"
-    else:
-        # Handle other cases or raise an error
-        return "unknown"
-
 def import_chain(chain_name, chain_details):
     root_revision = None
-    try:
-      for revision in chain_details:
-          try:
-            if not revision.parent:
-              root_revision = revision
-            chain_revision_repository.save(revision)
-          except Exception as e:
-            traceback.print_exc()
+    for revision in chain_details:
+        try:
+          if not revision.parent:
+            root_revision = revision
+          chain_revision_repository.save(revision)
+        except Exception as e:
+          traceback.print_exc()
 
-      leaf_revision = find_leaf_revision(chain_details, root_revision)
+    leaf_revision = find_leaf_revision(chain_details, root_revision)
 
-      chain = Chain(name=chain_name, revision=leaf_revision)
-      chain_repository.save(chain)
-    except Exception as e2:
-      traceback.print_exc()
+    chain = Chain(name=chain_name, revision=leaf_revision)
+    chain_repository.save(chain)
 
 def find_leaf_revision(revisions, current_revision):
     if (current_revision is None):

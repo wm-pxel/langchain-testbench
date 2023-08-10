@@ -1,3 +1,5 @@
+import logging
+
 import json
 from flask import Flask, Response, request
 from flask_pymongo import PyMongo
@@ -10,6 +12,7 @@ from pydantic import parse_obj_as
 from typing import List
 import lib.chain_service as chain_service
 
+logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
 CORS(app)
@@ -72,52 +75,46 @@ if __name__ == "__main__":
 @app.route("/chain/<chain_name>/export", methods=["GET"])
 def export_chain(chain_name):
     exported_chain = chain_service.export_chain(chain_name)
-    chain_json = json.dumps(exported_chain, default=pydantic_encoder)
 
-    if exported_chain:
-        return Response(
-            chain_json,
-            mimetype="application/json"
-        )
-    else:
-        return Response(
-            dumps({"error": f"Chain '{chain_name}' not found."}),
-            mimetype="application/json",
-            status=404
-        )
+    if not exported_chain:
+      return Response(
+          dumps({"error": f"Chain '{chain_name}' not found."}),
+          mimetype="application/json",
+          status=404
+      )
+
+    chain_json = json.dumps(exported_chain, default=pydantic_encoder)
+    return Response(
+        chain_json,
+        mimetype="application/json"
+    )
     
 
 @app.route("/chain/<chain_name>/import", methods=["POST"])
 def import_chain_route(chain_name):
-    if 'file' not in request.files:
-        raise BadRequest("File not present in request")
-    file = request.files['file']
-    if file.filename == '':
-        raise BadRequest("File name is not present in request")
-    if file and allowed_file(file.filename):
-        json_string = file.read().decode('utf-8')
-        json_data = json.loads(json_string)
+    logging.info(f"Importing chain '{chain_name}'")
+    try:
+        logging.info(f"Request json: {request.get_json()}")         
+        json_data = request.get_json()
+        if json_data is None:
+            raise BadRequest("JSON data not present in request")
+
         revisions = parse_obj_as(List[ChainRevision], json_data) 
 
-        try:
-            chain_service.import_chain(chain_name, revisions)
-            return Response(
-                dumps({"success": f"Import of '{chain_name}' successful."}),
-                mimetype="application/json",
-                status=200
-            )
-        except Exception as e:
-            return Response(
-                dumps({"error": f"Import of '{chain_name}' failed. Reason: {str(e)}"}),
-                mimetype="application/json",
-                status=400
-            )
-    else:
+        chain_service.import_chain(chain_name, revisions)
         return Response(
-            dumps({"error": "No selected file or wrong file type"}),
+            dumps({"success": f"Import of '{chain_name}' successful."}),
+            mimetype="application/json",
+            status=200
+        )
+    except Exception as e:
+        logging.error(f"Import of '{chain_name}' failed. Reason: {str(e)}")
+        return Response(
+            dumps({"error": f"Import of '{chain_name}' failed. Reason: {str(e)}"}),
             mimetype="application/json",
             status=400
         )
+
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'json'}
