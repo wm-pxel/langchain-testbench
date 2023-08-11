@@ -4,13 +4,29 @@ from pymongo import MongoClient
 
 
 def updateChainType(chain, prefix, update_fields):
-  chain_type = chain.get("chain_type")
-  if chain_type and chain_type.count("_") == 1:
-    update_fields[f"{prefix}.chain_type"] = chain_type.replace("_", "_chain_")
+  # make sure chain_type is properly formatted
+  try:
+    chain_type = chain.get("chain_type")
 
+    if chain_type and chain_type.count("_") == 1:
+      update_fields[f"{prefix}.chain_type"] = chain_type.replace("_", "_chain_")
+  except Exception as e:
+    print(e, chain, flush=True)
+
+  # recursively handle sequential chains
   if "chains" in chain:
-    for index, child_chain in enumerate(chain["chains"]):
-      updateChainType(child_chain, f"{prefix}.chains.{index}", update_fields)
+    if type(chain["chains"]) is list:
+      for index, child_chain in enumerate(chain["chains"]):
+        updateChainType(child_chain, f"{prefix}.chains.{index}", update_fields)
+    else:
+      for key, child_chain in chain["chains"].items():
+        updateChainType(child_chain, f"{prefix}.chains.{key}", update_fields)
+
+  # recursively handle case chains
+  if "cases" in chain:
+    for key, case in chain["cases"].items():
+      updateChainType(case, f"{prefix}.cases.{key}", update_fields)
+    updateChainType(chain["default_case"], f"{prefix}.default_case", update_fields)
 
 
 load_dotenv()
