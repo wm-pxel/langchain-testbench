@@ -119,10 +119,7 @@ const Header = () => {
           <button onClick={importChainClick}>
             Import
           </button>
-          <ImportChain
-            isImportModalOpen={isImportModalOpen}
-            onClose={() => setIsImportModalOpen(false)}
-      />        </div>
+        </div>
         <div className="chain-name">{chainName || ""}</div>
         <div className="actions">
           <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>
@@ -131,6 +128,8 @@ const Header = () => {
           </button>
         </div>
       </div>
+
+      <ImportChain isImportModalOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} />
     </div>
   );
 };
