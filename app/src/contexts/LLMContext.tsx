@@ -30,6 +30,30 @@ export interface LLMProviderProps {
   children: React.ReactNode;
 }
 
+const areLLMDirtyLLMEqual = (llms: Record<string, any>, dirtyLLMs: Record<string, any>): boolean => {
+  const keys1 = Object.keys(llms);
+  const keys2 = Object.keys(dirtyLLMs);
+  
+  if (keys1.length !== keys2.length) {
+      return false;
+  }
+
+  // Check if every key-value in obj1 is the same as obj2
+  return keys1.every(key => {
+      if (!(key in dirtyLLMs)) {
+          return false;
+      }
+
+      // Here, we are checking for nested objects. If the value is an object, we will do a recursive check.
+      // If not, just compare the values directly.
+      if (typeof llms[key] === 'object' && llms[key] !== null && typeof dirtyLLMs[key] === 'object' && dirtyLLMs[key] !== null) {
+          return areLLMDirtyLLMEqual(llms[key], dirtyLLMs[key]);
+      } else {
+          return llms[key] === dirtyLLMs[key];
+      }
+  });
+}
+
 export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => {
   const [llms, setLLMs] = useState<Record<string, LLM>>(defaultLLMs);
   const [dirtyLLMs, setDirtyLLMs] = useState<Record<string, LLM>>({});
@@ -51,7 +75,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
   }
 
   useEffect(() => {
-    setLLMsNeedSave(JSON.stringify(llms) !== JSON.stringify(dirtyLLMs));
+    setLLMsNeedSave(!areLLMDirtyLLMEqual(llms, dirtyLLMs));
   }, [llms, dirtyLLMs]);
 
   const deleteLLM = (name: string): void => {
