@@ -30,6 +30,47 @@ export interface LLMProviderProps {
   children: React.ReactNode;
 }
 
+const areLLMDirtyLLMEqual = (llms: Record<string, any>, dirtyLLMs: Record<string, any>): boolean => {
+  const keys1 = Object.keys(llms);
+  const keys2 = Object.keys(dirtyLLMs);
+  
+  if (keys1.length !== keys2.length) {
+      return false;
+  }
+
+  return keys1.every(key => {
+      if (!(key in dirtyLLMs)) {
+          return false;
+      }
+
+      // compare array values
+      if (Array.isArray(llms[key]) && Array.isArray(dirtyLLMs[key])) {
+        if (llms[key].length !== dirtyLLMs[key].length) {
+          return false;
+        }
+
+        for (let i = 0; i < llms[key].length; i++) {
+          if (typeof llms[key][i] === 'object' && llms[key][i] !== null) {
+            if (!areLLMDirtyLLMEqual(llms[key][i], dirtyLLMs[key][i])) {
+              return false;
+            }
+          } else if (llms[key][i] !== dirtyLLMs[key][i]) {
+            return false;
+          }
+        }
+        return true;
+      }
+      // compare object values
+      else if (typeof llms[key] === 'object' && llms[key] !== null && typeof dirtyLLMs[key] === 'object' && dirtyLLMs[key] !== null) {
+          return areLLMDirtyLLMEqual(llms[key], dirtyLLMs[key]);
+      }
+      // compare primitives
+      else {
+          return llms[key] === dirtyLLMs[key];
+      }
+  });
+}
+
 export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => {
   const [llms, setLLMs] = useState<Record<string, LLM>>(defaultLLMs);
   const [dirtyLLMs, setDirtyLLMs] = useState<Record<string, LLM>>({});
@@ -51,7 +92,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
   }
 
   useEffect(() => {
-    setLLMsNeedSave(JSON.stringify(llms) !== JSON.stringify(dirtyLLMs));
+    setLLMsNeedSave(!areLLMDirtyLLMEqual(llms, dirtyLLMs));
   }, [llms, dirtyLLMs]);
 
   const deleteLLM = (name: string): void => {
