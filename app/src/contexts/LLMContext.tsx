@@ -38,17 +38,34 @@ const areLLMDirtyLLMEqual = (llms: Record<string, any>, dirtyLLMs: Record<string
       return false;
   }
 
-  // Check if every key-value in obj1 is the same as obj2
   return keys1.every(key => {
       if (!(key in dirtyLLMs)) {
           return false;
       }
 
-      // Here, we are checking for nested objects. If the value is an object, we will do a recursive check.
-      // If not, just compare the values directly.
-      if (typeof llms[key] === 'object' && llms[key] !== null && typeof dirtyLLMs[key] === 'object' && dirtyLLMs[key] !== null) {
+      // compare array values
+      if (Array.isArray(llms[key]) && Array.isArray(dirtyLLMs[key])) {
+        if (llms[key].length !== dirtyLLMs[key].length) {
+          return false;
+        }
+
+        for (let i = 0; i < llms[key].length; i++) {
+          if (typeof llms[key][i] === 'object' && llms[key][i] !== null) {
+            if (!areLLMDirtyLLMEqual(llms[key][i], dirtyLLMs[key][i])) {
+              return false;
+            }
+          } else if (llms[key][i] !== dirtyLLMs[key][i]) {
+            return false;
+          }
+        }
+        return true;
+      }
+      // compare object values
+      else if (typeof llms[key] === 'object' && llms[key] !== null && typeof dirtyLLMs[key] === 'object' && dirtyLLMs[key] !== null) {
           return areLLMDirtyLLMEqual(llms[key], dirtyLLMs[key]);
-      } else {
+      }
+      // compare primitives
+      else {
           return llms[key] === dirtyLLMs[key];
       }
   });
