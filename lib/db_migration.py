@@ -2,14 +2,25 @@ import os
 from dotenv import load_dotenv
 from pymongo import MongoClient
 
+chain_spec_conversion = {
+      "llm_spec": "llm_chain_spec",
+      "sequential_spec": "sequential_chain_spec",
+      "case_spec": "case_chain_spec",
+      "reformat_spec": "reformat_chain_spec",
+      "transform_spec": "transform_chain_spec",
+      "api_spec": "api_chain_spec",
+      "vector_search_spec": "vector_search_chain_spec"
+}
+
 
 def updateChainType(chain, prefix, update_fields):
   # make sure chain_type is properly formatted
   try:
     chain_type = chain.get("chain_type")
 
-    if chain_type and chain_type.count("_") == 1:
-      update_fields[f"{prefix}.chain_type"] = chain_type.replace("_", "_chain_")
+    if chain_type and chain_type in chain_spec_conversion:
+      update_fields[f"{prefix}.chain_type"] = chain_spec_conversion[chain_type]
+
   except Exception as e:
     print(e, chain, flush=True)
 
