@@ -4,10 +4,12 @@ import json
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
-# parser.add_argument("-f", "--file", help="csv file to read from")
 
 args = vars(parser.parse_args())
 
+# Parse CSV to JSON
+# Input: CSV file with header containing 'sentences' and 'section_time_stamp'
+# Output: JSON file with sentences in 'text' field and timestamp in 'meta.section' field.
 def main(args):
   data = csv.DictReader(sys.stdin)
   records = [{

@@ -1,6 +1,4 @@
 import pandas as pd
-import pinecone
-import uuid
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
 parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
@@ -9,12 +7,8 @@ parser.add_argument("-emb", "--embedding_file", help="File location for embeddin
 
 args = vars(parser.parse_args())
 
-def createUUID():
-    return str(uuid.uuid4())
-
-## Main Function ##
+## Parse pickle file to JSON for further processing
 def main(args):
-    pinecone.init(api_key=args["api_key"], environment="northamerica-northeast1-gcp")
     embedding_filepath = args["embedding_file"]
 
     df_emb = pd.read_pickle(embedding_filepath)
