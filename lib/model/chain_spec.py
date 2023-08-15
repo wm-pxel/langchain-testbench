@@ -20,6 +20,7 @@ ChainSpec = Annotated[Union[
   "VectorSearchChainSpec"
   ], Field(discriminator='chain_type')]
 
+
 class BaseChainSpec(BaseModel):
   chain_id: int
 
@@ -29,13 +30,12 @@ class BaseChainSpec(BaseModel):
 
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     raise NotImplementedError
-  
+
   def traverse(self, fn: Callable[[ChainSpec], None]) -> None:
     fn(self)
 
     for child in self.children:
       child.traverse(fn)
-  
 
   def find_by_chain_id(self, chain_id: int) -> Optional[ChainSpec]:
     if self.chain_id == chain_id:
@@ -48,7 +48,7 @@ class BaseChainSpec(BaseModel):
         return result
 
     return None
-  
+
   def copy_replace(self, replace: Callable[[ChainSpec], ChainSpec]):
     return replace(self).copy(deep=True)
 
@@ -89,7 +89,7 @@ class SequentialChainSpec(BaseChainSpec):
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     chains = [chain.to_lang_chain(ctx) for chain in self.chains]
     return SequentialChain(chains=chains, input_variables=self.input_keys, output_variables=self.output_keys)
-  
+
   def copy_replace(self, replace: Callable[[ChainSpec], ChainSpec]):
     sequential = replace(self).copy(deep=True, exclude={"chains"})
     sequential.chains = [chain.copy_replace(replace) for chain in self.chains]
@@ -114,7 +114,7 @@ class CaseChainSpec(BaseChainSpec):
       default_chain=self.default_case.to_lang_chain(ctx),
     )
     return case_chain
-  
+
   def copy_replace(self, replace: Callable[[ChainSpec], ChainSpec]):
     case_chain = replace(self).copy(deep=True, exclude={"cases"})
     case_chain.cases = {key: chain.copy_replace(replace) for key, chain in self.cases.items()}
@@ -140,7 +140,7 @@ class TransformChainSpec(BaseChainSpec):
     scope = {}
     indented = body.replace("\n", "\n  ")
     code = f"def f(inputs: dict):\n  {indented}"
-    exec(code , scope)
+    exec(code, scope)
     return scope["f"]
 
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
@@ -166,6 +166,7 @@ class APIChainSpec(BaseChainSpec):
       output_variable=self.output_key,
     )
 
+
 class VectorSearchChainSpec(BaseChainSpec):
   chain_type: Literal["vector_search_chain_spec"] = "vector_search_chain_spec"
   query: str
@@ -190,6 +191,7 @@ class VectorSearchChainSpec(BaseChainSpec):
       output_key=self.output_key,
       min_score=self.min_score,
     )
+
 
 SequentialChainSpec.update_forward_refs()
 CaseChainSpec.update_forward_refs()
