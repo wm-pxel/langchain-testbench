@@ -3,12 +3,12 @@ from pydantic import BaseModel
 from pydantic_mongo import AbstractRepository, ObjectIdField
 from datetime import datetime
 
+
 class Result(BaseModel):
   id: ObjectIdField = None
-  revision: ObjectIdField
-  chain_id: int
-  input: Dict[str, str]
-  output: str
+  revisionID: ObjectIdField
+  inputs: Dict[str, Dict[str, str]]
+  outputs: Dict[str, Dict[str, str]]
   recorded: datetime
 
   class Config:
@@ -18,4 +18,3 @@ class Result(BaseModel):
 class ResultRepository(AbstractRepository[Result]):
   class Meta:
     collection_name = 'results'
-

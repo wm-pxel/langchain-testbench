@@ -25,3 +25,13 @@ class LangChainContext(BaseModel):
   def reset_results(self):
     for chain in self.prompts:
       chain.reset()
+
+  def get_IO(self):
+    vars = {}
+    for prompt in self.prompts:
+      vars[prompt.output_key] = prompt.recorded_calls[0][1]
+
+      for input in prompt.recorded_calls[0][0]:
+        vars[input] = prompt.recorded_calls[0][0][input]
+
+    return vars
