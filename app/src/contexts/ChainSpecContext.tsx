@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback, useMemo, useContext } from "react";
+import React, { createContext, useState, useMemo, useContext } from "react";
 import { ChainSpec } from "../model/specs";
 import { findNextChainId, insertChainSpec as insertGeneratedChainSpec, deleteChainSpec, updateChainSpec } from "../model/spec_control";
 import { deepEquals } from "../util/sets";
