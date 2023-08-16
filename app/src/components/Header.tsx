@@ -16,7 +16,7 @@ const Header = () => {
   const { latestLLMs, setIsEditingLLMs, setLLMs } = useContext(LLMContext);
   const { 
     latestChainSpec, setChainName,  chainName, chainSpec, 
-    setChainSpec, revision, setRevision, readyToInteract,
+    revision, setRevision, readyToInteract,
     isInteracting, setIsInteracting
   } = useContext(ChainSpecContext);
   const [revisions, setRevisions] = useState<Record<string, string>>({});
@@ -33,7 +33,7 @@ const Header = () => {
     try {
       const revision = await loadRevision(name);
       if (revision.id) setRevision(revision.id);
-      setChainSpec(revision.chain);
+      latestChainSpec();
       setLLMs(revision.llms);
     } catch (error) {
       setTimedMessage(setErrorMessage, "Error loading chain: " + (error as Error).message); 
@@ -43,7 +43,7 @@ const Header = () => {
   const newChain = (name: string) => {
     setErrorMessage(null);
     setChainName(name);
-    setChainSpec(null);
+    // setChainSpec(null);
     setLLMs(defaultLLMs);
     setRevision(null);
   }
@@ -73,7 +73,6 @@ const Header = () => {
       popupErrorMessage("Error saving chain: " + (error as Error).message); 
       return;
     }
-    setChainSpec(spec);
     listChainsAndUpdateRevisions(); 
   }
 

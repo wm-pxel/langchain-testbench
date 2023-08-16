@@ -11,7 +11,6 @@ export type DeleteSpecFunc = (chainId: number) => void;
 
 export interface ChainSpecContextType {
   chainSpec: ChainSpec | null;
-  setChainSpec: (spec: ChainSpec | null) => void,
   chainName: string;
   setChainName: (name: string) => void,
   revision: string | null;
@@ -29,7 +28,6 @@ export interface ChainSpecContextType {
 
 const ChainSpecContext = createContext<ChainSpecContextType>({
   chainSpec: null,
-  setChainSpec: (_: ChainSpec | null) => {},
   chainName: "",
   setChainName: (_: string) => {},
   revision: null,
@@ -58,10 +56,6 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   // to determine whether the UI is in sync with the database.
   const [chainSpec, setChainSpec] = useState<ChainSpec | null>(null);
 
-  // The displaySpec is used to populate the UI. It is updated whenever chainSpec
-  // is updated or when there is a structural change to the spec (insertions and deletions).
-  const [displaySpec, setDisplaySpec] = useState<ChainSpec | null>(null);
-
   // Dirty spec receives all updates to the spec from the UI (ie. onchange events)
   const [dirtyChainSpec, setDirtyChainSpec] = useState<ChainSpec | null>(null);
 
@@ -69,46 +63,41 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   const [revision, setRevision] = useState<string|null>(null);
   const [isInteracting, setIsInteracting] = useState<boolean>(false);
 
-  const insertChainSpec = useCallback((type: string, chainId: number, index: number): void => {
+  const insertChainSpec = (type: string, chainId: number, index: number): void => {
     const newSpec = insertGeneratedChainSpec(dirtyChainSpec, nextChainId, type, chainId, index);
-    setChains(newSpec);
-    setNextChainId(nextChainId + 1);
-  }, [dirtyChainSpec, nextChainId]);
+    setDirtyChain(newSpec);
+  };
 
-  const latestChainSpec = useCallback((): ChainSpec | null => {
+  const latestChainSpec = (): ChainSpec | null => {
+    setChainSpec(dirtyChainSpec)
     return dirtyChainSpec;
-  }, [dirtyChainSpec])
+  }
 
-  const setChains = (spec: ChainSpec | null): void => {
-    setDisplaySpec(spec);
+  const setDirtyChain = (spec: ChainSpec | null): void => {
+    // setDisplaySpec(spec);
     setDirtyChainSpec(spec);
     setNextChainId(spec ? Math.max(findNextChainId(spec), nextChainId) : 0);
   }
 
-  const findChainInCurrentSpec = useCallback((chainId: number): ChainSpec | undefined => {
+  const findChainInCurrentSpec = (chainId: number): ChainSpec | undefined => {
     if (!dirtyChainSpec) {
       return undefined;
     }
     return findByChainId(chainId, dirtyChainSpec);
-  }, [dirtyChainSpec]);
+  };
 
-  const deleteChain = useCallback((chainId: number): void => {
+  const deleteChain = (chainId: number): void => {
     const newSpec = deleteChainSpec(dirtyChainSpec, chainId);
-    setChains(newSpec);
-  }, [dirtyChainSpec]);
+    setDirtyChain(newSpec);
+  };
 
-  const updateDirtyChainSpec = useCallback((spec: ChainSpec): void => {
+  const updateDirtyChainSpec = (spec: ChainSpec): void => {
     const result = updateChainSpec(dirtyChainSpec, spec);
     if (!result.found) {
       throw new Error(`Could not find chain spec with id ${spec.chain_id} to update`);
     }
-    setDirtyChainSpec(result.chainSpec);
-  }, [dirtyChainSpec]);
-
-  const setAllSpecs = (spec: ChainSpec | null): void => {
-    setChains(spec);
-    setChainSpec(spec); // any external update is presumed to be synced with the database.
-  }
+    setDirtyChain(result.chainSpec);
+  };
 
   const readyToInteract = useMemo(() => {
     return !LLMsNeedSave && !!chainSpec && deepEquals(chainSpec, dirtyChainSpec);
@@ -120,8 +109,7 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
 
   return (
     <ChainSpecContext.Provider value={{ 
-      chainSpec: displaySpec,
-      setChainSpec: setAllSpecs,
+      chainSpec: dirtyChainSpec,
       chainName,
       setChainName,
       revision,
