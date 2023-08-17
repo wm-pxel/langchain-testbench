@@ -37,6 +37,11 @@ def save_revision(chain_name):
   revision_id = chain_service.save_revision(chain_name, next_revision)
   return Response(dumps({"revision_id": str(revision_id)}), mimetype="application/json")
 
+@app.route("/chain/<chain_name>/branch/<branch_name>", methods=["POST"])
+def branch_revision(chain_name, branch_name):
+  revision_id = chain_service.branch(chain_name, branch_name)
+  return Response(dumps({"revision_id": str(revision_id)}), mimetype="application/json")
+
 @app.route("/chain/<chain_name>/revision", methods=["GET"])
 def load_by_chain_name(chain_name):
   revision = chain_service.load_by_chain_name(chain_name)

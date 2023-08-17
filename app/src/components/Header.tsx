@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { listChains, loadRevision, saveRevision } from "../api/api";
+import { listChains, loadRevision, saveRevision, branchRevision } from "../api/api";
 import { createRevision } from "../model/spec_control";
 import ChainSpecContext from "../contexts/ChainSpecContext";
 import { LLMContext } from "../contexts/LLMContext";
@@ -77,6 +77,20 @@ const Header = () => {
     listChainsAndUpdateRevisions(); 
   }
 
+  const branch = async () => {
+    setErrorMessage(null);
+    const branch_name = prompt("Enter branch name", "new revision name") || "new_branch";
+    try {
+      const nextRevisionId = await branchRevision(chainName, branch_name);
+      setRevision(nextRevisionId.revision_id);
+    } catch (error) {
+      popupErrorMessage("Error saving branch: " + (error as Error).message); 
+      return;
+    }
+    listChainsAndUpdateRevisions();
+    loadLatest(branch_name)
+  }
+
   const exportChainClick = async () => {
     setErrorMessage(null);
     try {
@@ -112,6 +126,9 @@ const Header = () => {
           <FilterMenu modalKey="load-menu" title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
           <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
             Save
+          </button>
+          <button disabled={!(chainSpec && chainName)} onClick={branch}>
+            Branch Revision
           </button>
           <button disabled={!(chainSpec && chainName)} onClick={exportChainClick}>
             Export
