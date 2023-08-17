@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from pydantic_mongo import AbstractRepository, ObjectIdField
 
+
 class Chain(BaseModel):
   id: ObjectIdField = None
   name: str

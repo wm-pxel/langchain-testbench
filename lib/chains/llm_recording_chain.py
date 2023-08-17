@@ -1,9 +1,9 @@
 from typing import Dict, List
-from pydantic import Field
 from langchain.chains import LLMChain
 
+
 class LLMRecordingChain(LLMChain):
-  recorded_calls: List[tuple[Dict[str, str], Dict[str,str]]]
+  recorded_calls: List[tuple[Dict[str, str], Dict[str, str]]]
   chain_spec_id: int
 
   def __init__(self, llm: object, prompt: str, output_key: str, chain_spec_id: int):
@@ -17,6 +17,6 @@ class LLMRecordingChain(LLMChain):
   @property
   def calls(self) -> List[tuple[Dict[str, str], Dict[str, str]]]:
     return self.recorded_calls
-  
+
   def reset(self):
     self.recorded_calls.clear()

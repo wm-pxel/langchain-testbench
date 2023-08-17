@@ -29,6 +29,9 @@ class LangChainContext(BaseModel):
   def get_IO(self):
     vars = {}
     for prompt in self.prompts:
+      if (prompt.recorded_calls == []):
+        continue
+
       vars[prompt.output_key] = prompt.recorded_calls[0][1]
 
       for input in prompt.recorded_calls[0][0]:

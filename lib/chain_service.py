@@ -1,12 +1,12 @@
 import logging
 
 import traceback
-from types import MappingProxyType
-from typing import Optional, Dict
+from typing import Optional
 import json
 
 from huggingface_hub.inference_api import InferenceApi
 from langchain import HuggingFaceHub, OpenAI
+from langchain.chains.base import Chain as BaseChain
 from lib.model.chain_revision import ChainRevision, find_ancestor_ids
 from lib.model.chain import Chain
 from lib.model.chain_spec import ChainSpec
@@ -117,48 +117,27 @@ def list_chains():
   return {chain_name.name: str(chain_name.revision) for chain_name in chain_repository.find_by({})}
 
 
-def save_results(ctx: LangChainContext, revision_id: str):
-  results = ctx.results(revision_id)
-  for result in results:
-    result_repository.save(result)
-
-  ctx.reset_results()
-
-
-def compute_chain_IO(chain: ChainSpec, ctx: LangChainContext, vars=None):
-  def get_list_by_possible_attributes(obj, *attrs):
-    for attr in attrs:
-      if hasattr(obj, attr):
-        retList = getattr(obj, attr)
-        return retList if isinstance(retList, list) else [retList]
-    return []
-
-  def compute_and_update(chain, ctx, vars, inputs, outputs):
-    inner_inputs, inner_outputs = compute_chain_IO(chain, ctx, vars)
+def compute_chain_IO(chain_spec: ChainSpec, chain: BaseChain, ctx: LangChainContext):
+  def compute_and_update(chain_spec: ChainSpec, chain: BaseChain, ctx: LangChainContext, inputs, outputs):
+    inner_inputs, inner_outputs = compute_chain_IO(chain_spec, chain, ctx)
     inputs = {**inputs, **inner_inputs}
     outputs = {**outputs, **inner_outputs}
     return inputs, outputs
 
-  chain_id = chain.chain_id
+  chain_id = chain_spec.chain_id
   inputs, outputs = {}, {}
 
-  inputs_list = get_list_by_possible_attributes(chain, "input_keys", "categorization_key", "input_variables")
-  outputs_list = get_list_by_possible_attributes(chain, "output_key", "output_keys")
+  inputs[chain_id] = chain.input_keys
+  outputs[chain_id] = chain.output_keys
 
-  if vars is None:
-    vars = ctx.get_IO()
+  for sub_chain_spec, sub_chain in zip(getattr(chain_spec, "chains", []), getattr(chain, "chains", [])):
+    inputs, outputs = compute_and_update(sub_chain_spec, sub_chain, ctx, inputs, outputs)
 
-  inputs[chain_id] = {key: vars[key] for key in inputs_list}
-  outputs[chain_id] = {key: vars[key] for key in outputs_list}
+  for case_spec, case in zip(getattr(chain_spec, "cases", []), getattr(chain, "subchains", [])):
+    inputs, outputs = compute_and_update(case_spec, case, ctx, inputs, outputs)
 
-  for sub_chain in getattr(chain, "chains", []):
-    inputs, outputs = compute_and_update(sub_chain, ctx, vars, inputs, outputs)
-
-  for case in getattr(chain, "cases", []):
-    inputs, outputs = compute_and_update(case, ctx, vars, inputs, outputs)
-
-  if hasattr(chain, "cases"):
-    inputs, outputs = compute_and_update(chain.default_case, ctx, vars, inputs, outputs)
+  if hasattr(chain_spec, "default_case"):
+    inputs, outputs = compute_and_update(chain_spec.default_case, chain.default_chain, ctx, inputs, outputs)
 
   return inputs, outputs
 
@@ -177,16 +156,15 @@ def run_once(chain_name, input, record):
   lang_chain = revision.chain.to_lang_chain(ctx)
   output = lang_chain._call(input)
 
-  # if (record):
-  #   save_results(ctx, revision.id)
+  vars = ctx.get_IO()
 
-  inputs, outputs = compute_chain_IO(revision.chain, ctx)
-  result_repository.save(Result(revisionID=revision.id, inputs=inputs, outputs=outputs, recorded=datetime.now()))
+  inputs, outputs = compute_chain_IO(revision.chain, lang_chain, ctx)
+  result_repository.save(Result(revisionID=revision.id, inputs=inputs, outputs=outputs, io_mapping=vars, recorded=datetime.now()))
 
   return output
 
 
-def results(revision_id: str, ancestors: bool, chain_id: Optional[str] = None):
+def results(revision_id: str, ancestors: bool):
   """Find results for a prompt in for one or more chain revisions.
   One of chain-name or revision must be specified.
   If the ancestors flag is set, results for all ancestors of the specified revision are included.
@@ -197,7 +175,13 @@ def results(revision_id: str, ancestors: bool, chain_id: Optional[str] = None):
     ancestors_id = find_ancestor_ids(revision_id, chain_revision_repository)
     revision_ids += [ObjectId(i) for i in ancestors_id]
 
-  return result_repository.find_by({"revision": {"$in": revision_ids}, "chain_id": int(chain_id)})
+  return result_repository.find_by({"revisionID": {"$in": revision_ids}})
+
+
+def load_results_by_chain_name(chain_name: str):
+  chain = chain_repository.find_one_by({"name": chain_name})
+  revision = chain_revision_repository.find_one_by_id(chain.revision)
+  return results(revision.id, True)
 
 
 def export_chain(chain_name: str) -> str:

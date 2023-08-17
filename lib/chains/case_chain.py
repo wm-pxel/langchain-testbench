@@ -1,6 +1,6 @@
 from typing import Dict, List
 from langchain.chains.base import Chain
-from pydantic import root_validator
+
 
 class CaseChain(Chain):
   categorization_input: str
@@ -13,9 +13,9 @@ class CaseChain(Chain):
   @property
   def input_keys(self) -> List[str]:
     keys = list(set(self.default_chain.input_keys \
-      + [key for subchain in self.subchains.values() for key in subchain.input_keys] \
-      + [self.categorization_input]))
-    keys.sort()   
+                    + [key for subchain in self.subchains.values() for key in subchain.input_keys] \
+                    + [self.categorization_input]))
+    keys.sort()
     return keys
 
   @property
@@ -31,8 +31,8 @@ class CaseChain(Chain):
     categorization = inputs[self.categorization_input].strip()
 
     subchain = self.subchains[categorization] if categorization in self.subchains else self.default_chain
- 
+
     known_values = inputs.copy()
     outputs = subchain(known_values, return_only_outputs=True)
     known_values.update(outputs)
-    return {k: known_values[k] for k in self.output_keys}  
+    return {k: known_values[k] for k in self.output_keys}
