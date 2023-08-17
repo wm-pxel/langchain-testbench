@@ -7,20 +7,26 @@ interface TextModalProps {
   title: string;
   buttonText: string;
   placeholder: string;
+  disabled: boolean;
   enterValue: (option: string) => void;
   validateInput: (input: string) => Promise<boolean>;
 }
 
-const TextModal = ({enterValue, title, buttonText, placeholder, validateInput, modalKey}: TextModalProps) => {
+const TextModal = ({enterValue, title, buttonText, placeholder, disabled, validateInput, modalKey}: TextModalProps) => {
   const { activeModalId, setActiveModalId } = useContext(ModalContext);
   const [modalOpen, setModalOpen] = useState(false);
   const [text, setText] = useState("");
+  const [shouldDisable, setShouldDisable] = useState(disabled);
 
   useEffect(() => {
     if (activeModalId !== modalKey) {
       setModalOpen(false);
     }
   }, [activeModalId]);
+
+  useEffect(() => {
+    setShouldDisable(disabled);
+  }, [disabled]);
 
   const handleEnter = useCallback(async () => {
     if (await validateInput(text)) {
@@ -45,7 +51,7 @@ const TextModal = ({enterValue, title, buttonText, placeholder, validateInput, m
 
   return (
     <div className={`text-modal ${modalOpen ? 'open' : ''}`}>
-      <button onClick={handleClick} className="open-text-modal">{title}</button>
+      <button disabled={shouldDisable} onClick={handleClick} className="open-text-modal">{title}</button>
       <div className="text-modal-selector">
         <input type="text" value={text} onChange={(e) => setText(e.target.value)} placeholder={placeholder} />
         <div className="text-modal-actions">

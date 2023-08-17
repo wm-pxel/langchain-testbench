@@ -77,18 +77,17 @@ const Header = () => {
     listChainsAndUpdateRevisions(); 
   }
 
-  const branch = async () => {
+  const branch = async (name: string) => {
     setErrorMessage(null);
-    const branch_name = prompt("Enter branch name", "new revision name") || "new_branch";
     try {
-      const nextRevisionId = await branchRevision(chainName, branch_name);
+      const nextRevisionId = await branchRevision(chainName, name);
       setRevision(nextRevisionId.revision_id);
     } catch (error) {
       popupErrorMessage("Error saving branch: " + (error as Error).message); 
       return;
     }
     listChainsAndUpdateRevisions();
-    loadLatest(branch_name)
+    loadLatest(name)
   }
 
   const exportChainClick = async () => {
@@ -122,14 +121,13 @@ const Header = () => {
       {errorMessage && <div className="error-message">{errorMessage}</div>}
       <div className="header">
         <div className="file-options">
-          <TextModal modalKey="new-menu" title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={async (text) => await isNewChainNameValid(text)} />
+          <TextModal modalKey="new-menu" title="new" buttonText="Create" placeholder="name" disabled={false} enterValue={(name) => newChain(name)} validateInput={async (text) => await isNewChainNameValid(text)}/>
           <FilterMenu modalKey="load-menu" title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
           <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
             Save
           </button>
-          <button disabled={!(chainSpec && chainName)} onClick={branch}>
-            Branch Revision
-          </button>
+          <TextModal modalKey="branch-menu" title="branch revision" buttonText="Branch Revision" placeholder="New Branch" disabled={!(chainSpec && chainName)}
+                    enterValue={(name) => branch(name)} validateInput={async (text) => await isNewChainNameValid(text)} />
           <button disabled={!(chainSpec && chainName)} onClick={exportChainClick}>
             Export
           </button>
