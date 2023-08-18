@@ -1,7 +1,6 @@
 import { exportChain } from "../api/api";
 
-export async function downloadChain(chainName: string): Promise<void>
-{
+export async function downloadChain(chainName: string): Promise<void> {
   const blob = await exportChain(chainName);
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');

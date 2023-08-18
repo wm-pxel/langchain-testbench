@@ -163,11 +163,8 @@ def export_chain(chain_name: str) -> str:
         missing_id = next((id for id, revision in zip(export_ids, chain_revisions) if not revision), None)
         raise Exception("Could not find revision with id: " + missing_id)
 
-    # reverse the order
-    chain_revisions = chain_revisions[::-1]
+    return chain_revisions[::-1]
 
-    exported_chain = json.loads('[' + ','.join(revision.json() for revision in chain_revisions) + ']')
-    return exported_chain
 
 def import_chain(chain_name, chain_details):
     root_revision = None
@@ -183,6 +180,7 @@ def import_chain(chain_name, chain_details):
 
     chain = Chain(name=chain_name, revision=leaf_revision)
     chain_repository.save(chain)
+
 
 def find_leaf_revision(revisions, current_revision):
     if (current_revision is None):

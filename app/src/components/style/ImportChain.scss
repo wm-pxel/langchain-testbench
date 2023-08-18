@@ -1,0 +1,79 @@
+/* Modal styles */
+.chain-import-modal {
+  display: none;
+  position: fixed;
+  top: 30vh;
+  left: 36vw;
+  width: 28vw;
+  height: 20rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  border: var(--standard-border);
+  border-radius: var(--standard-border-radius);
+  
+  &.open {
+    display: flex; /* Display the modal when the "open" class is present */
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-content {
+    padding: 2vw;
+    border-radius: 1vw;
+    max-width: 25vw;
+    width: 90%;
+  }
+
+  .input-group {
+    margin-bottom: 10px;
+  }
+
+  input[type="text"]{
+    border-radius: 4px;
+    background-color: var(--main-background-color);
+    color: #dadada;
+    border: var(--standard-border);
+    border-width: 0.1rem;
+    font-family: Georgia, serif;
+    font-weight: 600;
+    font-size: 1rem;
+    width: 18vw;
+    text-align: left;
+    margin: 0;
+    padding: 0.5em;
+  }
+
+  input[type="file"] {
+    columns: white;
+    background-color: black;
+  }
+  label {
+    margin-right: .5vw;
+  }
+  
+
+  button {
+    margin-top: 1vh;
+    margin-right: 2vm;   
+  }
+  
+
+  .drop-area-outer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    background-color: #222;
+    border: var(--standard-border);
+    border-width: 0.1rem;
+    border-radius: var(--standard-border-radius);
+  }
+
+  .drop-area-outer .button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 1em 1em 1em;
+  }
+  /* Add more styles as needed */
+}
