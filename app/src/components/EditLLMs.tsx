@@ -214,7 +214,7 @@ const ChatOpenAILLMEditor = ({ llmKey, llm, updateLLM }: ChatOpenAILLMEditorProp
 }
 
 const EditLLMs = () => {
-  const { llms, addLLM, updateLLM, latestLLMs, isEditingLLMs,  setIsEditingLLMs } = useContext(LLMContext);
+  const { llms, addLLM, updateLLM, isEditingLLMs,  setIsEditingLLMs } = useContext(LLMContext);
   const backgroundRef = useRef<HTMLDivElement>(null);
   const [visibilityState, setVisibilityState] = useState("absent");
 
@@ -229,9 +229,8 @@ const EditLLMs = () => {
   }, [isEditingLLMs, visibilityState]);
 
   const closeModal = useCallback(() => {
-    latestLLMs(); // ensure latest changes are available in context
     setIsEditingLLMs(false);
-  }, [setIsEditingLLMs, latestLLMs]);
+  }, [setIsEditingLLMs]);
 
   return (
     <div className={`edit-llms ${visibilityState}`}

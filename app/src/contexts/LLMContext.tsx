@@ -98,7 +98,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
   const deleteLLM = (name: string): void => {
     const newLLMs = {...llms};
     delete newLLMs[name];
-    setBothLLMs(newLLMs);
+    setDirtyLLMs(newLLMs);
   }
 
   const latestLLMs = (): Record<string, LLM> => {
@@ -106,7 +106,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
     return dirtyLLMs;
   }
 
-  const addLLM = (llmType: string) => (setBothLLMs({
+  const addLLM = (llmType: string) => (setDirtyLLMs({
     ...dirtyLLMs,
     [`llm-${Object.keys(dirtyLLMs).length}`]: defaultLLM(llmType),
   }));
@@ -152,7 +152,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
 
   return (
     <LLMContext.Provider value={{ 
-      llms,
+      llms: dirtyLLMs,
       addLLM,
       updateLLM,
       deleteLLM,
