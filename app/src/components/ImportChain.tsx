@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { importChain } from '../api/api';
-import "./style/ImportChain.css";
+import "./style/ImportChain.scss";
 
 interface ImportChainProps {
   isImportModalOpen: boolean;
@@ -70,11 +70,15 @@ const ImportChain: React.FC<ImportChainProps> = ({ isImportModalOpen, onClose })
   return (
     <div className={`chain-import-modal ${isImportModalOpen ? 'open' : ''}`}>
       <div className="modal-content">
+        <div className="modal-header">
+          <h2>Import Chain</h2>
+        </div>
         <div className='input-group'>
           <label htmlFor="chain_name">Chain Name:</label>
           <input
             type="text"
             id="chain_name"
+            className='chain-name-input'
             value={chainName}
             onChange={handleChainNameChange}
           />
@@ -87,8 +91,7 @@ const ImportChain: React.FC<ImportChainProps> = ({ isImportModalOpen, onClose })
             onDrop={handleDrop}
             onClick={handleBrowseClick}
           >
-            <p>Drag and drop a file in this area</p>
-            <p>or click the button below to upload.</p>
+            <p>Drag and drop a file in this area or click the button below to upload.</p>
             <div className='button-container'>
               <button type="button">Browse</button>
             </div>

@@ -30,7 +30,7 @@ export interface LLMProviderProps {
   children: React.ReactNode;
 }
 
-const areLLMDirtyLLMEqual = (llms: Record<string, any>, dirtyLLMs: Record<string, any>): boolean => {
+const areLLMsEqual = (llms: Record<string, any>, dirtyLLMs: Record<string, any>): boolean => {
   const keys1 = Object.keys(llms);
   const keys2 = Object.keys(dirtyLLMs);
   
@@ -51,7 +51,7 @@ const areLLMDirtyLLMEqual = (llms: Record<string, any>, dirtyLLMs: Record<string
 
       for (let i = 0; i < llms[key].length; i++) {
         if (typeof llms[key][i] === 'object' && llms[key][i] !== null) {
-          if (!areLLMDirtyLLMEqual(llms[key][i], dirtyLLMs[key][i])) {
+          if (!areLLMsEqual(llms[key][i], dirtyLLMs[key][i])) {
             return false;
           }
         } else if (llms[key][i] !== dirtyLLMs[key][i]) {
@@ -62,7 +62,7 @@ const areLLMDirtyLLMEqual = (llms: Record<string, any>, dirtyLLMs: Record<string
     }
     // compare object values
     else if (typeof llms[key] === 'object' && llms[key] !== null && typeof dirtyLLMs[key] === 'object' && dirtyLLMs[key] !== null) {
-      return areLLMDirtyLLMEqual(llms[key], dirtyLLMs[key]);
+      return areLLMsEqual(llms[key], dirtyLLMs[key]);
     }
     // compare primitives
     else {
@@ -92,13 +92,13 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
   }
 
   useEffect(() => {
-    setLLMsNeedSave(!areLLMDirtyLLMEqual(llms, dirtyLLMs));
+    setLLMsNeedSave(!areLLMsEqual(llms, dirtyLLMs));
   }, [llms, dirtyLLMs]);
 
   const deleteLLM = (name: string): void => {
     const newLLMs = {...llms};
     delete newLLMs[name];
-    setBothLLMs(newLLMs);
+    setDirtyLLMs(newLLMs);
   }
 
   const latestLLMs = (): Record<string, LLM> => {
@@ -106,7 +106,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
     return dirtyLLMs;
   }
 
-  const addLLM = (llmType: string) => (setBothLLMs({
+  const addLLM = (llmType: string) => (setDirtyLLMs({
     ...dirtyLLMs,
     [`llm-${Object.keys(dirtyLLMs).length}`]: defaultLLM(llmType),
   }));
@@ -152,7 +152,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
 
   return (
     <LLMContext.Provider value={{ 
-      llms,
+      llms: dirtyLLMs,
       addLLM,
       updateLLM,
       deleteLLM,

@@ -93,23 +93,22 @@ def export_chain(chain_name):
       status=404
     )
 
-  chain_json = json.dumps(exported_chain, default=pydantic_encoder)
-  return Response(
-    chain_json,
-    mimetype="application/json"
-  )
-
+    chain_json = '[' + ','.join(revision.json() for revision in exported_chain) + ']'
+    return Response(
+        chain_json,
+        mimetype="application/json"
+    )
+    
 
 @app.route("/chain/<chain_name>/import", methods=["POST"])
 def import_chain_route(chain_name):
   logging.info(f"Importing chain '{chain_name}'")
   try:
-    logging.info(f"Request json: {request.get_json()}")         
     json_data = request.get_json()
     if json_data is None:
       raise BadRequest("JSON data not present in request")
 
-    revisions = parse_obj_as(List[ChainRevision], json_data) 
+    revisions = parse_obj_as(List[ChainRevision], json_data)
 
     chain_service.import_chain(chain_name, revisions)
     return Response(

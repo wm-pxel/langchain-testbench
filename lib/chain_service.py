@@ -130,13 +130,14 @@ def compute_chain_IO(chain_spec: ChainSpec, chain: BaseChain, ctx: LangChainCont
   inputs[chain_id] = chain.input_keys
   outputs[chain_id] = chain.output_keys
 
-  for sub_chain_spec, sub_chain in zip(getattr(chain_spec, "chains", []), getattr(chain, "chains", [])):
-    inputs, outputs = compute_and_update(sub_chain_spec, sub_chain, ctx, inputs, outputs)
+  if chain_spec.chain_type == "sequential_chain_spec":
+    for sub_chain_spec, sub_chain in zip(chain_spec.chains, chain.chains):
+      inputs, outputs = compute_and_update(sub_chain_spec, sub_chain, ctx, inputs, outputs)
 
-  for case_spec, case in zip(getattr(chain_spec, "cases", []), getattr(chain, "subchains", [])):
-    inputs, outputs = compute_and_update(case_spec, case, ctx, inputs, outputs)
+  if chain_spec.chain_type == "case_chain_spec":
+    for case_spec, case in zip(chain_spec.cases, chain.subchains):
+      inputs, outputs = compute_and_update(case_spec, case, ctx, inputs, outputs)
 
-  if hasattr(chain_spec, "default_case"):
     inputs, outputs = compute_and_update(chain_spec.default_case, chain.default_chain, ctx, inputs, outputs)
 
   return inputs, outputs
@@ -156,7 +157,8 @@ def run_once(chain_name, input, record):
   lang_chain = revision.chain.to_lang_chain(ctx)
   output = lang_chain._call(input)
 
-  vars = ctx.get_IO()
+  if record:
+    vars = ctx.get_IO()
 
   inputs, outputs = compute_chain_IO(revision.chain, lang_chain, ctx)
   result_repository.save(Result(revisionID=revision.id, inputs=inputs, outputs=outputs, io_mapping=vars, recorded=datetime.now()))
@@ -165,8 +167,8 @@ def run_once(chain_name, input, record):
 
 
 def results(revision_id: str, ancestors: bool):
-  """Find results for a prompt in for one or more chain revisions.
-  One of chain-name or revision must be specified.
+  """Find results for a prompt for one or more chain revisions.
+  The revision must be specified.
   If the ancestors flag is set, results for all ancestors of the specified revision are included.
   """
   revision_ids = [ObjectId(revision_id)]
@@ -179,6 +181,9 @@ def results(revision_id: str, ancestors: bool):
 
 
 def load_results_by_chain_name(chain_name: str):
+  """Find results for a prompt for one chain revision.
+  The chain name must be specified.
+  """
   chain = chain_repository.find_one_by({"name": chain_name})
   revision = chain_revision_repository.find_one_by_id(chain.revision)
   return results(revision.id, True)
@@ -192,11 +197,7 @@ def export_chain(chain_name: str) -> str:
     missing_id = next((id for id, revision in zip(export_ids, chain_revisions) if not revision), None)
     raise Exception("Could not find revision with id: " + missing_id)
 
-  # reverse the order
-  chain_revisions = chain_revisions[::-1]
-
-  exported_chain = json.loads('[' + ','.join(revision.json() for revision in chain_revisions) + ']')
-  return exported_chain
+    return chain_revisions[::-1]
 
 
 def import_chain(chain_name, chain_details):

@@ -32,12 +32,11 @@ export const exportChain = async(chainName: string) => {
 
 export const importChain = async (chainName: string, file: File) => {
   const fileContent = await file.text();
-  const jsonContent = JSON.parse(fileContent);
   
   const response = await fetch(`${API_URL}/chain/${chainName}/import`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(jsonContent),
+    body: fileContent,
   });
 
   if (response.ok) {
