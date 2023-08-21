@@ -65,7 +65,7 @@ def test_llm_chain_spec_to_lang_chain_creates_recording_chain():
 
     assert output == {"output1": "response1"}
     assert ctx.prompts[0].calls == [
-        ({"input1": "input1", "input2": "input2"}, "response1")
+        ({"input1": "input1", "input2": "input2"}, {"output1": "response1"})
     ]
 
 
