@@ -43,7 +43,6 @@ const Header = () => {
   const newChain = (name: string) => {
     setErrorMessage(null);
     setChainName(name);
-    // setChainSpec(null);
     setLLMs(defaultLLMs);
     setRevision(null);
   }
