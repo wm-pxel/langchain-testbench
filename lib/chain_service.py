@@ -160,8 +160,8 @@ def run_once(chain_name, input, record):
   if record:
     vars = ctx.get_IO()
 
-  inputs, outputs = compute_chain_IO(revision.chain, lang_chain, ctx)
-  result_repository.save(Result(revisionID=revision.id, inputs=inputs, outputs=outputs, io_mapping=vars, recorded=datetime.now()))
+    inputs, outputs = compute_chain_IO(revision.chain, lang_chain, ctx)
+    result_repository.save(Result(revisionID=revision.id, inputs=inputs, outputs=outputs, io_mapping=vars, recorded=datetime.now()))
 
   return output
 
