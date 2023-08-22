@@ -32,7 +32,6 @@ def revision():
   """Save and load chain revisions."""
   pass
 
-
 cli.add_command(revision)
 
 
@@ -58,7 +57,6 @@ def save(chain_name, file):
 
     print("Saved revision", revision.id, "for chain", chain_name)
 
-
 revision.add_command(save)
 
 
@@ -70,7 +68,6 @@ def load(chain_name):
   """
   revision = chain_service.load_by_chain_name(chain_name)
   print(revision.json(indent=2))
-
 
 revision.add_command(load)
 
@@ -84,7 +81,6 @@ def history(chain_name):
   ancestor_ids = chain_service.history_by_chain_name(chain_name)
   for id in ancestor_ids:
     print(id)
-
 
 revision.add_command(history)
 
@@ -109,7 +105,6 @@ def patch(chain_name):
 
   revision_id = chain_service.save_patch(chain_name, patch)
   print("Saved revision", revision_id, "for chain", chain_name)
-
 
 revision.add_command(patch)
 
@@ -140,7 +135,6 @@ def patch_prompt(chain_name, chain_id):
   revision_id = chain_service.save_patch(chain_name, patch)
   print("Saved revision", revision_id, "for chain", chain_name)
 
-
 revision.add_command(patch_prompt)
 
 
@@ -153,7 +147,6 @@ revision.add_command(patch_prompt)
 def chain():
   """Branch and reset chain names."""
   pass
-
 
 cli.add_command(chain)
 
@@ -169,7 +162,6 @@ def branch(chain_name, branch_name):
   new_chain_id = chain_service.branch(chain_name, branch_name)
   print(f"Created branch {branch_name} at {new_chain_id}")
 
-
 chain.add_command(branch)
 
 
@@ -183,7 +175,6 @@ def reset(chain_name, revision):
   chain_service.reset(chain_name, revision)
   print(f"Reset {chain_name} to revision {revision}")
 
-
 chain.add_command(reset)
 
 
@@ -192,7 +183,6 @@ def list():
   """List all chains."""
   for chain in chain_service.list_chains().items():
     print(f"{chain[0]}: {chain[1]}")
-
 
 chain.add_command(list)
 
@@ -206,7 +196,6 @@ chain.add_command(list)
 def run():
   """Run chains once or interactively."""
   pass
-
 
 cli.add_command(run)
 
@@ -240,7 +229,6 @@ def once(chain_name, input, record):
   output = chain_service.run_once(chain_name, input, record)
 
   print(json.dumps(output, indent=2))
-
 
 run.add_command(once)
 
@@ -307,7 +295,6 @@ def interactive(chain_name, record):
 
     inputs = {key: outputs[output_mapping[key]] if key in output_mapping else "" for key in input_keys}
 
-
 run.add_command(interactive)
 
 
@@ -320,7 +307,6 @@ run.add_command(interactive)
 def results():
   """Show results."""
   pass
-
 
 cli.add_command(results)
 
@@ -364,7 +350,6 @@ def show(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chai
       print(json.dumps(result.dict(), indent=2, default=lambda o: str(o)), end=',\n')
     print(']')
 
-
 results.add_command(show)
 
 
@@ -402,6 +387,5 @@ def diff(chain_name1, chain_name2, chain_id: Optional[int] = None):
         csv_out.writerow([formatted_input, "", results[0].output])
     else:
       csv_out.writerow([formatted_input, results[0].output, results[1].output])
-
 
 results.add_command(diff)
