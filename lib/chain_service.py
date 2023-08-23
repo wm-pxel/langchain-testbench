@@ -132,13 +132,13 @@ def compute_chain_IO(chain_spec: ChainSpec, chain: BaseChain, ctx: LangChainCont
 
   if chain_spec.chain_type == "sequential_chain_spec":
     for sub_chain_spec, sub_chain in zip(chain_spec.chains, chain.chains):
-      inputs, outputs = compute_and_update(sub_chain_spec, sub_chain, ctx, inputs, outputs)
+      inputs, outputs = compute_and_update(sub_chain_spec, sub_chain.chain, ctx, inputs, outputs)
 
   if chain_spec.chain_type == "case_chain_spec":
     for case_spec, case in zip(chain_spec.cases, chain.subchains):
-      inputs, outputs = compute_and_update(case_spec, case, ctx, inputs, outputs)
+      inputs, outputs = compute_and_update(case_spec, case.chain, ctx, inputs, outputs)
 
-    inputs, outputs = compute_and_update(chain_spec.default_case, chain.default_chain, ctx, inputs, outputs)
+    inputs, outputs = compute_and_update(chain_spec.default_case, chain.default_chain.chain, ctx, inputs, outputs)
 
   return inputs, outputs
 
@@ -160,7 +160,7 @@ def run_once(chain_name, input, record):
   if record:
     vars = ctx.get_IO()
 
-    inputs, outputs = compute_chain_IO(revision.chain, lang_chain, ctx)
+    inputs, outputs = compute_chain_IO(revision.chain, lang_chain.chain, ctx)
     result_repository.save(Result(revisionID=revision.id, inputs=inputs, outputs=outputs, io_mapping=vars, recorded=datetime.now()))
 
   return output
