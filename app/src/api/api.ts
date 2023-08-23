@@ -21,6 +21,14 @@ export const saveRevision = async (chainName: string, revision: Revision) => {
   return await response.json();
 }
 
+export const branchRevision = async (chainName: string, branchName: string) => {
+  const response = await fetch(`${API_URL}/chain/${chainName}/branch/${branchName}`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+  });
+  return await response.json();
+}
+
 export const exportChain = async(chainName: string) => {
   const response = await fetch(`${API_URL}/chain/${chainName}/export`);
   if (response.ok) {

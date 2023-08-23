@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { listChains, loadRevision, saveRevision } from "../api/api";
+import { listChains, loadRevision, saveRevision, branchRevision } from "../api/api";
 import { createRevision } from "../model/spec_control";
 import ChainSpecContext from "../contexts/ChainSpecContext";
 import { LLMContext } from "../contexts/LLMContext";
@@ -77,6 +77,19 @@ const Header = () => {
     listChainsAndUpdateRevisions(); 
   }
 
+  const branch = async (name: string) => {
+    setErrorMessage(null);
+    try {
+      const nextRevisionId = await branchRevision(chainName, name);
+      setRevision(nextRevisionId.revision_id);
+    } catch (error) {
+      popupErrorMessage("Error saving branch: " + (error as Error).message); 
+      return;
+    }
+    listChainsAndUpdateRevisions();
+    loadLatest(name)
+  }
+
   const exportChainClick = async () => {
     setErrorMessage(null);
     try {
@@ -108,11 +121,13 @@ const Header = () => {
       {errorMessage && <div className="error-message">{errorMessage}</div>}
       <div className="header">
         <div className="file-options">
-          <TextModal modalKey="new-menu" title="new" buttonText="Create" placeholder="name" enterValue={(name) => newChain(name)} validateInput={async (text) => await isNewChainNameValid(text)} />
+          <TextModal modalKey="new-menu" title="new" buttonText="Create" placeholder="name" disabled={false} enterValue={(name) => newChain(name)} validateInput={async (text) => await isNewChainNameValid(text)}/>
           <FilterMenu modalKey="load-menu" title="load" selectValue={(value) => loadLatest(value)} options={Object.keys(revisions)} />
           <button disabled={!(chainSpec && chainName && !readyToInteract)} onClick={saveSpec}>
             Save
           </button>
+          <TextModal modalKey="branch-menu" title="branch revision" buttonText="Branch Revision" placeholder="New Branch" disabled={!(chainSpec && chainName)}
+                    enterValue={(name) => branch(name)} validateInput={async (text) => await isNewChainNameValid(text)} />
           <button disabled={!(chainSpec && chainName)} onClick={exportChainClick}>
             Export
           </button>
