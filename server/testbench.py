@@ -93,12 +93,12 @@ def export_chain(chain_name):
       status=404
     )
 
-    chain_json = '[' + ','.join(revision.json() for revision in exported_chain) + ']'
-    return Response(
-        chain_json,
-        mimetype="application/json"
-    )
-    
+  chain_json = '[' + ','.join(revision.json() for revision in exported_chain) + ']'
+  return Response(
+      chain_json,
+      mimetype="application/json"
+  )
+
 
 @app.route("/chain/<chain_name>/import", methods=["POST"])
 def import_chain_route(chain_name):
