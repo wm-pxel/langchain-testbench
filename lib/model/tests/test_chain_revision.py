@@ -9,7 +9,7 @@ def test_chain_revision_serialization():
     os.environ["OPENAI_API_KEY"] = "set me!"
 
   llm = OpenAILLMSpec(model_name="davinci", temperature=0.5, max_tokens=10, top_p=1.0, frequency_penalty=0.0,
-                      presence_penalty=0.0, n=1, best_of=1, request_timeout=10, logit_bias=None)
+                      presence_penalty=0.0, n=1, request_timeout=10, logit_bias=None)
 
   chain_revision = ChainRevision(
       chain_id=1,

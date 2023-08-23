@@ -29,14 +29,13 @@ class OpenAILLMSpec(BaseLLMSpec):
   frequency_penalty: float
   presence_penalty: float
   n: int
-  best_of: int
   request_timeout: Optional[int]
   logit_bias: Optional[Dict[int, int]]
 
   def to_llm(self) -> LLM:
     return OpenAI(model_name=self.model_name, temperature=self.temperature,
                   max_tokens=self.max_tokens, top_p=self.top_p, frequency_penalty=self.frequency_penalty,
-                  presence_penalty=self.presence_penalty, n=self.n, best_of=self.best_of,
+                  presence_penalty=self.presence_penalty, n=self.n,
                   request_timeout=self.request_timeout, logit_bias=self.logit_bias)
 
 
