@@ -15,7 +15,7 @@ import { downloadChain } from "../util/download";
 const Header = () => {
   const { latestLLMs, setIsEditingLLMs, setLLMs } = useContext(LLMContext);
   const { 
-    latestChainSpec, setChainName,  chainName, chainSpec, 
+    setChainSpec, latestChainSpec, setChainName,  chainName, chainSpec, 
     revision, setRevision, readyToInteract,
     isInteracting, setIsInteracting
   } = useContext(ChainSpecContext);
@@ -33,7 +33,7 @@ const Header = () => {
     try {
       const revision = await loadRevision(name);
       if (revision.id) setRevision(revision.id);
-      latestChainSpec();
+      setChainSpec(revision.chain);
       setLLMs(revision.llms);
     } catch (error) {
       setTimedMessage(setErrorMessage, "Error loading chain: " + (error as Error).message); 

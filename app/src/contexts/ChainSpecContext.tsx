@@ -1,4 +1,4 @@
-import React, { createContext, useState, useMemo, useContext } from "react";
+import React, { createContext, useState, useCallback, useMemo, useContext } from "react";
 import { ChainSpec } from "../model/specs";
 import { findNextChainId, insertChainSpec as insertGeneratedChainSpec, deleteChainSpec, updateChainSpec } from "../model/spec_control";
 import { deepEquals } from "../util/sets";
@@ -11,6 +11,7 @@ export type DeleteSpecFunc = (chainId: number) => void;
 
 export interface ChainSpecContextType {
   chainSpec: ChainSpec | null;
+  setChainSpec: (spec: ChainSpec | null) => void,
   chainName: string;
   setChainName: (name: string) => void,
   revision: string | null;
@@ -28,6 +29,7 @@ export interface ChainSpecContextType {
 
 const ChainSpecContext = createContext<ChainSpecContextType>({
   chainSpec: null,
+  setChainSpec: (_: ChainSpec | null) => {},
   chainName: "",
   setChainName: (_: string) => {},
   revision: null,
@@ -63,33 +65,32 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   const [revision, setRevision] = useState<string|null>(null);
   const [isInteracting, setIsInteracting] = useState<boolean>(false);
 
-  const insertChainSpec = (type: string, chainId: number, index: number): void => {
+  const insertChainSpec = useCallback((type: string, chainId: number, index: number): void => {
     const newSpec = insertGeneratedChainSpec(dirtyChainSpec, nextChainId, type, chainId, index);
     setDirtyChain(newSpec);
-  };
+  }, [dirtyChainSpec, nextChainId]);
 
-  const latestChainSpec = (): ChainSpec | null => {
+  const latestChainSpec = useCallback((): ChainSpec | null => {
     setChainSpec(dirtyChainSpec)
     return dirtyChainSpec;
-  }
+  }, [dirtyChainSpec]);
 
   const setDirtyChain = (spec: ChainSpec | null): void => {
-    // setDisplaySpec(spec);
     setDirtyChainSpec(spec);
     setNextChainId(spec ? Math.max(findNextChainId(spec), nextChainId) : 0);
   }
 
-  const findChainInCurrentSpec = (chainId: number): ChainSpec | undefined => {
+  const findChainInCurrentSpec = useCallback((chainId: number): ChainSpec | undefined => {
     if (!dirtyChainSpec) {
       return undefined;
     }
     return findByChainId(chainId, dirtyChainSpec);
-  };
+  }, [dirtyChainSpec]);
 
-  const deleteChain = (chainId: number): void => {
+  const deleteChain = useCallback((chainId: number): void => {
     const newSpec = deleteChainSpec(dirtyChainSpec, chainId);
     setDirtyChain(newSpec);
-  };
+  }, [dirtyChainSpec]);
 
   const updateDirtyChainSpec = (spec: ChainSpec): void => {
     const result = updateChainSpec(dirtyChainSpec, spec);
@@ -110,6 +111,7 @@ export const ChainSpecProvider: React.FC<ChainSpecProviderProps> = ({ children }
   return (
     <ChainSpecContext.Provider value={{ 
       chainSpec: dirtyChainSpec,
+      setChainSpec: setDirtyChain,
       chainName,
       setChainName,
       revision,
