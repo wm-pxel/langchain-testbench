@@ -34,8 +34,9 @@ class LangChainContext(BaseModel):
 
       if (not hasattr(prompt.chain, "output_key")):
         continue
-
-      vars[prompt.chain.output_key] = prompt.recorded_calls[0][1]
+      
+      output_key = prompt.chain.output_key
+      vars[output_key] = str(prompt.recorded_calls[0][1]) # Store as a string?
 
       for input in prompt.recorded_calls[0][0]:
         vars[input] = prompt.recorded_calls[0][0][input]

@@ -70,7 +70,8 @@ const Interaction = () => {
 
       const response = await runOnce(chainName, input);
       const output = response.output || response[Object.keys(response)[0]];
-      setConversation([...newConversation, { from: 'chain', text: output }]);
+      const text = output.text ?? output;
+      setConversation([...newConversation, { from: 'chain', text }]);
       Object.entries(response).forEach(([key, value]) => console.log(`${key}:`, value))
 
       let nextInput = input;

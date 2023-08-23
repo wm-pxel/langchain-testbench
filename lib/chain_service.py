@@ -142,6 +142,20 @@ def compute_chain_IO(chain_spec: ChainSpec, chain: BaseChain, ctx: LangChainCont
 
   return inputs, outputs
 
+class RunResult:
+  def __init__(self, output, result=None):
+    self.output = output
+    self.result = result
+
+  output: dict
+  result: Result
+
+  def to_dict(self):
+        return {
+            'output': self.output,
+            'result': self.result
+        }
+
 
 def run_once(chain_name, input, record):
   """Run a chain revision.
@@ -161,9 +175,12 @@ def run_once(chain_name, input, record):
     vars = ctx.get_IO()
 
     inputs, outputs = compute_chain_IO(revision.chain, lang_chain.chain, ctx)
-    result_repository.save(Result(revisionID=revision.id, inputs=inputs, outputs=outputs, io_mapping=vars, recorded=datetime.now()))
 
-  return output
+    result = Result(revisionID=revision.id, inputs=inputs, outputs=outputs, io_mapping=vars, recorded=datetime.now())
+    result_repository.save(result)
+    return RunResult(output, result)
+
+  return RunResult(output)
 
 
 def results(revision_id: str, ancestors: bool):
