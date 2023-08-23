@@ -7,7 +7,6 @@ export interface OpenAILLM {
   frequency_penalty: number;
   presence_penalty: number;
   n: number;
-  best_of: number;
   request_timeout: number | null;
   logit_bias: Record<number, number>;
 }
@@ -45,7 +44,6 @@ export const defaultLLMs: Record<string, LLM> = {
     "frequency_penalty": 0.0,
     "presence_penalty": 0.0,
     "n": 1,
-    "best_of": 1,
     "request_timeout": null,
     "logit_bias": {},
   }
