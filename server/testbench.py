@@ -68,7 +68,7 @@ def load_by_id(revision_id):
 @app.route("/chain/<chain_name>/results", methods=["GET"])
 def load_results_by_chain_name(chain_name):
   results = chain_service.load_results_by_chain_name(chain_name)
-  return Response(dumps(results), mimetype="application/json")
+  return Response(dumps(transform_mongodb_data(results)), mimetype="application/json")
 
 
 @app.route("/chain/<chain_name>/run", methods=["POST"])
@@ -128,3 +128,26 @@ def import_chain_route(chain_name):
 def allowed_file(filename):
   ALLOWED_EXTENSIONS = {'json'}
   return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def transform_mongodb_data(data):
+  transformed_data = []
+
+  for item in data:
+    transformed_item = {}
+    for pair in item:
+      key = pair[0]
+      value = pair[1]
+
+      if isinstance(value, dict):
+        if "$oid" in value:
+          key = "id"
+          value = value["$oid"]
+        elif "$date" in value:
+          key = "date"
+          value = value["$date"]
+
+      transformed_item[key] = value
+
+    transformed_data.append(transformed_item)
+
+  return transformed_data
