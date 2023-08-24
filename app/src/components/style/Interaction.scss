@@ -121,6 +121,25 @@
     border-bottom: none;
   }
 
+  .input-tooltip {
+    border: none;
+    font-family: Georgia, serif;
+    background-color: var(--main-background-color);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-align: left;
+    padding: 1rem;
+    margin: 0;
+    line-height: 1.5em;
+    overflow: scroll;
+    border: 1px solid rgba(204, 204, 204, .5);
+    resize: none;
+  }
+
+  .input-tooltip strong{
+    color: var(--variable-name-color);
+  }
+
   .loading {
     width: 100%
   }

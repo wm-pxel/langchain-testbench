@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import { Tooltip } from "react-tooltip"
 import ChainSpecContext from "../contexts/ChainSpecContext";
 import { runOnce } from "../api/api";
 import { computeChainIO } from "../model/spec_control";
@@ -11,6 +12,7 @@ import "./style/Interaction.scss"
 interface Message {
   from: string;
   text: string;
+  responses: string[][];
 }
 
 const Interaction = () => {
@@ -20,7 +22,7 @@ const Interaction = () => {
   const [conversation, setConversation] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const conversationRef = useRef<HTMLDivElement>(null);
-  const [activeInput, setActiveInput] = useState<string | null>(null);
+  const [activeInput, setActiveInput] = useState< string | null>(null);
   const [primaryInput, setPrimaryInput] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -62,16 +64,27 @@ const Interaction = () => {
     try {
       let newConversation = conversation;
       if (primaryInput) {
-        newConversation = [...conversation, { from: 'user', text: input[primaryInput] || ''}];
+        newConversation = [...conversation, { from: 'user', text: input[primaryInput] || '', responses: []}];
         setConversation(newConversation);
         for (const key of Object.keys(input)) updateInput(key, '');
         scrollDown();
       }
 
       const response = await runOnce(chainName, input);
-      const output = response.output || response[Object.keys(response)[0]];
+      const responses: string[][] = [];
+      console.log(`CRB looking at response ${JSON.stringify(response.history.io_mapping)}`)
+      for (const [key, value] of Object.entries(response.history.io_mapping)) {
+        responses.push([key, value as string])
+      }
+
+      const responseOutput = response.output;
+      const output = 
+        responses?.[responses.length - 1]?.[responses[responses.length - 1]?.length - 1] ||
+        responseOutput.output || 
+        response[Object.keys(response)[0]];
       const text = output.text ?? output;
-      setConversation([...newConversation, { from: 'chain', text }]);
+      console.log(`CRB text ${text} -- ${typeof text}`)
+      setConversation([...newConversation, { from: 'chain', text, responses }]);
       Object.entries(response).forEach(([key, value]) => console.log(`${key}:`, value))
 
       let nextInput = input;
@@ -103,7 +116,23 @@ const Interaction = () => {
       </div>
       <div className="conversation" ref={conversationRef}>
         {conversation.map((message, i) => (
-          <div className={`message ${message.from}`} key={`message-${i}`} dangerouslySetInnerHTML={{__html: richText(message.text)}}>
+          <div key={`message-div-${i}`} >
+            <div data-tooltip-id={`tooltip-${i}`} className={`message ${message.from}`} key={`message-${i}`} dangerouslySetInnerHTML={{__html: richText(message.text)}}>
+          </div>
+          {
+            message.responses.length > 0 ?
+            <Tooltip className='input-tooltip' id={`tooltip-${i}`} key={`tooltip-${i}`} place={'top'}>
+              {<div className="chatBox" style={{ maxWidth: '300px' }}>
+              {message.responses.map((message, index) => (
+                <div key={index} className="chatMessage">
+                  <strong className="sender">{richText(message[0])}: </strong>
+                  <span className="messageContent">{richText(message[1])}</span>
+                </div>
+              ))}
+            </div>}
+            </Tooltip>
+            : null
+          }
           </div>
         ))}
         {loading && <div className="loading">

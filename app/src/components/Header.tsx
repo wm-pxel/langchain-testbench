@@ -3,6 +3,7 @@ import { listChains, loadRevision, saveRevision } from "../api/api";
 import { createRevision } from "../model/spec_control";
 import ChainSpecContext from "../contexts/ChainSpecContext";
 import { LLMContext } from "../contexts/LLMContext";
+import { PreviousRunsContext } from "../contexts/PreviousRunsContext";
 import FilterMenu from "./FilterMenu";
 import TextModal from "./TextModal";
 import { defaultLLMs } from "../model/llm";
@@ -14,6 +15,7 @@ import { downloadChain } from "../util/download";
 
 const Header = () => {
   const { latestLLMs, setIsEditingLLMs, setLLMs } = useContext(LLMContext);
+  const { setIsViewingPreviousRuns } = useContext(PreviousRunsContext);
   const { 
     latestChainSpec, setChainName,  chainName, chainSpec, 
     setChainSpec, revision, setRevision, readyToInteract,
@@ -123,12 +125,12 @@ const Header = () => {
         <div className="chain-name">{chainName || ""}</div>
         <div className="actions">
           <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>
+          <button onClick={() => setIsViewingPreviousRuns(true)}>Previous Runs</button>
           <button disabled={!readyToInteract} onClick={() => setIsInteracting(!isInteracting)}>
             Interact
           </button>
         </div>
       </div>
-
       <ImportChain isImportModalOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} />
     </div>
   );

@@ -145,17 +145,23 @@ def compute_chain_IO(chain_spec: ChainSpec, chain: BaseChain, ctx: LangChainCont
 class RunResult:
   def __init__(self, output, result=None):
     self.output = output
-    self.result = result
+    self.history = result
 
   output: dict
-  result: Result
+  history: Result
 
   def to_dict(self):
-        return {
-            'output': self.output,
-            'result': self.result
+    return {
+        'output': self.output,
+        'history': {
+          'id': str(self.history.id),
+          'revisionID': str(self.history.revisionID),
+          'inputs': self.history.inputs,
+          'outputs': self.history.outputs,
+          'io_mapping': self.history.io_mapping,
+          'recorded': str(self.history.recorded),
         }
-
+    }
 
 def run_once(chain_name, input, record):
   """Run a chain revision.
