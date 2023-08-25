@@ -13,7 +13,7 @@ class Result(BaseModel):
   recorded: datetime
 
   class Config:
-    json_encoders = {ObjectIdField: str}
+    json_encoders = {ObjectIdField: str, datetime: str}
 
 
 class ResultRepository(AbstractRepository[Result]):

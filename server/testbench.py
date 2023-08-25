@@ -1,6 +1,7 @@
 import logging
 
 import json
+import bson
 from flask import Flask, Response, request
 from bson.json_util import dumps
 from flask_cors import CORS
@@ -10,6 +11,8 @@ from pydantic.json import pydantic_encoder
 from pydantic import parse_obj_as
 from typing import List
 import lib.chain_service as chain_service
+from pydantic_mongo import AbstractRepository, ObjectIdField
+from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
@@ -138,13 +141,8 @@ def transform_mongodb_data(data):
       key = pair[0]
       value = pair[1]
 
-      if isinstance(value, dict):
-        if "$oid" in value:
-          key = "id"
-          value = value["$oid"]
-        elif "$date" in value:
-          key = "date"
-          value = value["$date"]
+      if isinstance(value, datetime) or isinstance(value, bson.objectid.ObjectId):
+        value = str(value)
 
       transformed_item[key] = value
 

@@ -1,16 +1,37 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { PreviousRunsContext } from "../contexts/PreviousRunsContext";
 import "./style/PreviousRuns.scss";
-import RunDataTable from "./RunDataTable";
-import data from "../util/mock-run-data.json";
+import RunDataTable, { RunData } from "./RunDataTable";
+import { chainResults, saveRevision } from "../api/api";
 
 const PreviousRuns = () => {
-  const { isViewingPreviousRuns, setIsViewingPreviousRuns } =
+  const { isViewingPreviousRuns, chainName, updateViewingPreviousRuns } =
     useContext(PreviousRunsContext);
   const backgroundRef = useRef<HTMLDivElement>(null);
   const [visibilityState, setVisibilityState] = useState("absent");
 
   const [showInfoForRow, setShowInfoForRow] = useState<number | null>(null);
+
+  const [data, setData] = useState<RunData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const chainHistory = await chainResults(chainName);
+
+      setIsLoading(false);
+
+    } catch (error) {
+      console.log("Error retrieving chain history: " + (error as Error).message);
+      setError(error as Error);
+      setIsLoading(false);
+      return;
+    }
+  };
 
   useEffect(() => {
     if (isViewingPreviousRuns) {
@@ -18,6 +39,7 @@ const PreviousRuns = () => {
       if (visibilityState === "absent") setVisibilityState("hidden");
       else if (visibilityState === "hidden") {
         setShowInfoForRow(null);
+        fetchData();
         setVisibilityState("visible");
       }
     } else {
@@ -26,8 +48,8 @@ const PreviousRuns = () => {
   }, [isViewingPreviousRuns, visibilityState]);
 
   const closeModal = useCallback(() => {
-    setIsViewingPreviousRuns(false);
-  }, [setIsViewingPreviousRuns]);
+    updateViewingPreviousRuns(false, '');
+  }, [updateViewingPreviousRuns]);
 
   return (
     <div

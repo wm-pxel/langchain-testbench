@@ -95,11 +95,11 @@ const RunDataRow: React.FC<RunDataRowProps> = ({
   );
 };
 
-type RunDataHistoryMessage = {
+export type RunDataHistoryMessage = {
   [key: string]: string;
 };
 
-type RunData = {
+export type RunData = {
   id: number;
   creationDate: string;
   rootType: string;

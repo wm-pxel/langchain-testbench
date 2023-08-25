@@ -15,7 +15,7 @@ import { downloadChain } from "../util/download";
 
 const Header = () => {
   const { latestLLMs, setIsEditingLLMs, setLLMs } = useContext(LLMContext);
-  const { setIsViewingPreviousRuns } = useContext(PreviousRunsContext);
+  const { updateViewingPreviousRuns } = useContext(PreviousRunsContext);
   const { 
     latestChainSpec, setChainName,  chainName, chainSpec, 
     setChainSpec, revision, setRevision, readyToInteract,
@@ -125,7 +125,7 @@ const Header = () => {
         <div className="chain-name">{chainName || ""}</div>
         <div className="actions">
           <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>
-          <button onClick={() => setIsViewingPreviousRuns(true)}>Previous Runs</button>
+          <button onClick={() => updateViewingPreviousRuns(true, chainName)}>Previous Runs</button>
           <button disabled={!readyToInteract} onClick={() => setIsInteracting(!isInteracting)}>
             Interact
           </button>

@@ -2,12 +2,14 @@ import { createContext, useEffect, useState } from "react";
 
 export interface PreviousRunsContextType {
   isViewingPreviousRuns: boolean;
-  setIsViewingPreviousRuns: (isViewingPreviousRuns: boolean) => void;
+  chainName: string;
+  updateViewingPreviousRuns: (isViewingPreviousRuns: boolean, chainName: string) => void;
 }
 
 export const PreviousRunsContext = createContext<PreviousRunsContextType>({
   isViewingPreviousRuns: false,
-  setIsViewingPreviousRuns: (_: boolean) => {},
+  chainName: '',
+  updateViewingPreviousRuns: (_: boolean, __: string) => {},
 });
 
 export interface PreviousRunsProviderProps {
@@ -19,12 +21,22 @@ export const PreviousRunsContextProvider: React.FC<
 > = ({ children }) => {
   const [isViewingPreviousRuns, setIsViewingPreviousRuns] =
     useState<boolean>(false);
+  const [chainName, setChainName] =
+    useState<string>('');
+
+  const updateViewingPreviousRuns = (isViewingPreviousRunsIn: boolean, chainNameIn: string) => {
+    setChainName(chainNameIn);
+    setIsViewingPreviousRuns(isViewingPreviousRunsIn);
+
+    console.log('CRB viewing chain name ' + chainNameIn)
+  }
 
   return (
     <PreviousRunsContext.Provider
       value={{
         isViewingPreviousRuns,
-        setIsViewingPreviousRuns,
+        chainName,
+        updateViewingPreviousRuns,
       }}
     >
       {children}
