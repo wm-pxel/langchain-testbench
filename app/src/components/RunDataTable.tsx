@@ -52,13 +52,13 @@ const RunDataRow: React.FC<RunDataRowProps> = ({
   return (
     <>
       <tr>
-        <DataCell content={runData.id} maxWidth={"1em"} />
+        <DataCell content={runData.id} maxWidth={"15em"} />
         <DataCell content={runData.revisionID} maxWidth={"15em"} />
         <DataCell content={runData.recorded} maxWidth={"10em"} />
         <DataCell content={getValueFromInputZero(runData)} maxWidth={"30em"} />
-        <DataCell content={getValueFromLastOutputEntry(runData)} maxWidth={"80em"} />
+        <DataCell content={getValueFromLastOutputEntry(runData)} maxWidth={"70em"} />
         <td>
-          <button onClick={handleRunClick}>Run</button>
+          {/* <button onClick={handleRunClick}>Run</button> */}
           <button onClick={() => toggleInfo(runData.id)}>
             {showInfo ? "Hide Info" : "Show More Info"}
           </button>

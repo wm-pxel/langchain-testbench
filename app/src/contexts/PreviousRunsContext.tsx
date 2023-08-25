@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useState } from "react";
 
 export interface PreviousRunsContextType {
   isViewingPreviousRuns: boolean;
@@ -27,8 +27,6 @@ export const PreviousRunsContextProvider: React.FC<
   const updateViewingPreviousRuns = (isViewingPreviousRunsIn: boolean, chainNameIn: string) => {
     setChainName(chainNameIn);
     setIsViewingPreviousRuns(isViewingPreviousRunsIn);
-
-    console.log('CRB viewing chain name ' + chainNameIn)
   }
 
   return (

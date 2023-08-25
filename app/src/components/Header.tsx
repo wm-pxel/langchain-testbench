@@ -17,7 +17,7 @@ const Header = () => {
   const { latestLLMs, setIsEditingLLMs, setLLMs } = useContext(LLMContext);
   const { updateViewingPreviousRuns } = useContext(PreviousRunsContext);
   const { 
-    latestChainSpec, setChainName,  chainName, chainSpec, 
+    latestChainSpec, setChainName, chainName, chainSpec, 
     setChainSpec, revision, setRevision, readyToInteract,
     isInteracting, setIsInteracting
   } = useContext(ChainSpecContext);
@@ -104,7 +104,6 @@ const Header = () => {
     setTimedMessage(setErrorMessage, message); 
   }
 
-
   return (
     <div className="page-top">
       {errorMessage && <div className="error-message">{errorMessage}</div>}
@@ -125,7 +124,12 @@ const Header = () => {
         <div className="chain-name">{chainName || ""}</div>
         <div className="actions">
           <button onClick={() => setIsEditingLLMs(true)}>LLMs</button>
-          <button onClick={() => updateViewingPreviousRuns(true, chainName)}>Previous Runs</button>
+          <button
+            onClick={() => updateViewingPreviousRuns(true, chainName)}
+            disabled={!chainName || chainName.trim() === ''}
+          >
+            Previous Runs
+          </button>
           <button disabled={!readyToInteract} onClick={() => setIsInteracting(!isInteracting)}>
             Interact
           </button>

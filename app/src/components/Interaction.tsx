@@ -72,7 +72,6 @@ const Interaction = () => {
 
       const response = await runOnce(chainName, input);
       const responses: string[][] = [];
-      console.log(`CRB looking at response ${JSON.stringify(response.history.io_mapping)}`)
       for (const [key, value] of Object.entries(response.history.io_mapping)) {
         responses.push([key, value as string])
       }
@@ -83,9 +82,7 @@ const Interaction = () => {
         responseOutput.output || 
         response[Object.keys(response)[0]];
       const text = output.text ?? output;
-      console.log(`CRB text ${text} -- ${typeof text}`)
       setConversation([...newConversation, { from: 'chain', text, responses }]);
-      Object.entries(response).forEach(([key, value]) => console.log(`${key}:`, value))
 
       let nextInput = input;
       for (const key of Object.keys(input)) {
