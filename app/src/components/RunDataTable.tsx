@@ -22,16 +22,9 @@ const DataCell: React.FC<DataCellProps> = ({ content, maxWidth }) => (
 );
 
 type RunDataRowProps = {
-  runData: {
-    id: number;
-    creationDate: string;
-    rootType: string;
-    input: string;
-    output: string;
-    history: RunDataHistoryMessage[];
-  };
+  runData: RunData;
   showInfo: boolean;
-  toggleInfo: (id: number) => void;
+  toggleInfo: (id: string) => void;
 };
 
 const RunDataRow: React.FC<RunDataRowProps> = ({
@@ -43,14 +36,27 @@ const RunDataRow: React.FC<RunDataRowProps> = ({
     console.log(`Running ID: ${runData.id}`);
   };
 
+  const getValueFromLastOutputEntry = (data: RunData): string => {
+    const firstOutputEntry = Object.values(data.outputs)[0];
+    if (!firstOutputEntry || firstOutputEntry.length === 0) return '';
+    const lastKeyInFirstOutput = firstOutputEntry[firstOutputEntry.length - 1];
+    return data.io_mapping[lastKeyInFirstOutput];
+  }
+
+  const getValueFromInputZero = (data: RunData): string => {
+    const inputZeroEntry = data.inputs["0"];
+    if (!inputZeroEntry || inputZeroEntry.length === 0) return '';
+    return data.io_mapping[inputZeroEntry[0]];
+  }
+
   return (
     <>
       <tr>
         <DataCell content={runData.id} maxWidth={"1em"} />
-        <DataCell content={runData.creationDate} maxWidth={"15em"} />
-        <DataCell content={runData.rootType} maxWidth={"10em"} />
-        <DataCell content={runData.input} maxWidth={"30em"} />
-        <DataCell content={runData.output} maxWidth={"80em"} />
+        <DataCell content={runData.revisionID} maxWidth={"15em"} />
+        <DataCell content={runData.recorded} maxWidth={"10em"} />
+        <DataCell content={getValueFromInputZero(runData)} maxWidth={"30em"} />
+        <DataCell content={getValueFromLastOutputEntry(runData)} maxWidth={"80em"} />
         <td>
           <button onClick={handleRunClick}>Run</button>
           <button onClick={() => toggleInfo(runData.id)}>
@@ -64,25 +70,25 @@ const RunDataRow: React.FC<RunDataRowProps> = ({
             <div className="detailSection">
               <h3>Details for ID: {runData.id}</h3>
               <p>
-                <strong>Creation Date:</strong>{" "}
-                {new Date(runData.creationDate).toLocaleDateString()}
+                <strong>Revision:</strong> {runData.revisionID}
               </p>
               <p>
-                <strong>Root Type:</strong> {runData.rootType}
+                <strong>Creation Date:</strong>{runData.recorded}
+              </p>
+              
+              <p>
+                <strong>Input:</strong> {getValueFromInputZero(runData)}
               </p>
               <p>
-                <strong>Input:</strong> {runData.input}
-              </p>
-              <p>
-                <strong>Output:</strong> {runData.output}
+                <strong>Output:</strong> {getValueFromLastOutputEntry(runData)}
               </p>
               <div>
                 <strong>History:</strong>
                 <ul>
-                  {runData.history.map((entry, index) => (
+                  {Object.entries(runData.io_mapping).map(([key, value], index) => (
                     <li key={index}>
-                      <strong>{Object.entries(entry)[0][0]}: </strong>
-                      {Object.entries(entry)[0][1]}
+                      <strong>{key}: </strong>
+                      {value}
                     </li>
                   ))}
                 </ul>
@@ -95,23 +101,19 @@ const RunDataRow: React.FC<RunDataRowProps> = ({
   );
 };
 
-export type RunDataHistoryMessage = {
-  [key: string]: string;
-};
-
 export type RunData = {
-  id: number;
-  creationDate: string;
-  rootType: string;
-  input: string;
-  output: string;
-  history: RunDataHistoryMessage[];
+  id: string;
+  revisionID: string;
+  inputs: { [key: string]: string[] };
+  outputs: { [key: string]: string[] };
+  io_mapping: { [key: string]: string };
+  recorded: string;
 };
 
 type RunDataTableProps = {
   data: RunData[];
-  showInfoForRow: number | null;
-  setShowInfoForRow: React.Dispatch<React.SetStateAction<number | null>>;
+  showInfoForRow: string | null;
+  setShowInfoForRow: React.Dispatch<React.SetStateAction<string | null>>;
 };
 
 const RunDataTable: React.FC<RunDataTableProps> = ({
@@ -125,8 +127,8 @@ const RunDataTable: React.FC<RunDataTableProps> = ({
         <thead>
           <tr>
             <th>ID</th>
-            <th>Creation Date</th>
-            <th>Root Type</th>
+            <th>Revision ID</th>
+            <th>Date Recorded</th>
             <th>Input</th>
             <th>Output</th>
             <th></th>
@@ -137,7 +139,7 @@ const RunDataTable: React.FC<RunDataTableProps> = ({
             <RunDataRow
               key={runData.id}
               showInfo={runData.id === showInfoForRow}
-              toggleInfo={(id: number) => {
+              toggleInfo={(id: string) => {
                 if (id === showInfoForRow) {
                   setShowInfoForRow(null);
                 } else {

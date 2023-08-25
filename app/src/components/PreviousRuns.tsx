@@ -10,7 +10,7 @@ const PreviousRuns = () => {
   const backgroundRef = useRef<HTMLDivElement>(null);
   const [visibilityState, setVisibilityState] = useState("absent");
 
-  const [showInfoForRow, setShowInfoForRow] = useState<number | null>(null);
+  const [showInfoForRow, setShowInfoForRow] = useState<string | null>(null);
 
   const [data, setData] = useState<RunData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,8 +21,8 @@ const PreviousRuns = () => {
     setError(null);
 
     try {
-      const chainHistory = await chainResults(chainName);
-
+      const chainHistory:RunData[] = await chainResults(chainName);
+      setData(chainHistory);
       setIsLoading(false);
 
     } catch (error) {
