@@ -1,8 +1,9 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { PreviousRunsContext } from "../contexts/PreviousRunsContext";
 import "./style/PreviousRuns.scss";
+import "./style/Interaction.scss";
 import RunDataTable, { RunData } from "./RunDataTable";
-import { chainResults, saveRevision } from "../api/api";
+import { chainResults } from "../api/api";
 
 const PreviousRuns = () => {
   const { isViewingPreviousRuns, chainName, updateViewingPreviousRuns } =
@@ -51,6 +52,42 @@ const PreviousRuns = () => {
     updateViewingPreviousRuns(false, '');
   }, [updateViewingPreviousRuns]);
 
+  let content;
+
+  if (isLoading || true) {
+    content = (
+      <div className="interaction" style={{position:'static', margin: 0, width:'100%'}}>
+        loading
+        <div className="loading">
+          <div className="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+        </div>
+      </div>
+    );
+  } else if (error) {
+    content = (
+      <div style={{ 
+        backgroundColor: '#ffe6e6', 
+        border: '1px solid #ff4c4c', 
+        padding: '10px',
+        borderRadius: '5px',
+        color: '#ff0000'
+    }}>
+        <strong>Error:</strong>
+        <p>{error.name}</p>
+        <p>{error.message}</p>
+        <pre>{error.stack}</pre>
+    </div>
+    );
+  } else {
+    content = (
+        <RunDataTable
+          data={data}
+          showInfoForRow={showInfoForRow}
+          setShowInfoForRow={setShowInfoForRow}
+        />
+      );
+  }
+
   return (
     <div
       className={`edit-llms ${visibilityState}`}
@@ -68,11 +105,7 @@ const PreviousRuns = () => {
           </button>
         </div>
       </div>
-      <RunDataTable
-        data={data}
-        showInfoForRow={showInfoForRow}
-        setShowInfoForRow={setShowInfoForRow}
-      />
+      {content}
     </div>
   );
 };
