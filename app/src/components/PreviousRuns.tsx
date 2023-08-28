@@ -54,7 +54,7 @@ const PreviousRuns = () => {
 
   let content;
 
-  if (isLoading || true) {
+  if (isLoading) {
     content = (
       <div className="interaction" style={{position:'static', margin: 0, width:'100%'}}>
         loading
