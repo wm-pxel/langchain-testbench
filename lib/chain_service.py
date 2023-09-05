@@ -142,27 +142,6 @@ def compute_chain_IO(chain_spec: ChainSpec, chain: BaseChain, ctx: LangChainCont
 
   return inputs, outputs
 
-class RunResult:
-  def __init__(self, output, result=None):
-    self.output = output
-    self.history = result
-
-  output: dict
-  history: Result
-
-  def to_dict(self):
-    return {
-        'output': self.output,
-        'history': {
-          'id': str(self.history.id),
-          'revisionID': str(self.history.revisionID),
-          'inputs': self.history.inputs,
-          'outputs': self.history.outputs,
-          'io_mapping': self.history.io_mapping,
-          'recorded': str(self.history.recorded),
-        }
-    }
-
 def run_once(chain_name, input, record):
   """Run a chain revision.
   The revision is read from the database and fed input from stdin or the given file.
@@ -184,10 +163,8 @@ def run_once(chain_name, input, record):
 
     result = Result(revisionID=revision.id, inputs=inputs, outputs=outputs, io_mapping=vars, recorded=datetime.now())
     result_repository.save(result)
-    return RunResult(output, result)
 
-  return RunResult(output)
-
+  return output
 
 def results(revision_id: str, ancestors: bool):
   """Find results for a prompt for one or more chain revisions.
@@ -199,17 +176,16 @@ def results(revision_id: str, ancestors: bool):
   if ancestors:
     ancestors_id = find_ancestor_ids(revision_id, chain_revision_repository)
     revision_ids += [ObjectId(i) for i in ancestors_id]
-
   return result_repository.find_by({"revisionID": {"$in": revision_ids}})
 
 
-def load_results_by_chain_name(chain_name: str):
+def load_results_by_chain_name(chain_name: str, ancestors: bool):
   """Find results for a prompt for one chain revision.
   The chain name must be specified.
   """
   chain = chain_repository.find_one_by({"name": chain_name})
   revision = chain_revision_repository.find_one_by_id(chain.revision)
-  return results(revision.id, True)
+  return results(revision.id, ancestors)
 
 
 def export_chain(chain_name: str) -> str:
