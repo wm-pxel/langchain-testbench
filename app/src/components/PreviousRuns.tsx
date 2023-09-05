@@ -22,7 +22,7 @@ const PreviousRuns = () => {
     setError(null);
 
     try {
-      const chainHistory:RunData[] = await chainResults(chainName);
+      const chainHistory:RunData[] = await chainResults(chainName, true);
       setData(chainHistory);
       setIsLoading(false);
 

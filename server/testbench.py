@@ -70,7 +70,8 @@ def load_by_id(revision_id):
 
 @app.route("/chain/<chain_name>/results", methods=["GET"])
 def load_results_by_chain_name(chain_name):
-  results = chain_service.load_results_by_chain_name(chain_name)
+  ancestors = request.args.get('ancestors').lower() == 'true'
+  results = chain_service.load_results_by_chain_name(chain_name, ancestors)
   return Response(dumps(transform_mongodb_data(results)), mimetype="application/json")
 
 
@@ -78,7 +79,7 @@ def load_results_by_chain_name(chain_name):
 def run_chain(chain_name):
   input = request.json
   result = chain_service.run_once(chain_name, input, True)
-  return Response(dumps(result.to_dict()), mimetype="application/json")
+  return Response(dumps(result), mimetype="application/json")
 
 
 if __name__ == "__main__":

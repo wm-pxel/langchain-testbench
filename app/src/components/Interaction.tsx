@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Tooltip } from "react-tooltip"
 import ChainSpecContext from "../contexts/ChainSpecContext";
-import { runOnce } from "../api/api";
+import { chainResults, runOnce } from "../api/api";
 import { computeChainIO } from "../model/spec_control";
 import { escapeHTML } from "../util/html";
 import DOMPurify from 'dompurify';
@@ -71,15 +71,16 @@ const Interaction = () => {
       }
 
       const response = await runOnce(chainName, input);
-      const responses: string[][] = [];
-      for (const [key, value] of Object.entries(response.history.io_mapping)) {
-        responses.push([key, value as string])
+      const results = await chainResults(chainName, false);
+      let responses: string[][] = [];
+      if (results?.length > 0) {
+        const result = results?.[results.length - 1]
+        for (const [key, value] of Object.entries(result.io_mapping)) {
+          responses.push([key, value as string])
+        }
       }
-
-      const responseOutput = response.output;
       const output = 
         responses?.[responses.length - 1]?.[responses[responses.length - 1]?.length - 1] ||
-        responseOutput.output || 
         response[Object.keys(response)[0]];
       const text = output.text ?? output;
       setConversation([...newConversation, { from: 'chain', text, responses }]);

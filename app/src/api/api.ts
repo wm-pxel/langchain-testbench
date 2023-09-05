@@ -21,8 +21,8 @@ export const saveRevision = async (chainName: string, revision: Revision) => {
   return await response.json();
 }
 
-export const chainResults = async (chainName: string) => {
-  const response = await fetch(`${API_URL}/chain/${chainName}/results`);
+export const chainResults = async (chainName: string, ancestors: boolean) => {
+  const response = await fetch(`${API_URL}/chain/${chainName}/results?ancestors=${ancestors}`);
   return await response.json();
 }
 
