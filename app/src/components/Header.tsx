@@ -5,7 +5,6 @@ import ChainSpecContext from "../contexts/ChainSpecContext";
 import { LLMContext } from "../contexts/LLMContext";
 import FilterMenu from "./FilterMenu";
 import TextModal from "./TextModal";
-import { defaultLLMs } from "../model/llm";
 import { setTimedMessage } from "../util/errorhandling";
 import "./style/Header.scss";
 import ImportChain from "./ImportChain";
@@ -44,7 +43,6 @@ const Header = () => {
     setErrorMessage(null);
     setChainName(name);
     setChainSpec(null);
-    setLLMs(defaultLLMs);
     setRevision(null);
   }
 
@@ -65,6 +63,7 @@ const Header = () => {
       throw new Error("No chain spec to save");
     }
     const llms = latestLLMs();
+
     const nextRevision = createRevision(revision, spec, llms);
     try {
       const nextRevisionId = await saveRevision(chainName, nextRevision);

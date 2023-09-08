@@ -10,6 +10,7 @@ interface LLMSpecDesignerProps { spec: LLMSpec };
   
 const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
   const { llms } = useContext(LLMContext);
+  const { setIsEditingLLMs } = useContext(LLMContext);
   const { updateChainSpec, deleteChainSpec } = useContext(ChainSpecContext);
 
   const [prompt, setPrompt] = useState<string>(spec.prompt);
@@ -56,10 +57,18 @@ const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
         placeholder="Enter prompt here."
       />
       <div className="form-element">
-        <label>LLM</label>
-        <select value={llm} onChange={e => setLLM(e.target.value)}>
-          {Object.keys(llms).map(llm => <option key={llm} value={llm}>{llm}</option>)}
-        </select>
+        {
+          Object.keys(llms).length === 0 ? (
+            <button className="add-llm" onClick={() => setIsEditingLLMs(true)}>Add LLM</button>
+            ) : (
+              <div>
+                <label>LLM</label>
+                <select value={llm} onChange={e => setLLM(e.target.value)}>
+                  {Object.keys(llms).map(llm => <option key={llm} value={llm}>{llm}</option>)}
+                </select>
+              </div>
+          )
+        }
       </div>
       <div className="form-element">
         <label>Output Key</label>
