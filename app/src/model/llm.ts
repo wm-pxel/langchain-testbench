@@ -23,6 +23,14 @@ export interface HuggingFaceHubLLM {
   model_kwargs: HuggingFaceHubArgs;
 }
 
+export interface HuggingFaceHubLocalLLM {
+  llm_type: "huggingface_hub_local";
+  model_type: string;
+  repo_id: string;
+  task: string | null;
+  model_kwargs: HuggingFaceHubArgs;
+}
+
 export interface ChatOpenAILLM {
   llm_type: "chat_openai";
   model_name: string;
@@ -32,7 +40,7 @@ export interface ChatOpenAILLM {
   request_timeout: number | null;
 }
 
-export type LLM = OpenAILLM | HuggingFaceHubLLM | ChatOpenAILLM;
+export type LLM = OpenAILLM | HuggingFaceHubLLM | HuggingFaceHubLocalLLM |ChatOpenAILLM;
 
 export const defaultLLMs: Record<string, LLM> = {
   llm: {
