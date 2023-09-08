@@ -25,7 +25,7 @@ export interface HuggingFaceHubLLM {
 
 export interface HuggingFaceHubLocalLLM {
   llm_type: "huggingface_hub_local";
-  model_type: string;
+  model_type?: string;
   repo_id: string;
   task: string | null;
   model_kwargs: HuggingFaceHubArgs;
