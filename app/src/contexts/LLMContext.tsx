@@ -138,7 +138,7 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
         }
       case "huggingface_hub_local":
         return {
-          llm_type: "huggingface_hub",
+          llm_type: "huggingface_hub_local",
           repo_id: "TheBloke/Llama-2-13B-chat-GGML",
           model_type: "llama",
           task: null,
