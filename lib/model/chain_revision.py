@@ -3,7 +3,7 @@ from typing import Dict, Optional
 from pydantic import BaseModel
 from pydantic_mongo import AbstractRepository, ObjectIdField
 from lib.model.chain_spec import ChainSpec, APIChainSpec, SequentialChainSpec, LLMChainSpec, CaseChainSpec, ReformatChainSpec, TransformChainSpec, VectorSearchChainSpec
-from lib.model.llm_spec import LLMSpec, OpenAILLMSpec, HuggingFaceHubLLMSpec, ChatOpenAILLMSpec
+from lib.model.llm_spec import LLMSpec, OpenAILLMSpec, HuggingFaceHubLLMSpec, HuggingFaceHubLocalLLMSpec, ChatOpenAILLMSpec
 
 
 def dump_json(obj: object, **kwargs):

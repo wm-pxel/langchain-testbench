@@ -8,6 +8,7 @@ from langchain.chat_models.openai import ChatOpenAI
 LLMSpec = Annotated[Union[
   "OpenAILLMSpec",
   "HuggingFaceHubLLMSpec",
+  "HuggingFaceHubLocalLLMSpec",
   "ChatOpenAILLMSpec",
   ], Field(discriminator='llm_type')]
 
@@ -45,6 +46,17 @@ class HuggingFaceHubLLMSpec(BaseLLMSpec):
     max_length: int
 
   llm_type: Literal["huggingface_hub"] = "huggingface_hub"
+  repo_id: str
+  task: Optional[str]
+  model_kwargs: Optional[ModelKwargs]
+
+
+class HuggingFaceHubLocalLLMSpec(BaseLLMSpec):
+  class ModelKwargs(TypedDict):
+    temperature: float
+    max_length: int
+
+  llm_type: Literal["huggingface_hub_local"] = "huggingface_hub_local"
   repo_id: str
   task: Optional[str]
   model_kwargs: Optional[ModelKwargs]
