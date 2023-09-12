@@ -25,16 +25,17 @@ export interface HuggingFaceHubLLM {
 }
 
 export interface FunctionParameter {
-  name: string;
-  type: 'string' | 'number';
+  type: string;
+  description: string;
 }
 
 export interface LLMFunction {
   id: number;
   name: string;
   description: string;
-  parameters: FunctionParameter[];
+  parameters: Record<string, FunctionParameter>;
 }
+
 
 export interface ChatOpenAILLM {
   llm_type: "chat_openai";

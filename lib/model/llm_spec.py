@@ -1,3 +1,4 @@
+import json
 from typing import Annotated, Callable, Optional, Dict, List, Literal, Union, TypedDict
 from pydantic import BaseModel, Field
 from langchain.llms.base import LLM
@@ -55,14 +56,14 @@ class HuggingFaceHubLLMSpec(BaseLLMSpec):
 
 
 class FunctionParameter(BaseModel):
-    name: str
     type: str
+    description: str
 
 class LLMFunction(BaseModel):
     id: int
     name: str
     description: str
-    parameters: List[FunctionParameter]
+    parameters: Dict[str, FunctionParameter]
 
 class ChatOpenAILLMSpec(BaseLLMSpec):
   llm_type: Literal["chat_openai"] = "chat_openai"
@@ -73,7 +74,30 @@ class ChatOpenAILLMSpec(BaseLLMSpec):
   request_timeout: Optional[int]
   functions: List[LLMFunction]
 
+  # TODO: update LLMFunction for direct serialization
+  def functions_ags(self) -> []:
+    functions = []
+    for function_entry in self.functions:
+      function = {}
+      function["name"] = function_entry.name
+      function["description"] = function_entry.description
+      function_parameters = {}
+      function_parameters["type"] = "object"
+
+      function_properties = {}
+      for param_name, param_obj in function_entry.parameters.items():
+        param = {}
+        param["type"] = param_obj.type
+        param["description"] = param_obj.description
+        function_properties[param_name] = param
+
+      function_parameters["properties"] = function_properties
+      function["parameters"] = function_parameters
+      functions.append(function)
+
+    return functions
 
   def to_llm(self) -> LLM:
     return ChatOpenAI(model_name=self.model_name, temperature=self.temperature,
-                      max_tokens=self.max_tokens, n=self.n, request_timeout=self.request_timeout)
+                      max_tokens=self.max_tokens, n=self.n, request_timeout=self.request_timeout,
+                      model_kwargs={"functions": self.functions_ags()})

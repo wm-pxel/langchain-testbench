@@ -91,12 +91,11 @@ class ChatChainSpec(BaseChainSpec):
 
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     llm = ctx.llms.get(self.llm_key)
-
     if llm is None:
       raise ValueError(f"LLM with key {self.llm_key} not found in context")
 
     promptTemplate = PromptTemplate(template=self.prompt, input_variables=self.input_keys)
-    ret_chain = LLMChain(llm=llm, prompt=promptTemplate, output_key=self.output_key)
+    ret_chain = LLMChain(llm=llm, prompt=promptTemplate, output_key=self.output_key, return_final_only=False)
     return self.wrapChain(ret_chain, ctx)
 
 

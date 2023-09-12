@@ -11,13 +11,14 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
   const [newFunctionItem, setNewFunctionItem] = useState<LLMFunction | null>(
     null
   );
+  const [inputValue, setInputValue] = useState('');
 
   const addFunctionItem = () => {
     const newItem: LLMFunction = {
       id: Date.now(),
       name: "",
       description: "",
-      parameters: [],
+      parameters: {},
     };
     setFunctionItems([...functionItems, newItem]);
     updateData(functionItems);
@@ -34,28 +35,63 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
     if (newFunctionItem) {
       const newItem = { ...newFunctionItem };
       const newParameter: FunctionParameter = {
-        name: "",
-        type: "string",
+        type: 'string',
+        description: '',
       };
-      newItem.parameters = [...newItem.parameters, newParameter];
+      const paramKey = Date.now().toString();
+      newItem.parameters[paramKey] = newParameter;
       setNewFunctionItem(newItem);
       setFunctionItems((prevItems) =>
         prevItems.map((item) => (item.id === newItem.id ? newItem : item))
       );
-      updateData(functionItems);
+      updateData([...functionItems]);
     }
   };
 
-  const deleteParameter = (paramIndex: number) => {
+  const deleteParameter = (paramKey: string) => {
     if (newFunctionItem) {
       const newItem = { ...newFunctionItem };
-      newItem.parameters = newItem.parameters.filter(
-        (_, index) => index !== paramIndex
-      );
+      delete newItem.parameters[paramKey];
       setNewFunctionItem(newItem);
-      setFunctionItems((prevItems) =>
-        prevItems.map((item) => (item.id === newItem.id ? newItem : item))
-      );
+      updateData([...functionItems]);
+    }
+  };
+
+  const handleParameterNameChange = (
+    paramKey: string,
+    newName: string
+  ) => {
+    if (newFunctionItem) {
+      const newItem = { ...newFunctionItem };
+      const paramValue = newItem.parameters[paramKey];
+      delete newItem.parameters[paramKey]; // Delete the old key
+      newItem.parameters[newName] = paramValue; // Create a new key with the updated name
+      setNewFunctionItem(newItem);
+      updateData([...functionItems]);
+    }
+  };
+
+  const handleParameterTypeChange = (
+    paramKey: string,
+    newType: 'string' | 'number'
+  ) => {
+    if (newFunctionItem) {
+      const newItem = { ...newFunctionItem };
+      newItem.parameters[paramKey].type = newType;
+      setNewFunctionItem(newItem);
+      updateData([...functionItems]);
+    }
+  };
+
+  const handleParameterDescriptionChange = (
+    paramKey: string,
+    newDescription: string
+  ) => {
+    if (newFunctionItem) {
+      const newItem = { ...newFunctionItem };
+      newItem.parameters[paramKey].description = newDescription;
+      setNewFunctionItem(newItem);
+      updateData([...functionItems]);
     }
   };
 
@@ -96,7 +132,47 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
             </div>
             <button className="llm-function-text" onClick={addParameter}>+ Add Parameter</button>
           </div>
-          {item.parameters.map((param, paramIndex) => (
+         
+          {newFunctionItem &&
+        Object.keys(newFunctionItem.parameters).map((paramKey) => {
+          const param = newFunctionItem.parameters[paramKey];
+          return (
+            <div key={paramKey}>
+              <input
+                type="text"
+                placeholder="Parameter Name"
+                value={inputValue} // Display the parameter name (key)
+                onChange={(e) => setInputValue(e.target.value)}
+                onBlur={() => handleParameterNameChange(paramKey, inputValue)}
+              />
+              <input
+                type="text"
+                placeholder="Parameter Description"
+                value={param.description}
+                onChange={(e) =>
+                  handleParameterDescriptionChange(paramKey, e.target.value)
+                }
+              />
+              <select
+                value={param.type}
+                onChange={(e) =>
+                  handleParameterTypeChange(
+                    paramKey,
+                    e.target.value as 'string' | 'number'
+                  )
+                }
+              >
+                <option value="string">String</option>
+                <option value="number">Number</option>
+              </select>
+              <button onClick={() => deleteParameter(paramKey)}>-</button>
+            </div>
+          );
+        })}
+
+
+
+          {/* {item.parameters.map((param, paramIndex) => (
             <div key={paramIndex}>
               <input
                 type="text"
@@ -121,7 +197,9 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
               </select>
               <button onClick={() => deleteParameter(paramIndex)}>-</button>
             </div>
-          ))}
+          ))} */}
+
+
         </div>
       ))}
     </div>

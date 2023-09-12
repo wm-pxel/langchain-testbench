@@ -264,7 +264,7 @@ const ChatOpenAILLMEditor = ({
   }, [llmKey]);
 
   const updateFunctionItems = useCallback((items: LLMFunction[]) => {
-    // setFunctionItems(items);
+    setFunctionItems(items);
   }, [setFunctionItems]);
 
 
