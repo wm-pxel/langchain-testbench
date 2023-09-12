@@ -5,6 +5,7 @@ import ChainSpecContext from "../contexts/ChainSpecContext";
 import { LLMContext } from "../contexts/LLMContext";
 import FilterMenu from "./FilterMenu";
 import TextModal from "./TextModal";
+import { defaultLLMs } from "../model/llm";
 import { setTimedMessage } from "../util/errorhandling";
 import "./style/Header.scss";
 import ImportChain from "./ImportChain";
@@ -43,6 +44,7 @@ const Header = () => {
     setErrorMessage(null);
     setChainName(name);
     setChainSpec(null);
+    setLLMs(defaultLLMs);
     setRevision(null);
   }
 
