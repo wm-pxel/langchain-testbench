@@ -2,7 +2,7 @@ import json
 from typing import Dict, Optional
 from pydantic import BaseModel
 from pydantic_mongo import AbstractRepository, ObjectIdField
-from lib.model.chain_spec import ChainSpec, APIChainSpec, SequentialChainSpec, LLMChainSpec, CaseChainSpec, ReformatChainSpec, TransformChainSpec, VectorSearchChainSpec
+from lib.model.chain_spec import ChainSpec, APIChainSpec, SequentialChainSpec, LLMChainSpec, ChatChainSpec, CaseChainSpec, ReformatChainSpec, TransformChainSpec, VectorSearchChainSpec
 from lib.model.llm_spec import LLMSpec, OpenAILLMSpec, HuggingFaceHubLLMSpec, ChatOpenAILLMSpec
 
 

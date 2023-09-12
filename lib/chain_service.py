@@ -154,7 +154,14 @@ def run_once(chain_name, input, record):
 
   ctx = LangChainContext(llms=filledLLMs, recording=True)
   lang_chain = revision.chain.to_lang_chain(ctx)
-  output = lang_chain._call(input)
+
+  try:
+    output = lang_chain._call(input)
+  except Exception as e:
+    print(e, flush=True)
+    empty = {}
+    empty['text'] = ""
+    return empty
 
   if record:
     vars = ctx.get_IO()

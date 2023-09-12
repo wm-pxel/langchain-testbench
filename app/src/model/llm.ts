@@ -24,6 +24,18 @@ export interface HuggingFaceHubLLM {
   model_kwargs: HuggingFaceHubArgs;
 }
 
+export interface FunctionParameter {
+  name: string;
+  type: 'string' | 'number';
+}
+
+export interface LLMFunction {
+  id: number;
+  name: string;
+  description: string;
+  parameters: FunctionParameter[];
+}
+
 export interface ChatOpenAILLM {
   llm_type: "chat_openai";
   model_name: string;
@@ -31,6 +43,7 @@ export interface ChatOpenAILLM {
   max_tokens: number;
   n: number;
   request_timeout: number | null;
+  functions: LLMFunction[]
 }
 
 export type LLM = OpenAILLM | HuggingFaceHubLLM | ChatOpenAILLM;

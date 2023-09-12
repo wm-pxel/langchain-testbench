@@ -68,6 +68,9 @@ export const computeChainIO = (spec: ChainSpec): [Set<string>, Set<string>] => {
     case 'llm_chain_spec':
       return [new Set(spec.input_keys), new Set([spec.output_key])];
 
+    case 'chat_chain_spec':
+      return [new Set(spec.input_keys), new Set([spec.output_key])];
+
     case 'sequential_chain_spec':
       const [sin, sout] = spec.chains.reduce(([inputs, outputs], child) => {
         const [specIn, specOut] = computeChainIO(child);
@@ -121,6 +124,14 @@ export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
     case 'llm_chain_spec':
       return {
         chain_type: "llm_chain_spec",
+        prompt: "",
+        input_keys: [],
+        output_key: "text",
+        llm_key: "llm",
+      };
+    case 'chat_chain_spec':
+      return {
+        chain_type: "chat_chain_spec",
         prompt: "",
         input_keys: [],
         output_key: "text",

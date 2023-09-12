@@ -11,6 +11,8 @@ export const renderChainSpec = (spec: ChainSpec) => {
   switch (spec.chain_type) {
     case "llm_chain_spec":
       return <LLMSpecDesigner spec={spec} key={`llm-spec-${spec.chain_id}`} />;
+    case "chat_chain_spec":
+        return <LLMSpecDesigner spec={spec} key={`llm-spec-${spec.chain_id}`} />;
     case "sequential_chain_spec":
       return <SequentialSpecDesigner spec={spec} key={`sequential-spec-${spec.chain_id}`} />;
     case "case_chain_spec":
@@ -28,6 +30,7 @@ export const renderChainSpec = (spec: ChainSpec) => {
 
 export const specTypeOptions = {
   llm_chain_spec: 'LLM',
+  chat_chain_spec: 'Chat',
   sequential_chain_spec: 'Sequential',
   case_chain_spec: 'Case',
   reformat_chain_spec: 'Reformat',

@@ -9,11 +9,14 @@ from lib.chains.api_chain import APIChain
 from lib.chains.reformat_chain import ReformatChain
 from lib.chains.recording_chain import RecordingChain
 from lib.chains.vector_search_chain import VectorSearchChain
+from lib.model.llm_spec import ChatOpenAILLMSpec
+from langchain.chat_models.openai import ChatOpenAI
 
 ChainSpec = Annotated[Union[
   "APIChainSpec",
   "SequentialChainSpec",
   "LLMChainSpec",
+  "ChatChainSpec",
   "CaseChainSpec",
   "ReformatChainSpec",
   "TransformChainSpec",
@@ -77,6 +80,23 @@ class LLMChainSpec(BaseChainSpec):
 
     ret_chain = LLMChain(llm=llm, prompt=promptTemplate, output_key=self.output_key)
 
+    return self.wrapChain(ret_chain, ctx)
+
+class ChatChainSpec(BaseChainSpec):
+  input_keys: List[str]
+  output_key: str
+  chain_type: Literal["chat_chain_spec"] = "chat_chain_spec"
+  prompt: str
+  llm_key: str
+
+  def to_lang_chain(self, ctx: LangChainContext) -> Chain:
+    llm = ctx.llms.get(self.llm_key)
+
+    if llm is None:
+      raise ValueError(f"LLM with key {self.llm_key} not found in context")
+
+    promptTemplate = PromptTemplate(template=self.prompt, input_variables=self.input_keys)
+    ret_chain = LLMChain(llm=llm, prompt=promptTemplate, output_key=self.output_key)
     return self.wrapChain(ret_chain, ctx)
 
 

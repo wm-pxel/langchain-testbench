@@ -1,4 +1,4 @@
-from typing import Annotated, Callable, Optional, Dict, Literal, Union, TypedDict
+from typing import Annotated, Callable, Optional, Dict, List, Literal, Union, TypedDict
 from pydantic import BaseModel, Field
 from langchain.llms.base import LLM
 from langchain.llms.openai import OpenAI
@@ -54,6 +54,16 @@ class HuggingFaceHubLLMSpec(BaseLLMSpec):
     return HuggingFaceHub(model_kwargs=self.model_kwargs, repo_id=self.repo_id, task=self.task)
 
 
+class FunctionParameter(BaseModel):
+    name: str
+    type: str
+
+class LLMFunction(BaseModel):
+    id: int
+    name: str
+    description: str
+    parameters: List[FunctionParameter]
+
 class ChatOpenAILLMSpec(BaseLLMSpec):
   llm_type: Literal["chat_openai"] = "chat_openai"
   model_name: str
@@ -61,6 +71,8 @@ class ChatOpenAILLMSpec(BaseLLMSpec):
   max_tokens: int
   n: int
   request_timeout: Optional[int]
+  functions: List[LLMFunction]
+
 
   def to_llm(self) -> LLM:
     return ChatOpenAI(model_name=self.model_name, temperature=self.temperature,

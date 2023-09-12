@@ -11,6 +11,14 @@ export interface LLMSpec extends BaseSpec {
   llm_key: string;
 }
 
+export interface ChatSpec extends BaseSpec {
+  chain_type: "chat_chain_spec";
+  input_keys: string[];
+  output_key: string;
+  prompt: string;
+  llm_key: string;
+}
+
 export interface SequentialSpec extends BaseSpec {
   chain_type: "sequential_chain_spec";
   input_keys: string[];
@@ -61,4 +69,4 @@ export interface VectorSearchSpec extends BaseSpec {
   output_key: string;
 }
 
-export type ChainSpec = LLMSpec | SequentialSpec | CaseSpec | ReformatSpec | TransformSpec | APISpec | VectorSearchSpec;
+export type ChainSpec = LLMSpec | ChatSpec | SequentialSpec | CaseSpec | ReformatSpec | TransformSpec | APISpec | VectorSearchSpec;

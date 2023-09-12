@@ -79,8 +79,12 @@ const Interaction = () => {
           responses.push([key, value as string])
         }
       }
+
+      const lastResponseIndex = responses.length - 1;
+      const lastResponseEntryIndex = responses[lastResponseIndex]?.length - 1;
+
       const output = 
-        responses?.[responses.length - 1]?.[responses[responses.length - 1]?.length - 1] ||
+        responses?.[lastResponseIndex]?.[lastResponseEntryIndex] ||
         response[Object.keys(response)[0]];
       const text = output.text ?? output;
       setConversation([...newConversation, { from: 'chain', text, responses }]);
