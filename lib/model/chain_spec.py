@@ -10,8 +10,6 @@ from lib.chains.api_chain import APIChain
 from lib.chains.reformat_chain import ReformatChain
 from lib.chains.recording_chain import RecordingChain
 from lib.chains.vector_search_chain import VectorSearchChain
-from lib.model.llm_spec import ChatOpenAILLMSpec
-from langchain.chat_models.openai import ChatOpenAI
 
 ChainSpec = Annotated[Union[
   "APIChainSpec",
