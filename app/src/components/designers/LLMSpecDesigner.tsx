@@ -58,7 +58,7 @@ const LLMSpecDesigner = ({ spec }: LLMSpecDesignerProps) => {
       <div className="form-element">
         <label>LLM</label>
         <select value={llm} onChange={e => setLLM(e.target.value)}>
-            {Object.keys(llms).map(llm => <option key={llm} value={llm}>{llm}</option>)}
+          {Object.keys(llms).map(llm => <option key={llm} value={llm}>{llm}</option>)}
         </select>
       </div>
       <div className="form-element">

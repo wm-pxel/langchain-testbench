@@ -65,7 +65,6 @@ const Header = () => {
       throw new Error("No chain spec to save");
     }
     const llms = latestLLMs();
-
     const nextRevision = createRevision(revision, spec, llms);
     try {
       const nextRevisionId = await saveRevision(chainName, nextRevision);

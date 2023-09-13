@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { LLMContext } from "../contexts/LLMContext";
-import {HuggingFaceHubLLM, LLM, OpenAILLM, ChatOpenAILLM, HuggingFaceHubLocalLLM} from "../model/llm";
+import {HuggingFaceHubLLM, LLM, OpenAILLM, ChatOpenAILLM, CTransformersLLM } from "../model/llm";
 import "./style/EditLLMs.scss";
 import QuickMenu from "./QuickMenu";
 
@@ -151,13 +151,13 @@ const HuggingFaceLLMEditor = ({ llmKey, llm, updateLLM }: HuggingFaceHubLLMEdito
   );
 }
 
-export interface HuggingFaceHubLocalLLMEditorProps {
+export interface CTransformersLLMEditorProps {
   llmKey: string,
-  llm: HuggingFaceHubLocalLLM,
+  llm: CTransformersLLM,
   updateLLM: (llmKey: string, llm: LLM) => void
 }
 
-const HuggingFaceLocalLLMEditor = ({ llmKey, llm, updateLLM }: HuggingFaceHubLocalLLMEditorProps) => {
+const CTransformersLLMEditor = ({ llmKey, llm, updateLLM }: CTransformersLLMEditorProps) => {
   const [name, setName] = useState(llmKey);
   const [repoId, setRepoId] = useState(llm.repo_id);
   const [temperature, setTemperature] = useState<number>(llm.model_kwargs.temperature);
@@ -165,7 +165,7 @@ const HuggingFaceLocalLLMEditor = ({ llmKey, llm, updateLLM }: HuggingFaceHubLoc
 
   useEffect((): void => {
     updateLLM(name, {
-      llm_type: 'huggingface_hub_local',
+      llm_type: 'ctransformers_llm',
       repo_id: repoId,
       task: null,
       model_kwargs: {
@@ -309,8 +309,8 @@ const EditLLMs = () => {
             return <OpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           } else if (llm.llm_type === 'huggingface_hub') {
             return <HuggingFaceLLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
-          } else if (llm.llm_type === 'huggingface_hub_local') {
-            return <HuggingFaceLocalLLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
+          } else if (llm.llm_type === 'ctransformers_llm') {
+            return <CTransformersLLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           } else if (llm.llm_type == 'chat_openai') {
             return <ChatOpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           }
