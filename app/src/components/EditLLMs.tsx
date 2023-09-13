@@ -313,8 +313,6 @@ const ChatOpenAILLMEditor = ({
         <div>
           <div className="llm-param-name">functions</div>
           <FunctionSpecDesigner updateData={updateFunctionItems}/>
-
-
         </div>
       </div>
       <div className="llm-param">

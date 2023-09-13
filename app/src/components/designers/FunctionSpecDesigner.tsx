@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { FunctionParameter, LLMFunction } from "../../model/llm";
 
-
 interface FunctionSpecDesignerProps {
   updateData: (data: LLMFunction[]) => void;
 }
@@ -11,7 +10,7 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
   const [newFunctionItem, setNewFunctionItem] = useState<LLMFunction | null>(
     null
   );
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
 
   const addFunctionItem = () => {
     const newItem: LLMFunction = {
@@ -35,8 +34,8 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
     if (newFunctionItem) {
       const newItem = { ...newFunctionItem };
       const newParameter: FunctionParameter = {
-        type: 'string',
-        description: '',
+        type: "string",
+        description: "",
       };
       const paramKey = Date.now().toString();
       newItem.parameters[paramKey] = newParameter;
@@ -57,10 +56,7 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
     }
   };
 
-  const handleParameterNameChange = (
-    paramKey: string,
-    newName: string
-  ) => {
+  const handleParameterNameChange = (paramKey: string, newName: string) => {
     if (newFunctionItem) {
       const newItem = { ...newFunctionItem };
       const paramValue = newItem.parameters[paramKey];
@@ -73,7 +69,7 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
 
   const handleParameterTypeChange = (
     paramKey: string,
-    newType: 'string' | 'number'
+    newType: "string" | "number"
   ) => {
     if (newFunctionItem) {
       const newItem = { ...newFunctionItem };
@@ -97,13 +93,21 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
 
   return (
     <div>
-      <button className="llm-function-text" onClick={addFunctionItem}>+ Add Function</button>
+      <button className="llm-function-text" onClick={addFunctionItem}>
+        + Add Function
+      </button>
       {functionItems.map((item) => (
         <div key={item.id}>
           <div className="llm-params">
             <div className="llm-param">
-              <div className="llm-param-name">function name
-              <button style={{ marginLeft: '160px' }} onClick={() => deleteFunctionItem(item.id)}>-</button>
+              <div className="llm-param-name">
+                function name
+                <button
+                  style={{ marginLeft: "160px" }}
+                  onClick={() => deleteFunctionItem(item.id)}
+                >
+                  -
+                </button>
               </div>
               <input
                 type="text"
@@ -130,76 +134,62 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
                 }}
               />
             </div>
-            <button className="llm-function-text" onClick={addParameter}>+ Add Parameter</button>
+            <button className="llm-function-text" onClick={addParameter}>
+              + Add Parameter
+            </button>
           </div>
-         
+
           {newFunctionItem &&
-        Object.keys(newFunctionItem.parameters).map((paramKey) => {
-          const param = newFunctionItem.parameters[paramKey];
-          return (
-            <div key={paramKey}>
-              <input
-                type="text"
-                placeholder="Parameter Name"
-                value={inputValue} // Display the parameter name (key)
-                onChange={(e) => setInputValue(e.target.value)}
-                onBlur={() => handleParameterNameChange(paramKey, inputValue)}
-              />
-              <input
-                type="text"
-                placeholder="Parameter Description"
-                value={param.description}
-                onChange={(e) =>
-                  handleParameterDescriptionChange(paramKey, e.target.value)
-                }
-              />
-              <select
-                value={param.type}
-                onChange={(e) =>
-                  handleParameterTypeChange(
-                    paramKey,
-                    e.target.value as 'string' | 'number'
-                  )
-                }
-              >
-                <option value="string">String</option>
-                <option value="number">Number</option>
-              </select>
-              <button onClick={() => deleteParameter(paramKey)}>-</button>
-            </div>
-          );
-        })}
-
-
-
-          {/* {item.parameters.map((param, paramIndex) => (
-            <div key={paramIndex}>
-              <input
-                type="text"
-                placeholder="Parameter Name"
-                value={param.name}
-                onChange={(e) => {
-                  param.name = e.target.value;
-                  setFunctionItems([...functionItems]);
-                  updateData(functionItems);
-                }}
-              />
-              <select
-                value={param.type}
-                onChange={(e) => {
-                  param.type = e.target.value as "string" | "number";
-                  setFunctionItems([...functionItems]);
-                  updateData(functionItems);
-                }}
-              >
-                <option value="string">String</option>
-                <option value="number">Number</option>
-              </select>
-              <button onClick={() => deleteParameter(paramIndex)}>-</button>
-            </div>
-          ))} */}
-
-
+            Object.keys(newFunctionItem.parameters).map((paramKey) => {
+              const param = newFunctionItem.parameters[paramKey];
+              return (
+                <div key={paramKey}>
+                  <div className="llm-params">
+                    <div className="llm-param">
+                      <div className="llm-param-name">parameter name</div>
+                      <input
+                        type="text"
+                        className="llm-param-value"
+                        value={inputValue} // Display the parameter name (key)
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onBlur={() =>
+                          handleParameterNameChange(paramKey, inputValue)
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="llm-param">
+                    <div className="llm-param-name">parameter description</div>
+                    <input
+                      type="text"
+                      className="llm-param-value"
+                      value={param.description}
+                      onChange={(e) =>
+                        handleParameterDescriptionChange(
+                          paramKey,
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="llm-param">
+                    <select
+                      value={param.type}
+                      onChange={(e) =>
+                        handleParameterTypeChange(
+                          paramKey,
+                          e.target.value as "string" | "number"
+                        )
+                      }
+                    >
+                      <option value="string">String</option>
+                      <option value="number">Number</option>
+                    </select>
+                    <button onClick={() => deleteParameter(paramKey)}>-</button>
+                  </div>
+                </div>
+              );
+            })}
         </div>
       ))}
     </div>
