@@ -86,7 +86,10 @@ const Interaction = () => {
       const output = 
         responses?.[lastResponseIndex]?.[lastResponseEntryIndex] ||
         response[Object.keys(response)[0]];
-      const text = output.text ?? output;
+      let text = output.text ?? output ?? '';
+      if (typeof text !== "string") {
+        text = JSON.stringify(text)
+      }
       setConversation([...newConversation, { from: 'chain', text, responses }]);
 
       let nextInput = input;

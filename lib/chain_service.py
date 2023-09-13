@@ -157,8 +157,8 @@ def run_once(chain_name, input, record):
 
   try:
     output = lang_chain._call(input)
+    output = revision.chain.post_process_response(output)
   except Exception as e:
-    print(e, flush=True)
     empty = {}
     empty['text'] = ""
     return empty
