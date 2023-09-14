@@ -1,17 +1,11 @@
-import { useState } from "react";
 import { FunctionParameter, LLMFunction } from "../../model/llm";
 
 interface FunctionSpecDesignerProps {
+  functionItems: LLMFunction[];
   updateData: (data: LLMFunction[]) => void;
 }
 
-const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
-  const [functionItems, setFunctionItems] = useState<LLMFunction[]>([]);
-  const [newFunctionItem, setNewFunctionItem] = useState<LLMFunction | null>(
-    null
-  );
-  const [inputValue, setInputValue] = useState("");
-
+const FunctionSpecDesigner = ({ functionItems, updateData }: FunctionSpecDesignerProps) => {
   const addFunctionItem = () => {
     const newItem: LLMFunction = {
       id: Date.now(),
@@ -19,75 +13,67 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
       description: "",
       parameters: {},
     };
-    setFunctionItems([...functionItems, newItem]);
-    updateData(functionItems);
-    setNewFunctionItem(newItem);
+    updateData([...functionItems, newItem]);
   };
 
   const deleteFunctionItem = (itemId: number) => {
     const updatedItems = functionItems.filter((item) => item.id !== itemId);
-    setFunctionItems(updatedItems);
-    updateData(functionItems);
+    updateData(updatedItems);
   };
 
-  const addParameter = () => {
-    if (newFunctionItem) {
-      const newItem = { ...newFunctionItem };
+  const addParameter = (updatedItem: LLMFunction) => {
+    if (updatedItem) {
       const newParameter: FunctionParameter = {
+        id: Date.now(),
         type: "string",
         description: "",
       };
-      const paramKey = Date.now().toString();
-      newItem.parameters[paramKey] = newParameter;
-      setNewFunctionItem(newItem);
-      setFunctionItems((prevItems) =>
-        prevItems.map((item) => (item.id === newItem.id ? newItem : item))
-      );
-      updateData([...functionItems]);
+      const paramKey = `param_${Date.now().toString()}`;
+      updatedItem.parameters[paramKey] = newParameter;
+      const items =  functionItems.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+      updateData([...items]);
     }
   };
 
-  const deleteParameter = (paramKey: string) => {
-    if (newFunctionItem) {
-      const newItem = { ...newFunctionItem };
-      delete newItem.parameters[paramKey];
-      setNewFunctionItem(newItem);
-      updateData([...functionItems]);
+  const deleteParameter = (updatedItem: LLMFunction, paramKey: string) => {
+    if (updatedItem) {
+      delete updatedItem.parameters[paramKey];
+      const items =  functionItems.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+      updateData([...items]);
     }
   };
 
-  const handleParameterNameChange = (paramKey: string, newName: string) => {
-    if (newFunctionItem) {
-      const newItem = { ...newFunctionItem };
-      const paramValue = newItem.parameters[paramKey];
-      delete newItem.parameters[paramKey]; // Delete the old key
-      newItem.parameters[newName] = paramValue; // Create a new key with the updated name
-      setNewFunctionItem(newItem);
-      updateData([...functionItems]);
+  const handleParameterNameChange = (updatedItem: LLMFunction, paramKey: string, newName: string) => {
+    if (updatedItem) {
+      const paramValue = updatedItem.parameters[paramKey];
+      delete updatedItem.parameters[paramKey]; // Delete the old key
+      updatedItem.parameters[newName] = paramValue; // Create a new key with the updated name
+      const items =  functionItems.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+      updateData([...items]);
     }
   };
 
   const handleParameterTypeChange = (
+    updatedItem: LLMFunction,
     paramKey: string,
     newType: "string" | "number"
   ) => {
-    if (newFunctionItem) {
-      const newItem = { ...newFunctionItem };
-      newItem.parameters[paramKey].type = newType;
-      setNewFunctionItem(newItem);
-      updateData([...functionItems]);
+    if (updatedItem) {
+      updatedItem.parameters[paramKey].type = newType;
+      const items =  functionItems.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+      updateData([...items]);
     }
   };
 
   const handleParameterDescriptionChange = (
+    updatedItem: LLMFunction, 
     paramKey: string,
     newDescription: string
   ) => {
-    if (newFunctionItem) {
-      const newItem = { ...newFunctionItem };
-      newItem.parameters[paramKey].description = newDescription;
-      setNewFunctionItem(newItem);
-      updateData([...functionItems]);
+    if (updatedItem) {
+      updatedItem.parameters[paramKey].description = newDescription;
+      const items =  functionItems.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+      updateData([...items]);
     }
   };
 
@@ -115,8 +101,7 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
                 value={item.name}
                 onChange={(e) => {
                   item.name = e.target.value;
-                  setFunctionItems([...functionItems]);
-                  updateData(functionItems);
+                  updateData([...functionItems]);
                 }}
               />
             </div>
@@ -129,32 +114,29 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
                 value={item.description}
                 onChange={(e) => {
                   item.description = e.target.value;
-                  setFunctionItems([...functionItems]);
-                  updateData(functionItems);
+                  // setFunctionItems([...functionItems]);
+                  updateData([...functionItems]);
                 }}
               />
             </div>
-            <button className="llm-function-text" onClick={addParameter}>
+            <button className="llm-function-text" onClick={() => addParameter(item)}>
               + Add Parameter
             </button>
           </div>
 
-          {newFunctionItem &&
-            Object.keys(newFunctionItem.parameters).map((paramKey) => {
-              const param = newFunctionItem.parameters[paramKey];
+          {item &&
+            Object.keys(item.parameters).map((paramKey) => {
+              const param = item.parameters[paramKey];
               return (
-                <div key={paramKey}>
+                <div key={param.id}>
                   <div className="llm-params">
                     <div className="llm-param">
                       <div className="llm-param-name">parameter name</div>
                       <input
                         type="text"
                         className="llm-param-value"
-                        value={inputValue} // Display the parameter name (key)
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onBlur={() =>
-                          handleParameterNameChange(paramKey, inputValue)
-                        }
+                        value={paramKey} // Display the parameter name (key)
+                        onChange={(e) => handleParameterNameChange(item, paramKey, e.target.value)}
                       />
                     </div>
                   </div>
@@ -166,6 +148,7 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
                       value={param.description}
                       onChange={(e) =>
                         handleParameterDescriptionChange(
+                          item,
                           paramKey,
                           e.target.value
                         )
@@ -177,6 +160,7 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
                       value={param.type}
                       onChange={(e) =>
                         handleParameterTypeChange(
+                          item,
                           paramKey,
                           e.target.value as "string" | "number"
                         )
@@ -185,7 +169,7 @@ const FunctionSpecDesigner = ({ updateData }: FunctionSpecDesignerProps) => {
                       <option value="string">String</option>
                       <option value="number">Number</option>
                     </select>
-                    <button onClick={() => deleteParameter(paramKey)}>-</button>
+                    <button onClick={() => deleteParameter(item, paramKey)}>-</button>
                   </div>
                 </div>
               );

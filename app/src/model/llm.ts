@@ -27,6 +27,7 @@ export interface HuggingFaceHubLLM {
 export interface FunctionParameter {
   type: string;
   description: string;
+  id: number;
 }
 
 export interface LLMFunction {

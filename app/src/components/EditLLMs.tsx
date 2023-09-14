@@ -3,7 +3,6 @@ import { LLMContext } from "../contexts/LLMContext";
 import { HuggingFaceHubLLM, LLM, OpenAILLM, ChatOpenAILLM, LLMFunction } from "../model/llm";
 import "./style/EditLLMs.scss";
 import QuickMenu from "./QuickMenu";
-import DeleteChainButton from "./designers/DeleteChainButton";
 import FunctionSpecDesigner from "./designers/FunctionSpecDesigner";
 
 export interface OpenAILLMEditorProps {
@@ -312,7 +311,9 @@ const ChatOpenAILLMEditor = ({
       <div className="">
         <div>
           <div className="llm-param-name">functions</div>
-          <FunctionSpecDesigner updateData={updateFunctionItems}/>
+          <FunctionSpecDesigner 
+            functionItems={functionItems} 
+            updateData={updateFunctionItems}/>
         </div>
       </div>
       <div className="llm-param">
