@@ -132,3 +132,23 @@ docker-compose up
 ```
 
 URL is http://localhost:5173
+
+## Running with Local LLM (available for Mac M1's and above only)
+- Ensure that all npm packages are up to date. You can do this
+by running npm install if you are running a local llm for the first
+time on a repo that was checked out before this feature was added.
+- In the .env file at the project root, make the following change
+
+```.env
+MONGODB_URL=mongodb://testbench:testbench@localhost:27017/testbench
+```
+- In `docker-compose.yml`, comment out the `server` service. We are
+doing this as the local llm option is only available for bare metal
+on Mac M1's and above.
+- Run the following in terminal
+```
+cd into langchain-testbench folder
+docker-compose build
+docker-compose up
+```
+- In the UI when adding an LLM, use the `CTransformers` option in the Quick Menu popup.
