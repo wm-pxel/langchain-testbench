@@ -123,7 +123,6 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
           frequency_penalty: 0.0,
           presence_penalty: 0.0,
           n: 1,
-          best_of: 1,
           request_timeout: null,
           logit_bias: {}
         }

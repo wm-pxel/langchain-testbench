@@ -33,7 +33,6 @@ const OpenAILLMEditor = ({ llmKey, llm, updateLLM }: OpenAILLMEditorProps) => {
       frequency_penalty: frequencyPenalty,
       presence_penalty: presencePenalty,
       n: 1,
-      best_of: 1,
       request_timeout: null,
       logit_bias: {},
       llm_type: "openai",
