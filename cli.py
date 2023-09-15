@@ -96,7 +96,7 @@ def patch(chain_name):
   buffer = b""
   for f in sys.stdin:
     buffer += f.encode('utf-8')
-  
+
   patch_dict = json.loads(buffer.decode('utf-8'))
 
   # junk revision lets us correctly deserialize the patch
@@ -120,7 +120,7 @@ def patch_prompt(chain_name, chain_id):
   """
   revision = chain_service.load_by_chain_name(chain_name)
   patch = revision.chain.find_by_chain_id(int(chain_id)).copy(deep=True)
-  
+
   # error if spec is not an LLMSpec
   if not isinstance(patch, LLMSpec):
     print(f"Spec {chain_id} is not an LLMSpec")
@@ -129,7 +129,7 @@ def patch_prompt(chain_name, chain_id):
   buffer = b""
   for f in sys.stdin:
     buffer += f.encode('utf-8')
-  
+
   patch.prompt = buffer.decode('utf-8')
 
   revision_id = chain_service.save_patch(chain_name, patch)
@@ -211,7 +211,7 @@ def save_results(ctx: LangChainContext, revision_id: str):
 @click.command()
 @click.argument('chain-name')
 @click.argument("input", default="-", type=click.File("rb"))
-@click.option("--record", is_flag=True, help = "Record the inputs and outputs of LLM chains to the database.")
+@click.option("--record", is_flag=True, help="Record the inputs and outputs of LLM chains to the database.")
 def once(chain_name, input, record):
   """Run a chain revision.
   The revision is read from the database and fed input from stdin or the given file.
@@ -246,8 +246,8 @@ def interactive(chain_name, record):
   displayed to the user for each iteration.
 
   Outputs can be fed as inputs to subsequent iterations by adding '_in' to the
-  input name and '_out' to the output name. 
-  
+  input name and '_out' to the output name.
+
   For example, if the inputs are 'subject' and 'memory_in', and the outputs are
   'output' and 'memory_out', then the user will be prompted for 'subject',
   the output of 'output' will be displayed, and the output of 'memory_out' will
@@ -257,15 +257,15 @@ def interactive(chain_name, record):
   will be ignored.
   """
   revision = chain_service.load_by_chain_name(chain_name)
- 
+
   ctx = LangChainContext(llms=revision.llms, recording=True)
   lang_chain = revision.chain.to_lang_chain(ctx)
 
   input_keys = set(lang_chain.input_keys)
   output_keys = set(lang_chain.output_keys)
   output_mapping = {re.sub(r"_out$", "_in", key): key
-    for key in output_keys
-    if re.search(r"_out$", key) and re.sub(r"_out$", "_in", key) in input_keys}
+                    for key in output_keys
+                    if re.search(r"_out$", key) and re.sub(r"_out$", "_in", key) in input_keys}
 
   if "input" in input_keys:
     user_input_key = "input"
@@ -275,14 +275,14 @@ def interactive(chain_name, record):
   else:
     print("error inp key", input_keys)
     raise Exception("Chain must have exactly one input key that is not also an output key or an input key called 'input'")
-  
+
   if "output" in output_keys:
     user_output_key = "output"
   elif len(output_keys - input_keys) == 1:
     user_output_key = list(output_keys - input_keys)[0]
   else:
     raise Exception("Chain must have exactly one output key that is not also an input key or an output key called 'output'")
-  
+
   chain_service.initialize_services()
 
   inputs = {key: "" for key in input_keys if key != user_input_key}
@@ -294,7 +294,6 @@ def interactive(chain_name, record):
     print()
 
     inputs = {key: outputs[output_mapping[key]] if key in output_mapping else "" for key in input_keys}
-
 
 run.add_command(interactive)
 
@@ -334,7 +333,7 @@ def show(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chai
   else:
     raise Exception("Must specify chain name, revision id, or chain id")  
 
-  results = chain_service.results(revision.id, ancestors, chain_id)
+  results = chain_service.results(revision.id, ancestors)
   if csv_format:
     csv_out = csv.writer(sys.stdout)
     csv_out.writerow(["chain_id", "revision", "input", "output"])
@@ -342,7 +341,7 @@ def show(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chai
       csv_out.writerow([
         result.chain_id, 
         result.revision, 
-        dict_to_csv_column(result.input), 
+        dict_to_csv_column(result.input),
         result.output,
       ])
   else:
@@ -352,6 +351,7 @@ def show(chain_name: str, revision: str, ancestors: bool, csv_format: bool, chai
     print(']')
 
 results.add_command(show)
+
 
 def add_result(results: Dict, key: str, value: Any):
   if key not in results:
@@ -365,16 +365,14 @@ def add_result(results: Dict, key: str, value: Any):
 def diff(chain_name1, chain_name2, chain_id: Optional[int] = None):
   revision1 = chain_service.load_by_chain_name(chain_name1)
   revision2 = chain_service.load_by_chain_name(chain_name2)
-  
-  query = {'chain_id': chain_id} if chain_id is not None else {}
 
   grouped_results = {}
 
-  results1 = chain_service.results(revision1.id, False, chain_id)
+  results1 = chain_service.results(revision1.id, False)
   for result in results1:
     add_result(grouped_results, json.dumps(result.input), result)
 
-  results2 = chain_service.results(revision2.id, False, chain_id)
+  results2 = chain_service.results(revision2.id, False)
   for result in results2:
     add_result(grouped_results, json.dumps(result.input), result)
 

@@ -25,3 +25,20 @@ class LangChainContext(BaseModel):
   def reset_results(self):
     for chain in self.prompts:
       chain.reset()
+
+  def get_IO(self):
+    vars = {}
+    for prompt in self.prompts:
+      if (prompt.recorded_calls == []):
+        continue
+
+      if (not hasattr(prompt.chain, "output_key")):
+        continue
+      
+      # output_key = prompt.chain.output_key
+      # vars[output_key] = str(prompt.recorded_calls[0][1]) # Store as a string?
+
+      for input in prompt.recorded_calls[0][0]:
+        vars[input] = prompt.recorded_calls[0][0][input]
+
+    return vars
