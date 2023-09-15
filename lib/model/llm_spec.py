@@ -4,12 +4,12 @@ from langchain.llms.base import LLM
 from langchain.llms.openai import OpenAI
 from langchain.llms.huggingface_hub import HuggingFaceHub
 from langchain.chat_models.openai import ChatOpenAI
-from lib.local.huggingface_hub_local import HuggingFaceHubLocal
+from lib.local.ctransformers_llm import CTransformersLLM
 
 LLMSpec = Annotated[Union[
     "OpenAILLMSpec",
     "HuggingFaceHubLLMSpec",
-    "HuggingFaceHubLocalLLMSpec",
+    "CTransformersLLMSpec",
     "ChatOpenAILLMSpec",
 ], Field(discriminator='llm_type')]
 
@@ -55,18 +55,18 @@ class HuggingFaceHubLLMSpec(BaseLLMSpec):
         return HuggingFaceHub(model_kwargs=self.model_kwargs, repo_id=self.repo_id, task=self.task)
 
 
-class HuggingFaceHubLocalLLMSpec(BaseLLMSpec):
+class CTransformersLLMSpec(BaseLLMSpec):
     class ModelKwargs(TypedDict):
         temperature: float
         max_length: int
 
-    llm_type: Literal["huggingface_hub_local"] = "huggingface_hub_local"
+    llm_type: Literal["ctransformers_llm"] = "ctransformers_llm"
     repo_id: str
     task: Optional[str]
     model_kwargs: Optional[ModelKwargs]
 
     def to_llm(self) -> LLM:
-        return HuggingFaceHubLocal()
+        return CTransformersLLM()
 
 
 class ChatOpenAILLMSpec(BaseLLMSpec):

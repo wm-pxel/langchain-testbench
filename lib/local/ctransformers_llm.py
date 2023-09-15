@@ -9,11 +9,11 @@ from langchain import PromptTemplate, LLMChain
 LOCAL_LLM = f"{os.getcwd()}/lib/local/models/llama-2-13b-chat.ggmlv3.q4_0.bin"
 
 
-class HuggingFaceHubLocal(LLM):
+class CTransformersLLM(LLM):
     @property
     def _llm_type(self) -> str:
         """Return type of llm."""
-        return "huggingface_hub_local"
+        return "ctransformers_llm"
 
     def _call(
             self,
@@ -30,20 +30,6 @@ class HuggingFaceHubLocal(LLM):
             temperature=0,
         )
 
-        # Streaming
-        # response = llm(prompt)
-        #
-        # return response
-
-        #  LLMChain
-        template = """Question: {question}
-
-        Answer:"""
-
-        prompt = PromptTemplate(template=template, input_variables=["question"])
-
-        llm_chain = LLMChain(prompt=prompt, llm=llm)
-
-        response = llm_chain.run(prompt)
+        response = llm(prompt)
 
         return response
