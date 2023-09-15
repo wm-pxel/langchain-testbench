@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
 from langchain.chains import LLMChain, SequentialChain, TransformChain
 from langchain.prompts import PromptTemplate
+from langchain.prompts.chat import ChatPromptTemplate
 from lib.model.lang_chain_context import LangChainContext
 from lib.chains.case_chain import CaseChain
 from lib.chains.api_chain import APIChain
@@ -89,6 +90,7 @@ class ChatChainSpec(BaseChainSpec):
   output_key: str
   chain_type: Literal["chat_chain_spec"] = "chat_chain_spec"
   prompt: str
+  role: str
   llm_key: str
 
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
@@ -96,7 +98,13 @@ class ChatChainSpec(BaseChainSpec):
     if llm is None:
       raise ValueError(f"LLM with key {self.llm_key} not found in context")
 
-    promptTemplate = PromptTemplate(template=self.prompt, input_variables=self.input_keys)
+    promptTemplate = ChatPromptTemplate.from_role_strings(
+        [
+          (self.role, self.prompt),
+        ]
+    )
+
+    promptTemplate.input_variables=self.input_keys
     ret_chain = LLMChain(llm=llm, prompt=promptTemplate, output_key=self.output_key, return_final_only=False)
     result = self.wrapChain(ret_chain, ctx)
     return result
