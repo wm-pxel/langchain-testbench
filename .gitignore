@@ -4,6 +4,8 @@ venv
 testbench.egg-info
 node_modules
 /.vs
+/.idea
 /docker-envs/*.env
+/lib/local/models/*
 /mongo-data/.mongodb/mongosh
 /mongo-data

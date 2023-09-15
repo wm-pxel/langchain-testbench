@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { LLMContext } from "../contexts/LLMContext";
-import { HuggingFaceHubLLM, LLM, OpenAILLM, ChatOpenAILLM } from "../model/llm";
+import {HuggingFaceHubLLM, LLM, OpenAILLM, ChatOpenAILLM, CTransformersLLM } from "../model/llm";
 import "./style/EditLLMs.scss";
 import QuickMenu from "./QuickMenu";
 
@@ -151,6 +151,67 @@ const HuggingFaceLLMEditor = ({ llmKey, llm, updateLLM }: HuggingFaceHubLLMEdito
   );
 }
 
+export interface CTransformersLLMEditorProps {
+  llmKey: string,
+  llm: CTransformersLLM,
+  updateLLM: (llmKey: string, llm: LLM) => void
+}
+
+const CTransformersLLMEditor = ({ llmKey, llm, updateLLM }: CTransformersLLMEditorProps) => {
+  const [name, setName] = useState(llmKey);
+  const [repoId, setRepoId] = useState(llm.repo_id);
+  const [temperature, setTemperature] = useState<number>(llm.model_kwargs.temperature);
+  const [maxLength, setMaxLength] = useState<number>(llm.model_kwargs.max_length);
+
+  useEffect((): void => {
+    updateLLM(name, {
+      llm_type: 'ctransformers_llm',
+      repo_id: repoId,
+      task: null,
+      model_kwargs: {
+        temperature: temperature,
+        max_length: maxLength
+      }
+    });
+  }, [name, repoId, temperature, maxLength]);
+
+  useEffect((): void => {
+    setRepoId(llm.repo_id);
+    setTemperature(llm.model_kwargs.temperature);
+    setMaxLength(llm.model_kwargs.max_length);
+  }, [llm]);
+
+  useEffect((): void => {
+    setName(llmKey);
+  }, [llmKey]);
+
+  return (
+    <div className="llm">
+      <div className="llm-key">
+        <input type="text" className="llm-key-input"
+          defaultValue={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+      <div className="llm-params">
+        <div className="llm-param">
+          <div className="llm-param-name">repo id</div>
+          <input type="text" className="llm-param-value"
+            defaultValue={repoId} onChange={(e) => setRepoId(e.target.value)} />
+        </div>
+        <div className="llm-param">
+          <div className="llm-param-name">temperature</div>
+          <input type="text" className="llm-param-value"
+            defaultValue={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} />
+        </div>
+        <div className="llm-param">
+          <div className="llm-param-name">max length</div>
+          <input type="text" className="llm-param-value"
+            defaultValue={maxLength} onChange={(e) => setMaxLength(parseFloat(e.target.value))} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export interface ChatOpenAILLMEditorProps {
   llmKey: string,
   llm: ChatOpenAILLM
@@ -248,12 +309,14 @@ const EditLLMs = () => {
             return <OpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           } else if (llm.llm_type === 'huggingface_hub') {
             return <HuggingFaceLLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
+          } else if (llm.llm_type === 'ctransformers_llm') {
+            return <CTransformersLLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           } else if (llm.llm_type == 'chat_openai') {
             return <ChatOpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           }
         })}
         <div className="llm-actions">
-          <QuickMenu modalKey="add-llm-menu" selectValue={addLLM} options={{ openai: 'Open AI', huggingface_hub: 'Hugging Face', chat_openai: "Chat GPT" }} />
+          <QuickMenu modalKey="add-llm-menu" selectValue={addLLM} options={{ openai: 'Open AI', huggingface_hub: 'Hugging Face', ctransformers_llm: 'CTransformers', chat_openai: "Chat GPT" }} />
         </div>
       </div>
     </div>

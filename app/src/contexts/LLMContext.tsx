@@ -136,6 +136,17 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
             max_length: 256
           },
         }
+      case "ctransformers_llm":
+        return {
+          llm_type: "ctransformers_llm",
+          repo_id: "TheBloke/Llama-2-13B-chat-GGML",
+          model_type: "llama",
+          task: null,
+          model_kwargs: {
+            temperature: 0.8,
+            max_length: 256
+          },
+        }
       case "chat_openai":
         return {
           llm_type: "chat_openai",

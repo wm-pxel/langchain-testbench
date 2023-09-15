@@ -23,6 +23,19 @@ export interface HuggingFaceHubLLM {
   model_kwargs: HuggingFaceHubArgs;
 }
 
+export interface CTransformersLLMArgs {
+  temperature: number;
+  max_length: number;
+}
+
+export interface CTransformersLLM {
+  llm_type: "ctransformers_llm";
+  model_type?: string;
+  repo_id: string;
+  task: string | null;
+  model_kwargs: CTransformersLLMArgs;
+}
+
 export interface ChatOpenAILLM {
   llm_type: "chat_openai";
   model_name: string;
@@ -32,7 +45,7 @@ export interface ChatOpenAILLM {
   request_timeout: number | null;
 }
 
-export type LLM = OpenAILLM | HuggingFaceHubLLM | ChatOpenAILLM;
+export type LLM = OpenAILLM | HuggingFaceHubLLM | CTransformersLLM |ChatOpenAILLM;
 
 export const defaultLLMs: Record<string, LLM> = {
   llm: {
