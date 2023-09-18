@@ -243,7 +243,6 @@ const ChatOpenAILLMEditor = ({
       request_timeout: null,
       functions: functionItems,
     });
-    console.log('CRB ChatOpenAILLMEditor calling UpdateLLM ' + maxTokens + ' '  + JSON.stringify(functionItems))
   }, [name, modelName, temperature, maxTokens, functionItems]);
 
   useEffect((): void => {

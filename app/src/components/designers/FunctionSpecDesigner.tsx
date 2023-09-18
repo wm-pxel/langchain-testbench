@@ -114,7 +114,6 @@ const FunctionSpecDesigner = ({ functionItems, updateData }: FunctionSpecDesigne
                 value={item.description}
                 onChange={(e) => {
                   item.description = e.target.value;
-                  // setFunctionItems([...functionItems]);
                   updateData([...functionItems]);
                 }}
               />

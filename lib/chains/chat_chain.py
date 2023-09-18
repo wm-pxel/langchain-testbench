@@ -34,6 +34,4 @@ class ChatChain(Chain):
       f_body = self.body.format(**vars)
       res = requests.post(f_url, data=f_body)
 
-    print(f"CRB test output f{res.text}", flush=True)
-
     return {self.output_variable: res.text}
