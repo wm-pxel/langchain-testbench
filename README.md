@@ -137,6 +137,10 @@ URL is http://localhost:5173
 - Ensure that all npm packages are up to date. You can do this
 by running npm install if you are running a local llm for the first
 time on a repo that was checked out before this feature was added.
+- Download one or more of the following GGML files to the `models` folder (these files can be downloaded from Huggingface and will be imported by the ctransformers library in the backend to create an llm locally).
+  - [TheBloke/Llama-2-7B-Chat-GGML](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML/resolve/main/llama-2-7b-chat.ggmlv3.q4_0.bin)
+  - [TheBloke/Llama-2-13B-Chat-GGML](https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML/resolve/main/llama-2-13b-chat.ggmlv3.q4_0.bin)
+  - [TheBloke/Llama-2-7B-32K-Instruct-GGML](https://huggingface.co/TheBloke/Llama-2-7B-32K-Instruct-GGML/resolve/main/llama-2-7b-32k-instruct.ggmlv3.q4_0.bin)
 - In the .env file at the project root, make the following change
 
 ```.env
