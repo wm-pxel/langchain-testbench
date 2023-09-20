@@ -6,6 +6,6 @@ node_modules
 /.vs
 /.idea
 /docker-envs/*.env
-/models/*
+/models/*.bin
 /mongo-data/.mongodb/mongosh
 /mongo-data
