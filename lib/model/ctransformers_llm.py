@@ -6,7 +6,7 @@ from langchain.llms import CTransformers
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain import PromptTemplate, LLMChain
 
-LOCAL_LLM = f"{os.getcwd()}/lib/local/models/llama-2-13b-chat.ggmlv3.q4_0.bin"
+LOCAL_LLM = f"{os.getcwd()}/models/llama-2-13b-chat.ggmlv3.q4_0.bin"
 
 
 class CTransformersLLM(LLM):

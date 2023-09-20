@@ -145,10 +145,12 @@ MONGODB_URL=mongodb://testbench:testbench@localhost:27017/testbench
 - In `docker-compose.yml`, comment out the `server` service. We are
 doing this as the local llm option is only available for bare metal
 on Mac M1's and above.
-- Run the following in terminal
+- Then run:
 ```
 cd into langchain-testbench folder
 docker-compose build
 docker-compose up
+
+flask --app server.testbench:app run --host=0.0.0.0 --port=4900
 ```
 - In the UI when adding an LLM, use the `CTransformers` option in the Quick Menu popup.

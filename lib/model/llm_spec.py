@@ -4,7 +4,7 @@ from langchain.llms.base import LLM
 from langchain.llms.openai import OpenAI
 from langchain.llms.huggingface_hub import HuggingFaceHub
 from langchain.chat_models.openai import ChatOpenAI
-from lib.local.ctransformers_llm import CTransformersLLM
+from lib.model.ctransformers_llm import CTransformersLLM
 
 LLMSpec = Annotated[Union[
     "OpenAILLMSpec",
