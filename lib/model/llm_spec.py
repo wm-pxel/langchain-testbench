@@ -66,7 +66,7 @@ class CTransformersLLMSpec(BaseLLMSpec):
     model_kwargs: Optional[ModelKwargs]
 
     def to_llm(self) -> LLM:
-        return CTransformersLLM()
+        return CTransformersLLM(**self.model_kwargs)
 
 
 class ChatOpenAILLMSpec(BaseLLMSpec):

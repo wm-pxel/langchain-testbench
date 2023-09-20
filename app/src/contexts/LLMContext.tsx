@@ -143,8 +143,8 @@ export const LLMContextProvider: React.FC<LLMProviderProps> = ({ children }) => 
           model_type: "llama",
           task: null,
           model_kwargs: {
-            temperature: 0.8,
-            max_length: 256
+            temperature: 0,
+            max_length: 128
           },
         }
       case "chat_openai":
