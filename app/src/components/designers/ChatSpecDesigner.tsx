@@ -19,8 +19,9 @@ const ChatSpecDesigner = ({ spec }: ChatSpecDesignerProps) => {
   const [variables, setVariables] = useState<string[]>(spec.input_keys);
   const [llm, setLLM] = useState<string>(spec.llm_key);
   const [role, setRole] = useState<string>(spec.role);
+  const [name, setName] = useState<string>(spec.name || '');
 
-  const roles = ["user", "assistant", "system", "other"];
+  const roles = ["user", "function", "assistant", "system", "other"];
   const formatReducer = useMemo(
     () =>
       new FormatReducer(
@@ -44,13 +45,17 @@ const ChatSpecDesigner = ({ spec }: ChatSpecDesignerProps) => {
       ...spec,
       llm_key: llm,
       prompt,
+      role,
+      name,
       output_key: outputKey,
       input_keys: variables,
     });
-  }, [llm, prompt, outputKey, variables]);
+  }, [llm, prompt, role, name, outputKey, variables]);
 
   useEffect(() => {
     setPrompt(spec.prompt);
+    setRole(spec.role);
+    setName(spec.name || '');
     setOutputKey(spec.output_key);
     setLLM(spec.llm_key);
     setVariables(spec.input_keys);
@@ -70,7 +75,7 @@ const ChatSpecDesigner = ({ spec }: ChatSpecDesignerProps) => {
         placeholder="Enter prompt here."
       />
       <div className="form-element">
-        <label>Role</label>
+        <label>role</label>
         <select value={role} onChange={(e) => setRole(e.target.value)}>
           {Object.values(roles).map((role) => (
             <option key={role} value={role}>
@@ -79,7 +84,14 @@ const ChatSpecDesigner = ({ spec }: ChatSpecDesignerProps) => {
           ))}
         </select>
       </div>
-
+      <div className="form-element">
+        <label>name</label>
+        <input
+          className="var-name-input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
       <div className="form-element">
         <label>LLM</label>
         <select value={llm} onChange={(e) => setLLM(e.target.value)}>

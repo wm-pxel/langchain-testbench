@@ -5,6 +5,8 @@ from langchain.chains.base import Chain
 from langchain.chains import LLMChain, SequentialChain, TransformChain
 from langchain.prompts import PromptTemplate
 from langchain.prompts.chat import ChatPromptTemplate
+from langchain.schema.messages import FunctionMessage
+from lib.model.function_template import ChatPromptTemplate
 from lib.model.lang_chain_context import LangChainContext
 from lib.chains.case_chain import CaseChain
 from lib.chains.api_chain import APIChain
@@ -98,13 +100,22 @@ class ChatChainSpec(BaseChainSpec):
     if llm is None:
       raise ValueError(f"LLM with key {self.llm_key} not found in context")
 
-    promptTemplate = ChatPromptTemplate.from_role_strings(
+    promptTemplate = {}
+
+    # Special case for functions
+    if self.role == 'function':
+      promptTemplate = ChatPromptTemplate.from_messages(
+        [
+          FunctionMessage(content=self.prompt, name=self.name)
+        ]
+    )
+    else:
+      promptTemplate = ChatPromptTemplate.from_role_strings(
         [
           (self.role, self.prompt),
         ]
-    )
+      )
 
-    promptTemplate.input_variables=self.input_keys
     ret_chain = LLMChain(llm=llm, prompt=promptTemplate, output_key=self.output_key, return_final_only=False)
     result = self.wrapChain(ret_chain, ctx)
     return result
@@ -132,7 +143,7 @@ class ChatChainSpec(BaseChainSpec):
 
   def post_process_response(self, output: Dict[str, str]) -> Dict[str, str]:
     # TODO: Better handling of this:
-    if output["text"] == "":
+    if not hasattr(output, 'text') or output["text"] == "":
       return self.convert_function_format(output)
     return output
 

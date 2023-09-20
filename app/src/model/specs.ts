@@ -17,6 +17,7 @@ export interface ChatSpec extends BaseSpec {
   output_key: string;
   prompt: string;
   role: string;
+  name?: string;
   llm_key: string;
 }
 
