@@ -1,3 +1,4 @@
+import json
 from typing import Annotated, Callable, Dict, List, Literal, Optional, Union, Any
 from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
@@ -14,6 +15,7 @@ ChainSpec = Annotated[Union[
   "APIChainSpec",
   "SequentialChainSpec",
   "LLMChainSpec",
+  "ChatChainSpec",
   "CaseChainSpec",
   "ReformatChainSpec",
   "TransformChainSpec",
@@ -30,6 +32,9 @@ class BaseChainSpec(BaseModel):
 
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     raise NotImplementedError
+  
+  def post_process_response(self, output: Dict[str, str]) -> Dict[str, str]:
+    return output
 
   def traverse(self, fn: Callable[[ChainSpec], None]) -> None:
     fn(self)
@@ -79,6 +84,49 @@ class LLMChainSpec(BaseChainSpec):
 
     return self.wrapChain(ret_chain, ctx)
 
+class ChatChainSpec(BaseChainSpec):
+  input_keys: List[str]
+  output_key: str
+  chain_type: Literal["chat_chain_spec"] = "chat_chain_spec"
+  prompt: str
+  llm_key: str
+
+  def to_lang_chain(self, ctx: LangChainContext) -> Chain:
+    llm = ctx.llms.get(self.llm_key)
+    if llm is None:
+      raise ValueError(f"LLM with key {self.llm_key} not found in context")
+
+    promptTemplate = PromptTemplate(template=self.prompt, input_variables=self.input_keys)
+    ret_chain = LLMChain(llm=llm, prompt=promptTemplate, output_key=self.output_key, return_final_only=False)
+    result = self.wrapChain(ret_chain, ctx)
+    return result
+
+  def convert_function_format(self, data):
+    if 'full_generation' in data and isinstance(data['full_generation'], list):
+        result = []
+        for generation in data['full_generation']:
+          message = generation.message
+          args = message.additional_kwargs
+          if 'function_call' in args:
+            function_info = args['function_call']
+            function_name = function_info['name']
+            function_args = {}
+            for key, value in json.loads(function_info['arguments']).items():
+              function_args[str(key)] = str(value)
+            
+            result.append({
+                        'function_flag': True,
+                        'function_name': function_name,
+                        'arguments': function_args
+                    })
+        return result
+    return data
+
+  def post_process_response(self, output: Dict[str, str]) -> Dict[str, str]:
+    # TODO: Better handling of this:
+    if output["text"] == "":
+      return self.convert_function_format(output)
+    return output
 
 class SequentialChainSpec(BaseChainSpec):
   input_keys: List[str]

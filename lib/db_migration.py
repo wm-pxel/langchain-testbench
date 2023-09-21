@@ -4,6 +4,7 @@ from pymongo import MongoClient
 
 chain_spec_conversion = {
       "llm_spec": "llm_chain_spec",
+      "chat_spec": "chat_chain_spec",
       "sequential_spec": "sequential_chain_spec",
       "case_spec": "case_chain_spec",
       "reformat_spec": "reformat_chain_spec",
