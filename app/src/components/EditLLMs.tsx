@@ -314,15 +314,6 @@ const ChatOpenAILLMEditor = ({
             updateData={updateFunctionItems}/>
         </div>
       </div>
-      <div className="llm-param">
-            <div className="llm-param-name">max tokens</div>
-            <input
-              type="text"
-              className="llm-param-value"
-              defaultValue={maxTokens}
-              onChange={(e) => setMaxTokens(parseFloat(e.target.value))}
-            />
-          </div>
     </div>
   );
 };

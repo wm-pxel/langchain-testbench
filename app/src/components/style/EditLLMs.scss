@@ -139,6 +139,7 @@
   .llm-function-text {
     font-size: 0.75rem;
     text-align: left;
+    margin-top: .1em;
   }
 
   .llm-function-add-button {
@@ -174,5 +175,19 @@
 
   .quick-menu .quick-menu-selector {
     top: 2rem;
+  }
+
+  select {
+    background-color: var(--main-background-color);
+    color: #dadada;
+    border: var(--standard-border);
+    border-width: .1rem;
+    font-family: Georgia, serif;
+    font-weight: 600;
+    font-size: 1rem;
+    text-align: left;
+    margin: 0;
+    padding: .5em;
+    min-width: 16rem;
   }
 }
