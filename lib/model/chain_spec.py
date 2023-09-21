@@ -4,6 +4,8 @@ from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
 from langchain.chains import LLMChain, SequentialChain, TransformChain
 from langchain.prompts import PromptTemplate
+from langchain.prompts.chat import ChatPromptTemplate
+from langchain.schema.messages import FunctionMessage
 from lib.model.lang_chain_context import LangChainContext
 from lib.chains.case_chain import CaseChain
 from lib.chains.api_chain import APIChain
@@ -33,7 +35,7 @@ class BaseChainSpec(BaseModel):
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
     raise NotImplementedError
   
-  def post_process_response(self, output: Dict[str, str]) -> Dict[str, str]:
+  def post_process_response(self, output: Dict[str, str], recorded_calls: []) -> Dict[str, str]:
     return output
 
   def traverse(self, fn: Callable[[ChainSpec], None]) -> None:
@@ -89,6 +91,8 @@ class ChatChainSpec(BaseChainSpec):
   output_key: str
   chain_type: Literal["chat_chain_spec"] = "chat_chain_spec"
   prompt: str
+  role: str
+  name: Optional[str]
   llm_key: str
 
   def to_lang_chain(self, ctx: LangChainContext) -> Chain:
@@ -96,12 +100,27 @@ class ChatChainSpec(BaseChainSpec):
     if llm is None:
       raise ValueError(f"LLM with key {self.llm_key} not found in context")
 
-    promptTemplate = PromptTemplate(template=self.prompt, input_variables=self.input_keys)
+    promptTemplate = {}
+
+    # Special case for functions
+    if self.role == 'function':
+      promptTemplate = ChatPromptTemplate.from_messages(
+        [
+          FunctionMessage(content=self.prompt, name=self.name)
+        ]
+    )
+    else:
+      promptTemplate = ChatPromptTemplate.from_role_strings(
+        [
+          (self.role, self.prompt),
+        ]
+      )
+
     ret_chain = LLMChain(llm=llm, prompt=promptTemplate, output_key=self.output_key, return_final_only=False)
     result = self.wrapChain(ret_chain, ctx)
     return result
 
-  def convert_function_format(self, data):
+  def convert_function_format(self, data, recorded_calls):
     if 'full_generation' in data and isinstance(data['full_generation'], list):
         result = []
         for generation in data['full_generation']:
@@ -120,12 +139,19 @@ class ChatChainSpec(BaseChainSpec):
                         'arguments': function_args
                     })
         return result
+    
+    for item in recorded_calls:
+      text_value = item[1].get('text ')
+      full_generation_value = item[1].get('full_generation')
+      if text_value is not None and full_generation_value is not None:
+          return { 'text': text_value }
+
     return data
 
-  def post_process_response(self, output: Dict[str, str]) -> Dict[str, str]:
+  def post_process_response(self, output: Dict[str, str], recorded_calls: []) -> Dict[str, str]:
     # TODO: Better handling of this:
-    if output["text"] == "":
-      return self.convert_function_format(output)
+    if not hasattr(output, 'text') or output["text"] == "":
+      function_formatted = self.convert_function_format(output, recorded_calls)
     return output
 
 class SequentialChainSpec(BaseChainSpec):

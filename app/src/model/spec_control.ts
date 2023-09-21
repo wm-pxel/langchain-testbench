@@ -133,6 +133,7 @@ export const generateDefaultSpec = (type: string): Partial<ChainSpec> => {
       return {
         chain_type: "chat_chain_spec",
         prompt: "",
+        role: "user",
         input_keys: [],
         output_key: "text",
         llm_key: "llm",
