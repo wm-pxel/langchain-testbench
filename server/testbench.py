@@ -37,7 +37,7 @@ def save_revision(chain_name):
   try:
     next_revision = ChainRevision.parse_raw(request.data)
   except Exception as e:
-    print("ERROR parsing revision:", e)
+    logging.error("ERROR parsing revision:", e)
     return {"error": str(e)}, 400
 
   revision_id = chain_service.save_revision(chain_name, next_revision)

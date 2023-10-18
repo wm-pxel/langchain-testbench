@@ -71,17 +71,13 @@ const Interaction = () => {
       }
 
       const response = await runOnce(chainName, input);
-      const results = await chainResults(chainName, false);
-      let responses: string[][] = [];
-      if (results?.length > 0) {
-        const result = results?.[results.length - 1]
-        for (const [key, value] of Object.entries(result.io_mapping)) {
-          responses.push([key, value as string])
-        }
-      }
-      const output = 
-        responses?.[responses.length - 1]?.[responses[responses.length - 1]?.length - 1] ||
-        response[Object.keys(response)[0]];
+      let responses: string[][] = Object.entries(response);
+
+      console.log("Response:");
+      responses.forEach(([key, value]) => console.log(`${key}: ${value}`));
+      console.log("");
+
+      const output = response.output || response[Object.keys(response)[0]];
       const text = output.text ?? output;
       setConversation([...newConversation, { from: 'chain', text, responses }]);
 

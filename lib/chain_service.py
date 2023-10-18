@@ -135,7 +135,7 @@ def compute_chain_IO(chain_spec: ChainSpec, chain: BaseChain, ctx: LangChainCont
       inputs, outputs = compute_and_update(sub_chain_spec, sub_chain.chain, ctx, inputs, outputs)
 
   if chain_spec.chain_type == "case_chain_spec":
-    for case_spec, case in zip(chain_spec.cases, chain.subchains):
+    for case_spec, case in zip(chain_spec.cases.values(), chain.subchains.values()):
       inputs, outputs = compute_and_update(case_spec, case.chain, ctx, inputs, outputs)
 
     inputs, outputs = compute_and_update(chain_spec.default_case, chain.default_chain.chain, ctx, inputs, outputs)
@@ -196,7 +196,7 @@ def export_chain(chain_name: str) -> str:
     missing_id = next((id for id, revision in zip(export_ids, chain_revisions) if not revision), None)
     raise Exception("Could not find revision with id: " + missing_id)
 
-    return chain_revisions[::-1]
+  return chain_revisions[::-1]
 
 
 def import_chain(chain_name, chain_details):
