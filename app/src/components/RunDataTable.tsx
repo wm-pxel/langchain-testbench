@@ -32,10 +32,6 @@ const RunDataRow: React.FC<RunDataRowProps> = ({
   showInfo,
   toggleInfo,
 }) => {
-  const handleRunClick = () => {
-    console.log(`Running ID: ${runData.id}`);
-  };
-
   const getValueFromLastOutputEntry = (data: RunData): string => {
     const firstOutputEntry = Object.values(data.outputs)[0];
     if (!firstOutputEntry || firstOutputEntry.length === 0) return '';
@@ -58,7 +54,6 @@ const RunDataRow: React.FC<RunDataRowProps> = ({
         <DataCell content={getValueFromInputZero(runData)} maxWidth={"30em"} />
         <DataCell content={getValueFromLastOutputEntry(runData)} maxWidth={"70em"} />
         <td>
-          {/* <button onClick={handleRunClick}>Run</button> */}
           <button onClick={() => toggleInfo(runData.id)}>
             {showInfo ? "Hide Info" : "Show More Info"}
           </button>

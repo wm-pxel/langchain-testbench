@@ -245,11 +245,11 @@ const EditLLMs = () => {
       <div className="llms">
         {Object.entries(llms).map(([llmKey, llm], idx) => {
           if (llm.llm_type === 'openai') {
-            return <OpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
+            return <OpenAILLMEditor key={`llm-editor-${idx}`} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           } else if (llm.llm_type === 'huggingface_hub') {
-            return <HuggingFaceLLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
+            return <HuggingFaceLLMEditor key={`llm-editor-${idx}`} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           } else if (llm.llm_type == 'chat_openai') {
-            return <ChatOpenAILLMEditor key={llmKey} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
+            return <ChatOpenAILLMEditor key={`llm-editor-${idx}`} llmKey={llmKey} llm={llm} updateLLM={(name, llm) => updateLLM(idx, name, llm)} />
           }
         })}
         <div className="llm-actions">
