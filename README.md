@@ -132,3 +132,14 @@ docker-compose up
 ```
 
 URL is http://localhost:5173
+
+## Vector Search
+
+The vector search chain relies on SentenceTransformers which relies on PyTorch to run. This works well on Macs, but apparently not on Linux (Windows is an unkonwn). We've removed the PyTorch dependency by default so we can deploy on Linux. To regain vector search functionality uncomment:
+```
+# sentence-transformers==2.2.2 - uncomment for vector search
+# torch==2.0.1 - uncomment for vector search
+# torchvision==0.15.2 - uncomment for vector search
+# transformers==4.31.0 - uncomment for vector search
+```
+In requirements.txt before building (or install these packages manually).
